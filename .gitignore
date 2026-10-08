@@ -1,0 +1,22 @@
+# Node.js / Angular
+node_modules/
+dist/
+build/
+*.log
+.env*
+.angular/
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+packages/
+
+# IDE / Universal
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/

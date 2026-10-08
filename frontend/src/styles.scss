@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-neo-bg text-neo-black min-h-screen antialiased selection:bg-neo-yellow selection:text-neo-black;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  /* Neobrutalist Core Button */
+  .neo-btn {
+    @apply inline-flex items-center justify-center font-bold px-5 py-2.5 rounded-lg border-3 border-neo-black shadow-neo transition-all duration-150 active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed select-none;
+  }
+
+  .neo-btn-primary {
+    @apply neo-btn bg-neo-yellow hover:bg-neo-yellowDark text-neo-black;
+  }
+
+  .neo-btn-accent {
+    @apply neo-btn bg-neo-pink hover:bg-pink-400 text-white;
+  }
+
+  .neo-btn-cyan {
+    @apply neo-btn bg-neo-cyan hover:bg-emerald-400 text-neo-black;
+  }
+
+  .neo-btn-secondary {
+    @apply neo-btn bg-white hover:bg-neo-gray text-neo-black;
+  }
+
+  /* Neobrutalist Card */
+  .neo-card {
+    @apply bg-white border-3 border-neo-black rounded-xl p-6 shadow-neo;
+  }
+
+  .neo-card-interactive {
+    @apply neo-card transition-all duration-150 hover:-translate-y-1 hover:shadow-neo-lg cursor-pointer;
+  }
+
+  /* Neobrutalist Badge / Tag */
+  .neo-badge {
+    @apply inline-flex items-center text-xs font-black uppercase tracking-wider px-3 py-1 rounded-md border-2 border-neo-black shadow-neo-sm;
+  }
+
+  /* Neobrutalist Input */
+  .neo-input {
+    @apply w-full px-4 py-3 bg-white border-3 border-neo-black rounded-lg font-medium text-neo-black placeholder-neo-muted shadow-neo-sm focus:outline-none focus:shadow-neo focus:border-neo-black transition-all;
+  }
+
+  /* Comic-style decorative speech bubble tail */
+  .comic-bubble {
+    position: relative;
+  }
+  .comic-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 28px;
+    border-width: 12px 12px 0;
+    border-style: solid;
+    border-color: #121212 transparent;
+    display: block;
+    width: 0;
+  }
+}
