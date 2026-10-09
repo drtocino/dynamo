@@ -1,5 +1,7 @@
 using Dynamo.Api.Hubs;
+using Dynamo.Api.Services;
 using Dynamo.Application.Games.Queries;
+using Dynamo.Application.Services;
 using Dynamo.Application.Sessions.Commands;
 using Dynamo.Application.Sessions.Queries;
 using Dynamo.Core.Common;
@@ -54,6 +56,10 @@ builder.Services.AddHostedService<SessionCleanupWorker>();
 // Register SignalR for real-time multiplayer updates
 builder.Services.AddSignalR();
 
+// Register Game Engine Services
+builder.Services.AddSingleton<IGameStateBroadcaster, GameStateBroadcaster>();
+builder.Services.AddSingleton<SessionActorManager>();
+
 var app = builder.Build();
 
 // Ensure database and seed data created
@@ -74,5 +80,6 @@ app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<SessionHub>("/hubs/session");
+app.MapHub<GameHub>("/hub/game");
 
 app.Run();

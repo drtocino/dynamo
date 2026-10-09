@@ -19,6 +19,7 @@ public class SessionsController : BaseController
     private readonly ILeaveSessionCommandHandler _leaveSessionHandler;
     private readonly IRepository<Session> _sessionRepository;
     private readonly IHubContext<SessionHub, ISessionClient> _hubContext;
+    private readonly Dynamo.Application.Services.SessionActorManager _actorManager;
 
     public SessionsController(
         ICreateSessionCommandHandler createSessionHandler,
@@ -28,7 +29,8 @@ public class SessionsController : BaseController
         IChangeSessionStateCommandHandler changeSessionStateHandler,
         ILeaveSessionCommandHandler leaveSessionHandler,
         IRepository<Session> sessionRepository,
-        IHubContext<SessionHub, ISessionClient> hubContext)
+        IHubContext<SessionHub, ISessionClient> hubContext,
+        Dynamo.Application.Services.SessionActorManager actorManager)
     {
         _createSessionHandler = createSessionHandler;
         _createSharedScreenHandler = createSharedScreenHandler;
@@ -38,6 +40,7 @@ public class SessionsController : BaseController
         _leaveSessionHandler = leaveSessionHandler;
         _sessionRepository = sessionRepository;
         _hubContext = hubContext;
+        _actorManager = actorManager;
     }
 
     [HttpPost]
@@ -80,6 +83,9 @@ public class SessionsController : BaseController
         {
             var player = await _joinSessionHandler.HandleAsync(id, request, cancellationToken);
 
+            // Synchronize with Authoritative Session Actor
+            _actorManager.RegisterPlayer(id.ToString(), request.ClientId.ToString());
+
             // Broadcast real-time event to session group
             await _hubContext.Clients.Group($"session:{id}").PlayerJoined(player);
 
@@ -101,6 +107,8 @@ public class SessionsController : BaseController
         var updatedSession = await _leaveSessionHandler.HandleAsync(id, clientId, playerId, cancellationToken);
         if (updatedSession == null) return NotFound(new { message = $"Session {id} was not found." });
 
+        _actorManager.UnregisterPlayer(id.ToString(), clientId.ToString());
+
         // Broadcast PlayerLeft
         await _hubContext.Clients.Group($"session:{id}").PlayerLeft(new { playerId, newHostClientId = updatedSession.HostClientId });
 
@@ -114,8 +122,18 @@ public class SessionsController : BaseController
         {
             var updated = await _changeSessionStateHandler.HandleAsync(id, request.State, cancellationToken);
 
-            // Broadcast SessionStateChanged
-            await _hubContext.Clients.Group($"session:{id}").SessionStateChanged(new { state = updated.State });
+            if (request.State == SessionState.Active)
+            {
+                var actor = _actorManager.GetOrCreateActor(id.ToString());
+                actor.Start();
+            }
+            else if (request.State == SessionState.Ended)
+            {
+                _ = _actorManager.StopActorAsync(id.ToString());
+            }
+
+            // Broadcast SessionStateChanged with string state value
+            await _hubContext.Clients.Group($"session:{id}").SessionStateChanged(new { state = updated.State.ToString() });
 
             return Ok(updated);
         }

@@ -31,12 +31,18 @@ public class SessionCleanupWorker : BackgroundService
 
                 var now = DateTime.UtcNow;
                 var expiredSessions = await sessionRepo.FindAsync(s => s.ExpiresAt < now && s.State != SessionState.Ended, stoppingToken);
+                var actorManager = scope.ServiceProvider.GetService<Dynamo.Application.Services.SessionActorManager>();
 
                 foreach (var session in expiredSessions)
                 {
                     _logger.LogInformation("Expiring idle session {SessionId} with code {RoomCode}", session.Id, session.RoomCode);
                     session.State = SessionState.Ended;
                     await sessionRepo.UpdateAsync(session, stoppingToken);
+
+                    if (actorManager != null)
+                    {
+                        await actorManager.StopActorAsync(session.Id.ToString());
+                    }
                 }
             }
             catch (Exception ex)

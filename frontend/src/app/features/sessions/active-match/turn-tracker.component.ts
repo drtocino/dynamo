@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Player } from '../../../core/models/player.model';
 
@@ -70,20 +70,36 @@ import { Player } from '../../../core/models/player.model';
     </div>
   `
 })
-export class TurnTrackerComponent implements OnInit, OnDestroy {
+export class TurnTrackerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() players: Player[] = [];
   @Input() activePlayer: Player | undefined;
   @Input() timeLimitSeconds: number = 60;
   @Input() currentRound: number = 1;
   @Input() totalRounds: number = 3;
+  @Input() canControlTurn: boolean = true;
 
   @Output() advanceTurn = new EventEmitter<void>();
 
   secondsLeft: number = 60;
   private timerInterval: any;
+  private currentActivePlayerId: string | undefined;
 
   ngOnInit(): void {
+    this.currentActivePlayerId = this.activePlayer?.id;
     this.resetTimer();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['activePlayer']) {
+      const newId = this.activePlayer?.id;
+      if (newId && newId !== this.currentActivePlayerId) {
+        this.currentActivePlayerId = newId;
+        this.resetTimer();
+      }
+    }
+    if (changes['timeLimitSeconds'] && !changes['activePlayer']) {
+      this.resetTimer();
+    }
   }
 
   ngOnDestroy(): void {
@@ -98,7 +114,11 @@ export class TurnTrackerComponent implements OnInit, OnDestroy {
         this.secondsLeft--;
       } else {
         // Auto advance turn on timer expiry
-        this.onAdvanceTurn();
+        if (this.canControlTurn) {
+          this.onAdvanceTurn();
+        } else {
+          this.stopTimer();
+        }
       }
     }, 1000);
   }
@@ -106,6 +126,7 @@ export class TurnTrackerComponent implements OnInit, OnDestroy {
   stopTimer(): void {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
+      this.timerInterval = null;
     }
   }
 

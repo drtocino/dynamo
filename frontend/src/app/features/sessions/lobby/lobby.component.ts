@@ -6,6 +6,8 @@ import { SessionService } from '../../../core/services/session.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
 import { Session } from '../../../core/models/session.model';
 import { Player } from '../../../core/models/player.model';
+import { GameStore } from '../../../store/game.store';
+import { InputService } from '../../../core/services/input.service';
 
 @Component({
   selector: 'app-lobby',
@@ -130,6 +132,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private sessionService = inject(SessionService);
   private realtime = inject(RealtimeService);
+  public gameStore = inject(GameStore);
+  private inputService = inject(InputService);
 
   session: Session | undefined;
   copied = false;
@@ -158,12 +162,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
         return;
       }
       this.session = data;
+      const clientId = this.sessionService.getClientId();
       this.realtime.listenToSession(data.id);
+      this.gameStore.initSync(data.id, clientId);
 
       // Subscribe to real-time events
       this.subs.push(
         this.realtime.playerJoined$.subscribe(player => {
-          if (this.session && !this.session.players.some(p => p.id === player.id)) {
+          if (this.session && !this.session.players.some(p => p.id === player.id || p.clientId === player.clientId)) {
             this.session.players.push(player);
           }
         }),
@@ -176,21 +182,23 @@ export class LobbyComponent implements OnInit, OnDestroy {
           }
         }),
         this.realtime.stateChanged$.subscribe(state => {
+          const stateStr = typeof state === 'string' ? state : (state as any)?.state;
           if (this.session) {
-            this.session.state = state;
-            if (state === 'Active') {
+            this.session.state = stateStr as any;
+            if (stateStr === 'Active' || stateStr === 'InProgress') {
               this.router.navigate(['/active-match', this.session.id]);
             }
           }
         })
       );
 
-      // Periodic 2-second sync poll to ensure multi-window updates stay synchronized
+      // Resilient background sync to guarantee state convergence
       const pollInterval = setInterval(() => {
         if (!this.session?.id) return;
         this.sessionService.getSessionById(this.session.id).subscribe(refreshed => {
-          if (refreshed) {
-            this.session = refreshed;
+          if (refreshed && this.session) {
+            this.session.players = refreshed.players;
+            this.session.state = refreshed.state;
             if (refreshed.state === 'Active') {
               this.router.navigate(['/active-match', refreshed.id]);
             }
@@ -216,6 +224,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   startMatch(): void {
     if (!this.session) return;
     this.isStarting = true;
+    this.inputService.dispatchIntent('START_GAME', null, this.session.id);
     this.sessionService.changeState(this.session.id, 'Active').subscribe(() => {
       this.router.navigate(['/active-match', this.session!.id]);
     });

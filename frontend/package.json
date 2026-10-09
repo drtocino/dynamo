@@ -17,6 +17,8 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
+    "@microsoft/signalr": "^10.0.11",
+    "@ngrx/signals": "^18.1.1",
     "@supabase/supabase-js": "^2.45.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

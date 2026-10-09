@@ -7,6 +7,8 @@ import { RealtimeService } from '../../../core/services/realtime.service';
 import { Session } from '../../../core/models/session.model';
 import { Player } from '../../../core/models/player.model';
 import { TurnTrackerComponent } from './turn-tracker.component';
+import { GameStore } from '../../../store/game.store';
+import { InputService } from '../../../core/services/input.service';
 
 @Component({
   selector: 'app-active-match',
@@ -45,6 +47,7 @@ import { TurnTrackerComponent } from './turn-tracker.component';
         [timeLimitSeconds]="session.timeLimitSeconds"
         [currentRound]="currentRound"
         [totalRounds]="session.rounds"
+        [canControlTurn]="isHost || isActivePlayer"
         (advanceTurn)="handleAdvanceTurn()">
       </app-turn-tracker>
 
@@ -58,10 +61,27 @@ import { TurnTrackerComponent } from './turn-tracker.component';
           </p>
         </div>
 
+        <!-- Real-Time Interactive Actions (Client-Side Prediction Demo) -->
+        <div class="flex flex-wrap justify-center gap-4 py-4">
+          <button 
+            (click)="handleBuzz()"
+            class="neo-btn-primary bg-neo-yellow text-neo-black text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
+            <span>⚡</span> Buzz In (+10 pts)
+          </button>
+          <button 
+            (click)="handleAnswer()"
+            class="neo-btn-primary bg-neo-pink text-white text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
+            <span>🎯</span> Submit Answer (+20 pts)
+          </button>
+        </div>
+
         <!-- Simulated Interactive Scoreboard -->
         <div class="pt-6 border-t-3 border-neo-black">
-          <h3 class="text-sm font-black uppercase tracking-wider text-neo-muted mb-3">
-            Live Participants & Scores
+          <h3 class="text-sm font-black uppercase tracking-wider text-neo-muted mb-3 flex items-center justify-center gap-2">
+            <span>🏆</span> Authoritative Multiplayer Scores
+            <span *ngIf="gameStore.unacknowledgedIntents().length" class="text-xs bg-neo-yellow px-2 py-0.5 rounded font-bold border border-neo-black">
+              {{ gameStore.unacknowledgedIntents().length }} pending sync
+            </span>
           </h3>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div 
@@ -69,7 +89,9 @@ import { TurnTrackerComponent } from './turn-tracker.component';
               [class.border-neo-yellow]="p.id === activePlayer?.id"
               class="p-3 bg-neo-bg rounded-xl border-3 border-neo-black flex flex-col items-center">
               <span class="font-black text-sm text-neo-black truncate">{{ p.name }}</span>
-              <span class="text-xs font-bold text-neo-muted mt-1">Score: {{ (idx + 1) * 100 }} pts</span>
+              <span class="text-xs font-bold text-neo-muted mt-1">
+                Score: {{ getPlayerScore(p.clientId || p.id) }} pts
+              </span>
             </div>
           </div>
         </div>
@@ -82,14 +104,44 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private sessionService = inject(SessionService);
   private realtime = inject(RealtimeService);
+  public gameStore = inject(GameStore);
+  private inputService = inject(InputService);
 
   session: Session | undefined;
   currentRound: number = 1;
   private subs: Subscription[] = [];
 
+  get isHost(): boolean {
+    if (!this.session) return false;
+    return this.session.hostClientId === this.sessionService.getClientId();
+  }
+
+  get isActivePlayer(): boolean {
+    if (!this.session || !this.activePlayer) return false;
+    return this.activePlayer.clientId === this.sessionService.getClientId();
+  }
+
   get activePlayer(): Player | undefined {
     if (!this.session || !this.session.players.length) return undefined;
     return this.session.players.find(p => p.id === this.session!.activePlayerId) || this.session.players[0];
+  }
+
+  getPlayerScore(clientId: string): number {
+    const players = this.gameStore.effectiveState().players;
+    if (players && players[clientId]) {
+      return players[clientId].score;
+    }
+    return 0;
+  }
+
+  handleBuzz(): void {
+    if (!this.session) return;
+    this.inputService.dispatchIntent('BUZZ_IN', null, this.session.id);
+  }
+
+  handleAnswer(): void {
+    if (!this.session) return;
+    this.inputService.dispatchIntent('ANSWER_SELECTED', null, this.session.id);
   }
 
   ngOnInit(): void {
@@ -102,7 +154,9 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
         return;
       }
       this.session = data;
+      const clientId = this.sessionService.getClientId();
       this.realtime.listenToSession(data.id);
+      this.gameStore.initSync(data.id, clientId);
 
       this.subs.push(
         this.realtime.turnAdvanced$.subscribe(activePlayerId => {
@@ -111,20 +165,22 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
           }
         }),
         this.realtime.stateChanged$.subscribe(state => {
-          if (state === 'Lobby' && this.session) {
+          const stateStr = typeof state === 'string' ? state : (state as any)?.state;
+          if (stateStr === 'Lobby' && this.session) {
             this.router.navigate(['/lobby', this.session.id]);
-          } else if (state === 'Ended') {
+          } else if (stateStr === 'Ended') {
             this.router.navigate(['/']);
           }
         })
       );
 
-      // Periodic 2-second sync poll to ensure active match stays synchronized across devices
+      // Background synchronization for session consistency
       const pollInterval = setInterval(() => {
         if (!this.session?.id) return;
         this.sessionService.getSessionById(this.session.id).subscribe(refreshed => {
-          if (refreshed) {
-            this.session = refreshed;
+          if (refreshed && this.session) {
+            this.session.players = refreshed.players;
+            this.session.state = refreshed.state;
             if (refreshed.state === 'Lobby') {
               this.router.navigate(['/lobby', refreshed.id]);
             } else if (refreshed.state === 'Ended') {
@@ -132,7 +188,7 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
             }
           }
         });
-      }, 2000);
+      }, 3000);
       this.subs.push({ unsubscribe: () => clearInterval(pollInterval) } as Subscription);
     });
   }

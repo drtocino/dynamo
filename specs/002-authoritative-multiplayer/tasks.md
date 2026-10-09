@@ -16,8 +16,8 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 [P] Install `@microsoft/signalr` and `@ngrx/signals` in `frontend/package.json`
-- [ ] T002 [P] Register SignalR services in `backend/src/Dynamo.Api/Program.cs`
+- [x] T001 [P] Install `@microsoft/signalr` and `@ngrx/signals` in `frontend/package.json`
+- [x] T002 [P] Register SignalR services in `backend/src/Dynamo.Api/Program.cs`
 
 ---
 
@@ -27,10 +27,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [P] Create `GameState`, `PlayerState`, `PlayerIntent`, `StateSnapshot`, and `StateDelta` models in `backend/src/Dynamo.Core/Models/GameTypes.cs`
-- [ ] T004 [P] Create equivalent TypeScript interfaces in `frontend/src/app/core/models/game-state.model.ts`
-- [ ] T005 Setup `GameHub` with basic connection and group mapping in `backend/src/Dynamo.Api/Hubs/GameHub.cs`
-- [ ] T006 Implement `ConnectionService` wrapping SignalR in RxJS in `frontend/src/app/core/services/connection.service.ts`
+- [x] T003 [P] Create `GameState`, `PlayerState`, `PlayerIntent`, `StateSnapshot`, and `StateDelta` models in `backend/src/Dynamo.Core/Models/GameTypes.cs`
+- [x] T004 [P] Create equivalent TypeScript interfaces in `frontend/src/app/core/models/game-state.model.ts`
+- [x] T005 Setup `GameHub` with basic connection and group mapping in `backend/src/Dynamo.Api/Hubs/GameHub.cs`
+- [x] T006 Implement `ConnectionService` wrapping SignalR in RxJS in `frontend/src/app/core/services/connection.service.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -44,10 +44,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T007 [P] [US3] Implement `SessionActor` background task loop using `System.Threading.Channels` in `backend/src/Dynamo.Application/Services/SessionActor.cs`
-- [ ] T008 [US3] Implement `SessionActorManager` to spawn and manage actors per active SessionId in `backend/src/Dynamo.Application/Services/SessionActorManager.cs`
-- [ ] T009 [US3] Update `GameHub.cs` to enqueue received `PlayerIntent` into the corresponding `SessionActor`'s channel
-- [ ] T010 [US3] Implement state broadcast logic in `SessionActor.cs` to emit `StateDelta` via `IHubContext` at 10Hz
+- [x] T007 [P] [US3] Implement `SessionActor` background task loop using `System.Threading.Channels` in `backend/src/Dynamo.Application/Services/SessionActor.cs`
+- [x] T008 [US3] Implement `SessionActorManager` to spawn and manage actors per active SessionId in `backend/src/Dynamo.Application/Services/SessionActorManager.cs`
+- [x] T009 [US3] Update `GameHub.cs` to enqueue received `PlayerIntent` into the corresponding `SessionActor`'s channel
+- [x] T010 [US3] Implement state broadcast logic in `SessionActor.cs` to emit `StateDelta` via `IHubContext` at 10Hz
 
 **Checkpoint**: Server tick engine is fully functional and broadcasting updates.
 
@@ -61,11 +61,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create NgRx SignalStore in `frontend/src/app/store/game.store.ts` for the `AuthoritativeStateMirror`
-- [ ] T012 [US1] Implement `PredictionBuffer` logic within `game.store.ts` to optimistically apply inputs
-- [ ] T013 [P] [US1] Implement `InputService` in `frontend/src/app/core/services/input.service.ts` to capture intents, update the `PredictionBuffer`, and send via `ConnectionService`
-- [ ] T014 [US1] Update `GameStore` to subscribe to `ConnectionService` deltas and implement the Reconciler (rollback if rejected)
-- [ ] T015 [US1] Refactor `frontend/src/app/features/hub/hub.component.ts` to read state from `GameStore` signals instead of polling
+- [x] T011 [P] [US1] Create NgRx SignalStore in `frontend/src/app/store/game.store.ts` for the `AuthoritativeStateMirror`
+- [x] T012 [US1] Implement `PredictionBuffer` logic within `game.store.ts` to optimistically apply inputs
+- [x] T013 [P] [US1] Implement `InputService` in `frontend/src/app/core/services/input.service.ts` to capture intents, update the `PredictionBuffer`, and send via `ConnectionService`
+- [x] T014 [US1] Update `GameStore` to subscribe to `ConnectionService` deltas and implement the Reconciler (rollback if rejected)
+- [x] T015 [US1] Refactor `frontend/src/app/features/hub/hub.component.ts` to read state from `GameStore` signals instead of polling
 
 **Checkpoint**: Client can predict inputs and reconcile with the server's high-frequency broadcasts.
 
@@ -79,9 +79,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Update `ConnectionService` (`connection.service.ts`) to handle `onclose` and exponential backoff reconnect logic
-- [ ] T017 [US2] Add `RequestSnapshot` to `GameHub.cs` and handle returning full state sync in `SessionActor.cs`
-- [ ] T018 [US2] Update `GameStore` to process full `StateSnapshot` events to catch up after a reconnect
+- [x] T016 [P] [US2] Update `ConnectionService` (`connection.service.ts`) to handle `onclose` and exponential backoff reconnect logic
+- [x] T017 [US2] Add `RequestSnapshot` to `GameHub.cs` and handle returning full state sync in `SessionActor.cs`
+- [x] T018 [US2] Update `GameStore` to process full `StateSnapshot` events to catch up after a reconnect
 
 **Checkpoint**: Reconnection and full state resync works smoothly.
 
@@ -91,9 +91,9 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T019 [P] Disable the legacy EF Core 2-second polling logic in frontend components
-- [ ] T020 Refactor `SessionCleanupWorker` or introduce match-end hooks to persist final match data from `SessionActor` to EF Core
-- [ ] T021 Run quickstart.md validation scenarios to verify end-to-end functionality
+- [x] T019 [P] Disable the legacy EF Core 2-second polling logic in frontend components
+- [x] T020 Refactor `SessionCleanupWorker` or introduce match-end hooks to persist final match data from `SessionActor` to EF Core
+- [x] T021 Run quickstart.md validation scenarios to verify end-to-end functionality
 
 ---
 
