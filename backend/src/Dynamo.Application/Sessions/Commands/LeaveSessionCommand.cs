@@ -49,7 +49,7 @@ public class LeaveSessionCommandHandler : ILeaveSessionCommandHandler
         }
 
         // Remove client
-        var c = session.Clients.FirstOrDefault(x => x.Id == clientId);
+        var c = session.Clients.FirstOrDefault(x => x.ClientId == clientId);
         if (c != null)
         {
             await _clientRepository.DeleteAsync(c, cancellationToken);
@@ -58,10 +58,10 @@ public class LeaveSessionCommandHandler : ILeaveSessionCommandHandler
         // Host transfer logic on creator departure (FR-019)
         if (session.HostClientId == clientId)
         {
-            var remainingClient = session.Clients.Where(x => x.Id != clientId).OrderBy(x => x.ConnectedAt).FirstOrDefault();
+            var remainingClient = session.Clients.Where(x => x.ClientId != clientId).OrderBy(x => x.ConnectedAt).FirstOrDefault();
             if (remainingClient != null)
             {
-                session.HostClientId = remainingClient.Id;
+                session.HostClientId = remainingClient.ClientId;
             }
             else
             {

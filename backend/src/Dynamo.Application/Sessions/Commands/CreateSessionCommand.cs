@@ -98,7 +98,8 @@ public class CreateSessionCommandHandler : ICreateSessionCommandHandler
         // Add creator client
         session.Clients.Add(new Client
         {
-            Id = hostClientId,
+            Id = Guid.NewGuid(),
+            ClientId = hostClientId,
             SessionId = session.Id,
             ConnectedAt = DateTime.UtcNow
         });

@@ -65,7 +65,8 @@ public class CreateSharedScreenSessionCommandHandler : ICreateSharedScreenSessio
         // Add host device client
         session.Clients.Add(new Client
         {
-            Id = hostClientId,
+            Id = Guid.NewGuid(),
+            ClientId = hostClientId,
             SessionId = session.Id,
             ConnectedAt = DateTime.UtcNow
         });

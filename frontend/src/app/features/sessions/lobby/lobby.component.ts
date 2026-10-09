@@ -184,6 +184,20 @@ export class LobbyComponent implements OnInit, OnDestroy {
           }
         })
       );
+
+      // Periodic 2-second sync poll to ensure multi-window updates stay synchronized
+      const pollInterval = setInterval(() => {
+        if (!this.session?.id) return;
+        this.sessionService.getSessionById(this.session.id).subscribe(refreshed => {
+          if (refreshed) {
+            this.session = refreshed;
+            if (refreshed.state === 'Active') {
+              this.router.navigate(['/active-match', refreshed.id]);
+            }
+          }
+        });
+      }, 2000);
+      this.subs.push({ unsubscribe: () => clearInterval(pollInterval) } as Subscription);
     });
   }
 

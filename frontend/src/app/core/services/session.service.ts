@@ -18,11 +18,20 @@ export class SessionService {
 
   getClientId(): string {
     let clientId = localStorage.getItem('dynamo_client_id');
-    if (!clientId) {
-      clientId = 'client-' + Math.random().toString(36).substring(2, 9);
+    const isGuid = clientId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId);
+    if (!isGuid) {
+      clientId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : this.generateGuid();
       localStorage.setItem('dynamo_client_id', clientId);
     }
-    return clientId;
+    return clientId!;
+  }
+
+  private generateGuid(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
   }
 
   createSession(request: CreateSessionRequest): Observable<Session> {

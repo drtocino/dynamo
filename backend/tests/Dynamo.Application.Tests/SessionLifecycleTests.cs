@@ -221,4 +221,79 @@ public class SessionLifecycleTests
         Assert.Equal("Team Alpha", sessionDto.Players[0].Name);
         Assert.NotNull(sessionDto.ActivePlayerId);
     }
+
+    [Fact]
+    public async Task CreateSession_AllowsSameHostToCreateMultipleSessions_WithoutKeyCollision()
+    {
+        using var context = CreateInMemoryDbContext();
+        var gameRepo = new EfRepository<Game>(context);
+        var sessionRepo = new EfRepository<Session>(context);
+
+        var games = await gameRepo.GetAllAsync();
+        var handler = new CreateSessionCommandHandler(sessionRepo, gameRepo);
+        var persistentClientId = Guid.NewGuid();
+
+        // First session creation
+        var session1 = await handler.HandleAsync(new CreateSessionRequest
+        {
+            GameId = games.First().Id,
+            HostClientId = persistentClientId
+        });
+
+        // Second session creation with exact same HostClientId (verifies fix for duplicate key ArgumentException)
+        var session2 = await handler.HandleAsync(new CreateSessionRequest
+        {
+            GameId = games.First().Id,
+            HostClientId = persistentClientId
+        });
+
+        Assert.NotNull(session1);
+        Assert.NotNull(session2);
+        Assert.NotEqual(session1.Id, session2.Id);
+        Assert.Equal(persistentClientId, session1.HostClientId);
+        Assert.Equal(persistentClientId, session2.HostClientId);
+    }
+
+    [Fact]
+    public async Task JoinSession_AllowsSameClientToJoinMultipleSessions_WithoutKeyCollision()
+    {
+        using var context = CreateInMemoryDbContext();
+        var gameRepo = new EfRepository<Game>(context);
+        var sessionRepo = new EfRepository<Session>(context);
+        var playerRepo = new EfRepository<Player>(context);
+        var clientRepo = new EfRepository<Client>(context);
+
+        var games = await gameRepo.GetAllAsync();
+        var createHandler = new CreateSessionCommandHandler(sessionRepo, gameRepo);
+        var joinHandler = new JoinSessionCommandHandler(sessionRepo, playerRepo, clientRepo);
+
+        var guestClientId = Guid.NewGuid();
+
+        var session1 = await createHandler.HandleAsync(new CreateSessionRequest
+        {
+            GameId = games.First().Id
+        });
+        var session2 = await createHandler.HandleAsync(new CreateSessionRequest
+        {
+            GameId = games.First().Id
+        });
+
+        var player1 = await joinHandler.HandleAsync(session1.Id, new JoinSessionRequest
+        {
+            ClientId = guestClientId,
+            Name = "Guest User"
+        });
+
+        var player2 = await joinHandler.HandleAsync(session2.Id, new JoinSessionRequest
+        {
+            ClientId = guestClientId,
+            Name = "Guest User"
+        });
+
+        Assert.NotNull(player1);
+        Assert.NotNull(player2);
+        Assert.NotEqual(player1.Id, player2.Id);
+        Assert.Equal(guestClientId, player1.ClientId);
+        Assert.Equal(guestClientId, player2.ClientId);
+    }
 }

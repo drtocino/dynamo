@@ -55,6 +55,7 @@ public class DynamoDbContext : DbContext
         modelBuilder.Entity<Client>(b =>
         {
             b.HasKey(c => c.Id);
+            b.HasIndex(c => new { c.SessionId, c.ClientId });
         });
 
         modelBuilder.Entity<Player>(b =>

@@ -118,6 +118,22 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
           }
         })
       );
+
+      // Periodic 2-second sync poll to ensure active match stays synchronized across devices
+      const pollInterval = setInterval(() => {
+        if (!this.session?.id) return;
+        this.sessionService.getSessionById(this.session.id).subscribe(refreshed => {
+          if (refreshed) {
+            this.session = refreshed;
+            if (refreshed.state === 'Lobby') {
+              this.router.navigate(['/lobby', refreshed.id]);
+            } else if (refreshed.state === 'Ended') {
+              this.router.navigate(['/']);
+            }
+          }
+        });
+      }, 2000);
+      this.subs.push({ unsubscribe: () => clearInterval(pollInterval) } as Subscription);
     });
   }
 

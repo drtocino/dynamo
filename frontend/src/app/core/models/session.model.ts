@@ -5,6 +5,7 @@ export type SessionState = 'Configuring' | 'Lobby' | 'Active' | 'Ended';
 
 export interface Client {
   id: string;
+  clientId: string;
   sessionId: string;
   connectedAt: string;
 }

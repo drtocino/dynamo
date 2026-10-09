@@ -58,11 +58,12 @@ public class JoinSessionCommandHandler : IJoinSessionCommandHandler
         var clientId = request.ClientId == Guid.Empty ? Guid.NewGuid() : request.ClientId;
 
         // Register client if not already present
-        if (!session.Clients.Any(c => c.Id == clientId))
+        if (!session.Clients.Any(c => c.ClientId == clientId))
         {
             var client = new Client
             {
-                Id = clientId,
+                Id = Guid.NewGuid(),
+                ClientId = clientId,
                 SessionId = session.Id,
                 ConnectedAt = DateTime.UtcNow
             };
