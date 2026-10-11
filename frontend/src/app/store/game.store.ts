@@ -57,9 +57,6 @@ export const GameStore = signalStore(
               player.score += 20;
               break;
             default:
-              if (intent.payload) {
-                effective.payload = intent.payload;
-              }
               break;
           }
         }
@@ -89,7 +86,8 @@ export const GameStore = signalStore(
 
     applySnapshot(snapshot: StateSnapshot) {
       const myId = store.clientId();
-      const authPlayer = snapshot.fullState.players[myId];
+      const authPlayer = snapshot.fullState.players[myId] 
+        || (snapshot.fullState.players ? Object.values(snapshot.fullState.players).find(p => p.clientId === myId) : undefined);
       const lastAck = authPlayer ? authPlayer.lastAcknowledgedInputSequence : 0;
 
       // Reconciler: Prune acknowledged intents
@@ -121,7 +119,8 @@ export const GameStore = signalStore(
       };
 
       const myId = store.clientId();
-      const authPlayer = newAuth.players[myId];
+      const authPlayer = newAuth.players[myId] 
+        || (newAuth.players ? Object.values(newAuth.players).find(p => p.clientId === myId) : undefined);
       const lastAck = authPlayer ? authPlayer.lastAcknowledgedInputSequence : 0;
 
       // Reconciler: discard intents that server has already simulated

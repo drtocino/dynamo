@@ -18,7 +18,7 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 [P] Create frontend feature directory structure in `frontend/src/app/features/sessions/active-match/biblical-roulette/`
+- [X] T001 [P] Create frontend feature directory structure in `frontend/src/app/features/sessions/active-match/biblical-roulette/`
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
@@ -26,10 +26,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 [P] Create `Phrase` database entity in `backend/src/Dynamo.Core/Entities/Phrase.cs`
-- [ ] T003 Setup database migrations for `Phrase` entity
-- [ ] T004 [P] Create `BiblicalRouletteState` model in `backend/src/Dynamo.Core/Models/BiblicalRouletteState.cs`
-- [ ] T005 [P] Update `MultiplayerMode` enum to include `BiblicalRoulette` in `backend/src/Dynamo.Core/Enums/MultiplayerMode.cs`
+- [X] T002 [P] Create `Phrase` database entity in `backend/src/Dynamo.Core/Entities/Phrase.cs`
+- [X] T003 Setup database migrations for `Phrase` entity
+- [X] T004 [P] Create `BiblicalRouletteState` model in `backend/src/Dynamo.Core/Models/BiblicalRouletteState.cs`
+- [X] T005 [P] Update `MultiplayerMode` enum to include `BiblicalRoulette` in `backend/src/Dynamo.Core/Enums/MultiplayerMode.cs`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -43,11 +43,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create backend `BiblicalRouletteActor` in `backend/src/Dynamo.Application/Actors/BiblicalRouletteActor.cs` to handle initialization and basic state management
-- [ ] T007 [P] [US1] Create frontend `BiblicalRouletteComponent` in `frontend/src/app/features/sessions/active-match/biblical-roulette/biblical-roulette.component.ts`
-- [ ] T008 [P] [US1] Create frontend `PhraseBoardComponent` in `frontend/src/app/features/sessions/active-match/biblical-roulette/phrase-board/phrase-board.component.ts`
-- [ ] T009 [US1] Update `SessionsController` to route `MultiplayerMode.BiblicalRoulette` to the new actor
-- [ ] T010 [US1] Integrate `BiblicalRouletteComponent` into the main active match routing view
+- [X] T006 [P] [US1] Create backend `BiblicalRouletteActor` in `backend/src/Dynamo.Application/Actors/BiblicalRouletteActor.cs` to handle initialization and basic state management
+- [X] T007 [P] [US1] Create frontend `BiblicalRouletteComponent` in `frontend/src/app/features/sessions/active-match/biblical-roulette/biblical-roulette.component.ts`
+- [X] T008 [P] [US1] Create frontend `PhraseBoardComponent` in `frontend/src/app/features/sessions/active-match/biblical-roulette/phrase-board/phrase-board.component.ts`
+- [X] T009 [US1] Update `SessionsController` to route `MultiplayerMode.BiblicalRoulette` to the new actor
+- [X] T010 [US1] Integrate `BiblicalRouletteComponent` into the main active match routing view
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Players can join and see the phrase board.
 
@@ -61,11 +61,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T011 [P] [US2] Extend `GameHub` with `SpinRoulette()` and `GuessConsonant()` in `backend/src/Dynamo.Api/Hubs/GameHub.cs`
-- [ ] T012 [US2] Implement turn logic, roulette randomization, and consonant checking in `BiblicalRouletteActor.cs`
-- [ ] T013 [P] [US2] Create pure Angular `RouletteWheelComponent` with CSS spinning animations in `frontend/src/app/features/sessions/active-match/biblical-roulette/roulette-wheel/roulette-wheel.component.ts`
-- [ ] T014 [US2] Add keyboard/consonant selection UI to `BiblicalRouletteComponent`
-- [ ] T015 [US2] Wire `RouletteWheelComponent` to SignalR `RouletteSpun` events to trigger the animation
+- [X] T011 [P] [US2] Extend `GameHub` with `SpinRoulette()` and `GuessConsonant()` in `backend/src/Dynamo.Api/Hubs/GameHub.cs`
+- [X] T012 [US2] Implement turn logic, roulette randomization, and consonant checking in `BiblicalRouletteActor.cs`
+- [X] T013 [P] [US2] Create pure Angular `RouletteWheelComponent` with CSS spinning animations in `frontend/src/app/features/sessions/active-match/biblical-roulette/roulette-wheel/roulette-wheel.component.ts`
+- [X] T014 [US2] Add keyboard/consonant selection UI to `BiblicalRouletteComponent`
+- [X] T015 [US2] Wire `RouletteWheelComponent` to SignalR `RouletteSpun` events to trigger the animation
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. Core gameplay loop is established.
 
@@ -79,10 +79,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] Extend `GameHub` with `PurchaseVowel()` and `PurchaseHint()` commands
-- [ ] T017 [US3] Implement dynamic vowel pricing and hint logic in `BiblicalRouletteActor.cs`
-- [ ] T018 [P] [US3] Create `VowelStoreModalComponent` in `frontend/src/app/features/sessions/active-match/biblical-roulette/vowel-store-modal/vowel-store-modal.component.ts`
-- [ ] T019 [US3] Add vowel store trigger button and wire to backend in `BiblicalRouletteComponent`
+- [X] T016 [P] [US3] Extend `GameHub` with `PurchaseVowel()` and `PurchaseHint()` commands
+- [X] T017 [US3] Implement dynamic vowel pricing and hint logic in `BiblicalRouletteActor.cs`
+- [X] T018 [P] [US3] Create `VowelStoreModalComponent` in `frontend/src/app/features/sessions/active-match/biblical-roulette/vowel-store-modal/vowel-store-modal.component.ts`
+- [X] T019 [US3] Add vowel store trigger button and wire to backend in `BiblicalRouletteComponent`
 
 **Checkpoint**: All user stories should now be independently functional. Vowels and hints can be purchased.
 
@@ -92,10 +92,10 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T020 [P] Implement "Solve Phrase" feature in frontend and backend to declare a winner
-- [ ] T021 Apply Neobrutalist design tokens across all new components
-- [ ] T022 Seed the PostgreSQL database with initial biblical phrases and hints
-- [ ] T023 Run quickstart.md validation
+- [X] T020 [P] Implement "Solve Phrase" feature in frontend and backend to declare a winner
+- [X] T021 Apply Neobrutalist design tokens across all new components
+- [X] T022 Seed the PostgreSQL database with initial biblical phrases and hints
+- [X] T023 Run quickstart.md validation
 
 ---
 

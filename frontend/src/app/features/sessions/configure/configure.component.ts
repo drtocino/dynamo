@@ -188,6 +188,7 @@ export class ConfigureComponent implements OnInit {
       case 'trivia-pro': return '📖';
       case 'charades-flash': return '🎭';
       case 'scripture-duel': return '⚔️';
+      case 'biblical-roulette': return '🎡';
       default: return '🎲';
     }
   }

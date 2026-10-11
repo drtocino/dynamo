@@ -12,8 +12,8 @@ public class SessionActor : IAsyncDisposable
     private readonly CancellationTokenSource _cts = new();
     private Task? _tickLoopTask;
 
-    private readonly object _stateLock = new();
-    private readonly GameState _state;
+    protected readonly object _stateLock = new();
+    protected readonly GameState _state;
 
     public string SessionId => _sessionId;
     public GameState CurrentState
@@ -156,7 +156,7 @@ public class SessionActor : IAsyncDisposable
         }
     }
 
-    private void ApplyIntent(PlayerIntent intent)
+    protected virtual void ApplyIntent(PlayerIntent intent)
     {
         if (!_state.Players.TryGetValue(intent.ClientId, out var player))
         {

@@ -15,10 +15,19 @@ public class DynamoDbContext : DbContext
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Player> Players => Set<Player>();
+    public DbSet<Phrase> Phrases => Set<Phrase>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Phrase>(b =>
+        {
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Text).IsRequired().HasMaxLength(500);
+            b.Property(p => p.GeneralHint).IsRequired().HasMaxLength(250);
+            b.Property(p => p.SpecificHint).IsRequired().HasMaxLength(250);
+        });
 
         modelBuilder.Entity<Game>(b =>
         {
@@ -103,6 +112,51 @@ public class DynamoDbContext : DbContext
                 ThumbnailUrl = "/assets/games/scripture.png",
                 SupportedModes = new List<MultiplayerMode> { MultiplayerMode.RoomBased },
                 SettingsSchemaJson = "{\"maxPlayers\": 8, \"defaultRounds\": 4, \"defaultTime\": 45}",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                Slug = "biblical-roulette",
+                Name = "Biblical Roulette",
+                Description = "Spin the wheel, reveal letters, and solve the hidden verse with live dynamic vowel pricing.",
+                ThumbnailUrl = "/assets/games/roulette.png",
+                SupportedModes = new List<MultiplayerMode> { MultiplayerMode.SharedScreen, MultiplayerMode.BiblicalRoulette },
+                SettingsSchemaJson = "{\"maxPlayers\": 6, \"defaultRounds\": 3, \"defaultTime\": 45}",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            }
+        );
+
+        modelBuilder.Entity<Phrase>().HasData(
+            new
+            {
+                Id = Guid.Parse("a1111111-1111-1111-1111-111111111111"),
+                Text = "FOR GOD SO LOVED THE WORLD",
+                GeneralHint = "Gospel of John",
+                SpecificHint = "John 3:16 - The golden verse",
+                Category = "Gospels",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("b2222222-2222-2222-2222-222222222222"),
+                Text = "THE LORD IS MY SHEPHERD",
+                GeneralHint = "Psalms of David",
+                SpecificHint = "Psalm 23:1 - Written by King David",
+                Category = "Psalms",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("c3333333-3333-3333-3333-333333333333"),
+                Text = "I CAN DO ALL THINGS THROUGH CHRIST",
+                GeneralHint = "Pauline Epistle",
+                SpecificHint = "Philippians 4:13 - Written from prison",
+                Category = "Epistles",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             }

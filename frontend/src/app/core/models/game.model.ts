@@ -1,4 +1,4 @@
-export type MultiplayerMode = 'RoomBased' | 'SharedScreen';
+export type MultiplayerMode = 'RoomBased' | 'SharedScreen' | 'BiblicalRoulette';
 
 export interface Game {
   id: string;

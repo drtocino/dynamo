@@ -14,11 +14,13 @@ public interface IGameHubClient
 public class GameHub : Hub<IGameHubClient>
 {
     private readonly SessionActorManager _actorManager;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<GameHub> _logger;
 
-    public GameHub(SessionActorManager actorManager, ILogger<GameHub> logger)
+    public GameHub(SessionActorManager actorManager, IServiceScopeFactory scopeFactory, ILogger<GameHub> logger)
     {
         _actorManager = actorManager;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -29,8 +31,24 @@ public class GameHub : Hub<IGameHubClient>
 
         await Groups.AddToGroupAsync(Context.ConnectionId, $"Session_{sessionId}");
 
+        string? mode = null;
+        string? gameSlug = null;
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var sessionRepo = scope.ServiceProvider.GetRequiredService<Dynamo.Core.Common.IRepository<Dynamo.Core.Entities.Session>>();
+            if (Guid.TryParse(sessionId, out var sid))
+            {
+                var s = await sessionRepo.GetByIdAsync(sid);
+                if (s != null)
+                {
+                    mode = s.Mode.ToString();
+                    gameSlug = s.GameSlug;
+                }
+            }
+        }
+
         _actorManager.RegisterPlayer(sessionId, clientId);
-        var actor = _actorManager.GetOrCreateActor(sessionId);
+        var actor = _actorManager.GetOrCreateActor(sessionId, mode, gameSlug);
         var snapshot = actor.GetSnapshot();
 
         await Clients.Caller.ReceiveStateSnapshot(snapshot);
@@ -78,6 +96,83 @@ public class GameHub : Hub<IGameHubClient>
             var snapshot = actor.GetSnapshot();
             await Clients.Caller.ReceiveStateSnapshot(snapshot);
         }
+    }
+
+    public Task SpinRoulette(string sessionId)
+    {
+        var clientId = GetCallerClientId();
+        _actorManager.EnqueueIntent(sessionId, new PlayerIntent
+        {
+            ActionType = "SPIN_ROULETTE",
+            ClientId = clientId,
+            SessionId = sessionId,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task GuessConsonant(string sessionId, char letter)
+    {
+        var clientId = GetCallerClientId();
+        _actorManager.EnqueueIntent(sessionId, new PlayerIntent
+        {
+            ActionType = "GUESS_CONSONANT",
+            ClientId = clientId,
+            SessionId = sessionId,
+            Payload = letter,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task PurchaseVowel(string sessionId, char letter)
+    {
+        var clientId = GetCallerClientId();
+        _actorManager.EnqueueIntent(sessionId, new PlayerIntent
+        {
+            ActionType = "PURCHASE_VOWEL",
+            ClientId = clientId,
+            SessionId = sessionId,
+            Payload = letter,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task PurchaseHint(string sessionId)
+    {
+        var clientId = GetCallerClientId();
+        _actorManager.EnqueueIntent(sessionId, new PlayerIntent
+        {
+            ActionType = "PURCHASE_HINT",
+            ClientId = clientId,
+            SessionId = sessionId,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task SolvePhrase(string sessionId, string phrase)
+    {
+        var clientId = GetCallerClientId();
+        _actorManager.EnqueueIntent(sessionId, new PlayerIntent
+        {
+            ActionType = "SOLVE_PHRASE",
+            ClientId = clientId,
+            SessionId = sessionId,
+            Payload = phrase,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+        return Task.CompletedTask;
+    }
+
+    private string GetCallerClientId()
+    {
+        if (Context.Items.TryGetValue("ClientId", out var cid) && cid is string clientStr)
+        {
+            return clientStr;
+        }
+        return string.Empty;
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

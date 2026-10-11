@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using Dynamo.Application.Actors;
+using Dynamo.Core.Enums;
 using Dynamo.Core.Models;
 
 namespace Dynamo.Application.Services;
@@ -13,14 +15,36 @@ public class SessionActorManager : IAsyncDisposable
         _broadcaster = broadcaster;
     }
 
-    public SessionActor GetOrCreateActor(string sessionId)
+    public SessionActor GetOrCreateActor(string sessionId, string? mode = null, string? gameSlug = null)
     {
-        return _actors.GetOrAdd(sessionId, id =>
-        {
-            var actor = new SessionActor(id, _broadcaster);
-            actor.Start();
-            return actor;
-        });
+        bool isBiblicalRoulette = string.Equals(mode, "BiblicalRoulette", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(gameSlug, "biblical-roulette", StringComparison.OrdinalIgnoreCase);
+
+        return _actors.AddOrUpdate(
+            sessionId,
+            id =>
+            {
+                SessionActor actor = isBiblicalRoulette
+                    ? new BiblicalRouletteActor(id, _broadcaster)
+                    : new SessionActor(id, _broadcaster);
+                actor.Start();
+                return actor;
+            },
+            (id, existing) =>
+            {
+                if (isBiblicalRoulette && existing is not BiblicalRouletteActor)
+                {
+                    var rouletteActor = new BiblicalRouletteActor(id, _broadcaster);
+                    foreach (var p in existing.CurrentState.Players.Values)
+                    {
+                        rouletteActor.RegisterPlayer(p.ClientId);
+                    }
+                    _ = existing.DisposeAsync();
+                    rouletteActor.Start();
+                    return rouletteActor;
+                }
+                return existing;
+            });
     }
 
     public SessionActor? GetActor(string sessionId)

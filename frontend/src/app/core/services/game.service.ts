@@ -37,6 +37,15 @@ export class GameService {
       thumbnailUrl: 'assets/games/scripture.png',
       supportedModes: ['RoomBased'],
       settingsSchemaJson: '{"maxPlayers": 8, "defaultRounds": 4, "defaultTime": 45}'
+    },
+    {
+      id: '44444444-4444-4444-4444-444444444444',
+      slug: 'biblical-roulette',
+      name: 'Biblical Roulette',
+      description: 'Spin the wheel, reveal letters, and solve the hidden verse with live dynamic vowel pricing.',
+      thumbnailUrl: 'assets/games/roulette.png',
+      supportedModes: ['SharedScreen'],
+      settingsSchemaJson: '{"maxPlayers": 6, "defaultRounds": 3, "defaultTime": 45}'
     }
   ];
 

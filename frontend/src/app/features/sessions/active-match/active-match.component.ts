@@ -9,11 +9,12 @@ import { Player } from '../../../core/models/player.model';
 import { TurnTrackerComponent } from './turn-tracker.component';
 import { GameStore } from '../../../store/game.store';
 import { InputService } from '../../../core/services/input.service';
+import { BiblicalRouletteComponent } from './biblical-roulette/biblical-roulette.component';
 
 @Component({
   selector: 'app-active-match',
   standalone: true,
-  imports: [CommonModule, TurnTrackerComponent],
+  imports: [CommonModule, TurnTrackerComponent, BiblicalRouletteComponent],
   template: `
     <div *ngIf="session" class="max-w-4xl mx-auto space-y-6">
       <!-- Active Match Header Banner -->
@@ -40,62 +41,70 @@ import { InputService } from '../../../core/services/input.service';
         </div>
       </div>
 
-      <!-- Turn Tracker & Round Information -->
-      <app-turn-tracker 
-        [players]="session.players"
-        [activePlayer]="activePlayer"
-        [timeLimitSeconds]="session.timeLimitSeconds"
-        [currentRound]="currentRound"
-        [totalRounds]="session.rounds"
-        [canControlTurn]="isHost || isActivePlayer"
-        (advanceTurn)="handleAdvanceTurn()">
-      </app-turn-tracker>
+      <!-- Biblical Roulette Mode Container -->
+      <app-biblical-roulette 
+        *ngIf="session.gameSlug === 'biblical-roulette' || session.mode === 'BiblicalRoulette'; else genericGameView"
+        [session]="session">
+      </app-biblical-roulette>
 
       <!-- Generic Game Sandbox Display Container -->
-      <div class="neo-card bg-white p-8 text-center space-y-6">
-        <div class="inline-block p-4 bg-neo-bg rounded-2xl border-3 border-neo-black shadow-neo">
-          <span class="text-5xl block mb-2">{{ getMockGameIcon() }}</span>
-          <h2 class="text-2xl font-black text-neo-black">{{ getMockGamePromptTitle() }}</h2>
-          <p class="font-bold text-sm text-neo-muted max-w-md mx-auto mt-2">
-            {{ getMockGamePromptDescription() }}
-          </p>
-        </div>
+      <ng-template #genericGameView>
+        <!-- Turn Tracker & Round Information -->
+        <app-turn-tracker 
+          [players]="session.players"
+          [activePlayer]="activePlayer"
+          [timeLimitSeconds]="session.timeLimitSeconds"
+          [currentRound]="currentRound"
+          [totalRounds]="session.rounds"
+          [canControlTurn]="isHost || isActivePlayer"
+          (advanceTurn)="handleAdvanceTurn()">
+        </app-turn-tracker>
 
-        <!-- Real-Time Interactive Actions (Client-Side Prediction Demo) -->
-        <div class="flex flex-wrap justify-center gap-4 py-4">
-          <button 
-            (click)="handleBuzz()"
-            class="neo-btn-primary bg-neo-yellow text-neo-black text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
-            <span>⚡</span> Buzz In (+10 pts)
-          </button>
-          <button 
-            (click)="handleAnswer()"
-            class="neo-btn-primary bg-neo-pink text-white text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
-            <span>🎯</span> Submit Answer (+20 pts)
-          </button>
-        </div>
+        <div class="neo-card bg-white p-8 text-center space-y-6">
+          <div class="inline-block p-4 bg-neo-bg rounded-2xl border-3 border-neo-black shadow-neo">
+            <span class="text-5xl block mb-2">{{ getMockGameIcon() }}</span>
+            <h2 class="text-2xl font-black text-neo-black">{{ getMockGamePromptTitle() }}</h2>
+            <p class="font-bold text-sm text-neo-muted max-w-md mx-auto mt-2">
+              {{ getMockGamePromptDescription() }}
+            </p>
+          </div>
 
-        <!-- Simulated Interactive Scoreboard -->
-        <div class="pt-6 border-t-3 border-neo-black">
-          <h3 class="text-sm font-black uppercase tracking-wider text-neo-muted mb-3 flex items-center justify-center gap-2">
-            <span>🏆</span> Authoritative Multiplayer Scores
-            <span *ngIf="gameStore.unacknowledgedIntents().length" class="text-xs bg-neo-yellow px-2 py-0.5 rounded font-bold border border-neo-black">
-              {{ gameStore.unacknowledgedIntents().length }} pending sync
-            </span>
-          </h3>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div 
-              *ngFor="let p of session.players; let idx = index"
-              [class.border-neo-yellow]="p.id === activePlayer?.id"
-              class="p-3 bg-neo-bg rounded-xl border-3 border-neo-black flex flex-col items-center">
-              <span class="font-black text-sm text-neo-black truncate">{{ p.name }}</span>
-              <span class="text-xs font-bold text-neo-muted mt-1">
-                Score: {{ getPlayerScore(p.clientId || p.id) }} pts
+          <!-- Real-Time Interactive Actions (Client-Side Prediction Demo) -->
+          <div class="flex flex-wrap justify-center gap-4 py-4">
+            <button 
+              (click)="handleBuzz()"
+              class="neo-btn-primary bg-neo-yellow text-neo-black text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
+              <span>⚡</span> Buzz In (+10 pts)
+            </button>
+            <button 
+              (click)="handleAnswer()"
+              class="neo-btn-primary bg-neo-pink text-white text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
+              <span>🎯</span> Submit Answer (+20 pts)
+            </button>
+          </div>
+
+          <!-- Simulated Interactive Scoreboard -->
+          <div class="pt-6 border-t-3 border-neo-black">
+            <h3 class="text-sm font-black uppercase tracking-wider text-neo-muted mb-3 flex items-center justify-center gap-2">
+              <span>🏆</span> Authoritative Multiplayer Scores
+              <span *ngIf="gameStore.unacknowledgedIntents().length" class="text-xs bg-neo-yellow px-2 py-0.5 rounded font-bold border border-neo-black">
+                {{ gameStore.unacknowledgedIntents().length }} pending sync
               </span>
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div 
+                *ngFor="let p of session.players; let idx = index"
+                [class.border-neo-yellow]="p.id === activePlayer?.id"
+                class="p-3 bg-neo-bg rounded-xl border-3 border-neo-black flex flex-col items-center">
+                <span class="font-black text-sm text-neo-black truncate">{{ p.name }}</span>
+                <span class="text-xs font-bold text-neo-muted mt-1">
+                  Score: {{ getPlayerScore(p.clientId || p.id) }} pts
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </ng-template>
     </div>
   `
 })

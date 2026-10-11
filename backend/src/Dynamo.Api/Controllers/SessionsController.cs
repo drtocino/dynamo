@@ -124,7 +124,12 @@ public class SessionsController : BaseController
 
             if (request.State == SessionState.Active)
             {
-                var actor = _actorManager.GetOrCreateActor(id.ToString());
+                var actor = _actorManager.GetOrCreateActor(id.ToString(), updated.Mode, updated.GameSlug);
+                if (actor is Dynamo.Application.Actors.BiblicalRouletteActor rouletteActor)
+                {
+                    var sessions = await _sessionRepository.FindAsync(s => s.Id == id, cancellationToken);
+                    rouletteActor.InitializeMatch(sessions.FirstOrDefault());
+                }
                 actor.Start();
             }
             else if (request.State == SessionState.Ended)
