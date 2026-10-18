@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Dynamo.Application.Actors;
+using Dynamo.Core.Entities;
 using Dynamo.Core.Enums;
 using Dynamo.Core.Models;
 
@@ -9,13 +10,15 @@ public class SessionActorManager : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, SessionActor> _actors = new();
     private readonly IGameStateBroadcaster _broadcaster;
+    private readonly Func<string, List<Phrase>>? _phraseProvider;
 
-    public SessionActorManager(IGameStateBroadcaster broadcaster)
+    public SessionActorManager(IGameStateBroadcaster broadcaster, Func<string, List<Phrase>>? phraseProvider = null)
     {
         _broadcaster = broadcaster;
+        _phraseProvider = phraseProvider;
     }
 
-    public SessionActor GetOrCreateActor(string sessionId, string? mode = null, string? gameSlug = null)
+    public SessionActor GetOrCreateActor(string sessionId, string? mode = null, string? gameSlug = null, List<Phrase>? phrases = null)
     {
         bool isBiblicalRoulette = string.Equals(mode, "BiblicalRoulette", StringComparison.OrdinalIgnoreCase)
             || string.Equals(gameSlug, "biblical-roulette", StringComparison.OrdinalIgnoreCase);
@@ -25,7 +28,7 @@ public class SessionActorManager : IAsyncDisposable
             id =>
             {
                 SessionActor actor = isBiblicalRoulette
-                    ? new BiblicalRouletteActor(id, _broadcaster)
+                    ? new BiblicalRouletteActor(id, _broadcaster, phrases ?? _phraseProvider?.Invoke(id))
                     : new SessionActor(id, _broadcaster);
                 actor.Start();
                 return actor;
@@ -34,7 +37,7 @@ public class SessionActorManager : IAsyncDisposable
             {
                 if (isBiblicalRoulette && existing is not BiblicalRouletteActor)
                 {
-                    var rouletteActor = new BiblicalRouletteActor(id, _broadcaster);
+                    var rouletteActor = new BiblicalRouletteActor(id, _broadcaster, phrases ?? _phraseProvider?.Invoke(id));
                     foreach (var p in existing.CurrentState.Players.Values)
                     {
                         rouletteActor.RegisterPlayer(p.ClientId);

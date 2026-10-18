@@ -1,6 +1,7 @@
 using Dynamo.Api.Hubs;
 using Dynamo.Api.Services;
 using Dynamo.Application.Games.Queries;
+using Dynamo.Application.Phrases.Queries;
 using Dynamo.Application.Services;
 using Dynamo.Application.Sessions.Commands;
 using Dynamo.Application.Sessions.Queries;
@@ -43,6 +44,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
 // Register Application Handlers
 builder.Services.AddScoped<IGetGamesQueryHandler, GetGamesQueryHandler>();
+builder.Services.AddScoped<IGetPhrasesQueryHandler, GetPhrasesQueryHandler>();
 builder.Services.AddScoped<ICreateSessionCommandHandler, CreateSessionCommandHandler>();
 builder.Services.AddScoped<ICreateSharedScreenSessionCommandHandler, CreateSharedScreenSessionCommandHandler>();
 builder.Services.AddScoped<IJoinSessionCommandHandler, JoinSessionCommandHandler>();
@@ -58,7 +60,40 @@ builder.Services.AddSignalR();
 
 // Register Game Engine Services
 builder.Services.AddSingleton<IGameStateBroadcaster, GameStateBroadcaster>();
-builder.Services.AddSingleton<SessionActorManager>();
+builder.Services.AddSingleton<SessionActorManager>(sp =>
+{
+    var broadcaster = sp.GetRequiredService<IGameStateBroadcaster>();
+    var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+    var config = sp.GetRequiredService<IConfiguration>();
+    var defaultLang = config["App:DefaultLanguage"] ?? "es";
+
+    return new SessionActorManager(broadcaster, sessionId =>
+    {
+        try
+        {
+            using var scope = scopeFactory.CreateScope();
+            var phraseRepo = scope.ServiceProvider.GetRequiredService<Dynamo.Core.Common.IRepository<Dynamo.Core.Entities.Phrase>>();
+            var sessionRepo = scope.ServiceProvider.GetRequiredService<Dynamo.Core.Common.IRepository<Dynamo.Core.Entities.Session>>();
+
+            string lang = defaultLang;
+            if (Guid.TryParse(sessionId, out var sid))
+            {
+                var session = sessionRepo.GetByIdAsync(sid).GetAwaiter().GetResult();
+                if (session != null && !string.IsNullOrWhiteSpace(session.Language))
+                {
+                    lang = session.Language;
+                }
+            }
+
+            var phrases = phraseRepo.FindAsync(p => p.Language == lang).GetAwaiter().GetResult();
+            return phrases.ToList();
+        }
+        catch
+        {
+            return new List<Dynamo.Core.Entities.Phrase>();
+        }
+    });
+});
 
 var app = builder.Build();
 

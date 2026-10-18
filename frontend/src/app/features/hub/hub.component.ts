@@ -3,28 +3,35 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { GameService } from '../../core/services/game.service';
 import { Game, MultiplayerMode } from '../../core/models/game.model';
+import { TranslatePipe } from '../../core/i18n';
+import { LanguageSelectorComponent } from './components/language-selector/language-selector.component';
 
 @Component({
   selector: 'app-hub',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslatePipe, LanguageSelectorComponent],
   template: `
     <div class="space-y-10">
+      <!-- Hub Top Bar with Language Selector -->
+      <div class="flex items-center justify-end -mb-4">
+        <app-language-selector></app-language-selector>
+      </div>
+
       <!-- Hero Banner -->
       <section class="neo-card bg-neo-yellow relative overflow-hidden">
         <div class="max-w-2xl relative z-10">
           <div class="inline-block bg-neo-black text-white text-xs font-black px-3 py-1 rounded border-2 border-neo-black uppercase tracking-wider mb-3">
-            ✨ FAITH & FELLOWSHIP GAMING
+            {{ 'hub.faithBadge' | translate }}
           </div>
           <h1 class="text-4xl sm:text-5xl font-black text-neo-black leading-tight tracking-tight mb-4">
-            LEVEL UP YOUR YOUTH GROUP!
+            {{ 'hub.heroTitle' | translate }}
           </h1>
           <p class="font-bold text-lg text-neo-black/90 mb-6 leading-relaxed">
-            Create instant multiplayer matches or gather around one big screen. Safe, wholesome, and built for Christian fellowship.
+            {{ 'hub.heroSubtitle' | translate }}
           </p>
           <div class="flex flex-wrap gap-4">
             <a routerLink="/join" class="neo-btn-secondary text-base py-3 px-6 flex items-center gap-2">
-              <span>🎟️</span> Have a Room Code? Join Now
+              <span>🎟️</span> {{ 'hub.joinPrompt' | translate }}
             </a>
           </div>
         </div>
@@ -32,7 +39,7 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
         <!-- Comic decorative sticker -->
         <div class="hidden md:flex absolute right-6 -bottom-4 transform rotate-12 bg-white border-4 border-neo-black rounded-2xl p-4 text-center font-black">
           <span class="text-3xl block">⚡</span>
-          <span class="text-xs uppercase tracking-widest text-neo-black">NO ACCOUNTS<br/>INSTANT PLAY</span>
+          <span class="text-xs uppercase tracking-widest text-neo-black whitespace-pre-line">{{ 'hub.noAccounts' | translate }}</span>
         </div>
       </section>
 
@@ -41,9 +48,9 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <h2 class="text-3xl font-black tracking-tight text-neo-black flex items-center gap-3">
-              <span>🎮</span> Available Games
+              <span>🎮</span> {{ 'hub.availableGames' | translate }}
             </h2>
-            <p class="font-semibold text-neo-muted text-sm">Select a game below to launch a new match</p>
+            <p class="font-semibold text-neo-muted text-sm">{{ 'hub.selectGameDesc' | translate }}</p>
           </div>
 
           <!-- Mode Filter Buttons -->
@@ -54,14 +61,14 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
               [class.text-white]="selectedMode === 'ALL'"
               [class.text-neo-black]="selectedMode !== 'ALL'"
               class="px-3 py-1.5 rounded-lg text-xs font-black transition-colors">
-              All Games
+              {{ 'hub.filterAll' | translate }}
             </button>
             <button 
               (click)="selectedMode = 'RoomBased'"
               [class.bg-neo-cyan]="selectedMode === 'RoomBased'"
               [class.text-neo-black]="true"
               class="px-3 py-1.5 rounded-lg text-xs font-black transition-colors">
-              Room-Based
+              {{ 'hub.filterRoomBased' | translate }}
             </button>
             <button 
               (click)="selectedMode = 'SharedScreen'"
@@ -69,7 +76,7 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
               [class.text-white]="selectedMode === 'SharedScreen'"
               [class.text-neo-black]="selectedMode !== 'SharedScreen'"
               class="px-3 py-1.5 rounded-lg text-xs font-black transition-colors">
-              Shared Screen
+              {{ 'hub.filterSharedScreen' | translate }}
             </button>
           </div>
         </div>
@@ -89,22 +96,22 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
                   <span 
                     *ngIf="supportsMode(game, 'RoomBased')"
                     class="neo-badge bg-neo-cyan text-neo-black">
-                    Room-Based
+                    {{ 'hub.badgeRoomBased' | translate }}
                   </span>
                   <span 
                     *ngIf="supportsMode(game, 'SharedScreen')"
                     class="neo-badge bg-neo-pink text-white">
-                    Shared Screen
+                    {{ 'hub.badgeSharedScreen' | translate }}
                   </span>
                 </div>
               </div>
 
               <h3 class="text-2xl font-black tracking-tight text-neo-black mb-2">
-                {{ game.name }}
+                {{ getGameNameKey(game.slug) | translate }}
               </h3>
 
               <p class="font-medium text-sm text-neo-black/80 mb-6 leading-relaxed">
-                {{ game.description }}
+                {{ getGameDescKey(game.slug) | translate }}
               </p>
             </div>
 
@@ -114,13 +121,13 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
                 *ngIf="supportsMode(game, 'RoomBased')"
                 (click)="startConfigure(game, 'RoomBased')"
                 class="neo-btn-primary w-full text-sm py-2.5">
-                🌐 Host Room Match
+                {{ 'hub.btnHostRoom' | translate }}
               </button>
               <button 
                 *ngIf="supportsMode(game, 'SharedScreen')"
                 (click)="startConfigure(game, 'SharedScreen')"
                 class="neo-btn-secondary w-full text-sm py-2.5">
-                📺 Play Shared Screen
+                {{ 'hub.btnPlayShared' | translate }}
               </button>
             </div>
           </div>
@@ -159,6 +166,20 @@ export class HubComponent implements OnInit {
       case 'biblical-roulette': return '🎡';
       default: return '🎲';
     }
+  }
+
+  getGameNameKey(slug: string): string {
+    const camel = this.toCamelCase(slug);
+    return `hub.games.${camel}.name`;
+  }
+
+  getGameDescKey(slug: string): string {
+    const camel = this.toCamelCase(slug);
+    return `hub.games.${camel}.description`;
+  }
+
+  private toCamelCase(str: string): string {
+    return str.replace(/-([a-z])/g, (_, g) => g.toUpperCase());
   }
 
   startConfigure(game: Game, mode: MultiplayerMode): void {

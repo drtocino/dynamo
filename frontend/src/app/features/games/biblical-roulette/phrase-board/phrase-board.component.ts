@@ -1,36 +1,37 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '../../../../core/i18n';
 
 @Component({
   selector: 'app-phrase-board',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="neo-card bg-white p-0 border-3 border-neo-black rounded-2xl overflow-hidden flex flex-col justify-between h-full select-none shadow-none">
-      <!-- Integrated Hints Header: Same height as revealed letters component -->
+      <!-- Integrated Hints Header -->
       <div class="w-full bg-neo-yellow border-b-3 border-neo-black px-4 py-2 min-h-[42px] flex items-center justify-between gap-2.5">
         <div class="flex items-center gap-2">
           <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-xs font-black uppercase text-neo-black/70">Category:</span>
-            <span class="font-black text-sm text-neo-black uppercase tracking-tight">{{ generalHint || 'Biblical Verse' }}</span>
+            <span class="text-xs font-black uppercase text-neo-black/70">{{ 'game.biblicalRoulette.category' | translate }}</span>
+            <span class="font-black text-sm text-neo-black uppercase tracking-tight">{{ generalHint || ('game.biblicalRoulette.defaultCategory' | translate) }}</span>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
           <div *ngIf="hintRevealed; else hintLocked" class="flex items-center gap-1.5">
-            <span class="text-xs font-black uppercase text-neo-pink">Hint:</span>
+            <span class="text-xs font-black uppercase text-neo-pink">{{ 'game.biblicalRoulette.hintLabel' | translate }}</span>
             <span class="font-extrabold text-sm text-neo-black">{{ specificHint }}</span>
           </div>
           <ng-template #hintLocked>
             <div class="flex items-center gap-1 text-xs font-bold text-neo-black/70">
-              <span class="uppercase font-black">Specific Clue:</span>
-              <span class="italic font-bold">🔒 Locked (Buy for 500 pts)</span>
+              <span class="uppercase font-black">{{ 'game.biblicalRoulette.specificClue' | translate }}</span>
+              <span class="italic font-bold">{{ 'game.biblicalRoulette.hintLocked' | translate }}</span>
             </div>
           </ng-template>
         </div>
       </div>
 
-      <!-- Phrase Tiles Display Grid: Reduced padding -->
+      <!-- Phrase Tiles Display Grid -->
       <div class="flex-1 p-2.5 sm:p-3.5 flex flex-wrap justify-center gap-y-2.5 gap-x-1.5 min-h-[140px] items-center">
         <ng-container *ngFor="let word of words">
           <div class="flex gap-1 sm:gap-1.5 mx-1">
@@ -47,11 +48,11 @@ import { CommonModule } from '@angular/common';
         </ng-container>
       </div>
 
-      <!-- Letter Statistics Badges: Same height as hint component (min-h-[42px] py-2 px-4) -->
+      <!-- Letter Statistics Badges -->
       <div class="flex flex-wrap items-center justify-center gap-3 py-2 px-4 border-t-3 border-neo-black bg-neo-bg text-xs font-bold min-h-[42px]">
         <div class="flex items-center gap-1.5">
-          <span class="font-black uppercase text-neo-muted">Revealed Consonants:</span>
-          <span *ngIf="revealedConsonants.length === 0" class="text-neo-muted italic">None yet</span>
+          <span class="font-black uppercase text-neo-muted">{{ 'game.biblicalRoulette.revealedConsonants' | translate }}</span>
+          <span *ngIf="revealedConsonants.length === 0" class="text-neo-muted italic">{{ 'game.biblicalRoulette.noneYet' | translate }}</span>
           <span 
             *ngFor="let c of revealedConsonants" 
             class="px-1.5 py-0.5 bg-neo-cyan text-neo-black rounded font-black border border-neo-black">
@@ -60,8 +61,8 @@ import { CommonModule } from '@angular/common';
         </div>
 
         <div class="flex items-center gap-1.5">
-          <span class="font-black uppercase text-neo-muted">Purchased Vowels:</span>
-          <span *ngIf="revealedVowels.length === 0" class="text-neo-muted italic">None yet</span>
+          <span class="font-black uppercase text-neo-muted">{{ 'game.biblicalRoulette.purchasedVowels' | translate }}</span>
+          <span *ngIf="revealedVowels.length === 0" class="text-neo-muted italic">{{ 'game.biblicalRoulette.noneYet' | translate }}</span>
           <span 
             *ngFor="let v of revealedVowels" 
             class="px-1.5 py-0.5 bg-neo-pink text-white rounded font-black border border-neo-black">

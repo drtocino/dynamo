@@ -13,9 +13,11 @@ public class GamesController : BaseController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<GameDto>>> GetGames(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<GameDto>>> GetGames(
+        [FromQuery] string? language = null, 
+        CancellationToken cancellationToken = default)
     {
-        var games = await _getGamesHandler.HandleAsync(cancellationToken);
+        var games = await _getGamesHandler.HandleAsync(language, cancellationToken);
         return Ok(games);
     }
 }

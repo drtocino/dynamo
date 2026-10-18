@@ -48,7 +48,10 @@ public class GameHub : Hub<IGameHubClient>
                     var actor = _actorManager.GetOrCreateActor(sessionId, mode, gameSlug);
                     if (actor is Dynamo.Application.Actors.BiblicalRouletteActor rouletteActor)
                     {
-                        rouletteActor.InitializeMatch(s);
+                        var phraseRepo = scope.ServiceProvider.GetRequiredService<Dynamo.Core.Common.IRepository<Dynamo.Core.Entities.Phrase>>();
+                        var lang = s.Language ?? "es";
+                        var phrases = await phraseRepo.FindAsync(p => p.Language == lang);
+                        rouletteActor.InitializeMatch(s, phrases.ToList());
                     }
                     var snapshot = actor.GetSnapshot();
 

@@ -12,6 +12,7 @@ public class CreateSharedScreenSessionRequest
     public int Rounds { get; set; } = 3;
     public int TimeLimitSeconds { get; set; } = 60;
     public string GameSettingsJson { get; set; } = "{}";
+    public string Language { get; set; } = "es";
     public List<string> PlayerNames { get; set; } = new();
 }
 
@@ -58,6 +59,7 @@ public class CreateSharedScreenSessionCommandHandler : ICreateSharedScreenSessio
             Rounds = request.Rounds > 0 ? request.Rounds : 3,
             TimeLimitSeconds = request.TimeLimitSeconds > 0 ? request.TimeLimitSeconds : 60,
             GameSettingsJson = request.GameSettingsJson,
+            Language = string.IsNullOrWhiteSpace(request.Language) ? (game.Language ?? "es") : request.Language,
             ExpiresAt = DateTime.UtcNow.AddMinutes(15),
             CreatedAt = DateTime.UtcNow
         };

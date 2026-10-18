@@ -18,6 +18,7 @@ public class SessionsController : BaseController
     private readonly IChangeSessionStateCommandHandler _changeSessionStateHandler;
     private readonly ILeaveSessionCommandHandler _leaveSessionHandler;
     private readonly IRepository<Session> _sessionRepository;
+    private readonly IRepository<Phrase> _phraseRepository;
     private readonly IHubContext<SessionHub, ISessionClient> _hubContext;
     private readonly Dynamo.Application.Services.SessionActorManager _actorManager;
 
@@ -29,6 +30,7 @@ public class SessionsController : BaseController
         IChangeSessionStateCommandHandler changeSessionStateHandler,
         ILeaveSessionCommandHandler leaveSessionHandler,
         IRepository<Session> sessionRepository,
+        IRepository<Phrase> phraseRepository,
         IHubContext<SessionHub, ISessionClient> hubContext,
         Dynamo.Application.Services.SessionActorManager actorManager)
     {
@@ -39,6 +41,7 @@ public class SessionsController : BaseController
         _changeSessionStateHandler = changeSessionStateHandler;
         _leaveSessionHandler = leaveSessionHandler;
         _sessionRepository = sessionRepository;
+        _phraseRepository = phraseRepository;
         _hubContext = hubContext;
         _actorManager = actorManager;
     }
@@ -128,7 +131,10 @@ public class SessionsController : BaseController
                 if (actor is Dynamo.Application.Actors.BiblicalRouletteActor rouletteActor)
                 {
                     var sessions = await _sessionRepository.FindAsync(s => s.Id == id, cancellationToken);
-                    rouletteActor.InitializeMatch(sessions.FirstOrDefault());
+                    var sessionEntity = sessions.FirstOrDefault();
+                    var lang = sessionEntity?.Language ?? "es";
+                    var phrases = await _phraseRepository.FindAsync(p => p.Language == lang, cancellationToken);
+                    rouletteActor.InitializeMatch(sessionEntity, phrases.ToList());
                 }
                 actor.Start();
             }

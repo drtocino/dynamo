@@ -27,6 +27,7 @@ public class DynamoDbContext : DbContext
             b.Property(p => p.Text).IsRequired().HasMaxLength(500);
             b.Property(p => p.GeneralHint).IsRequired().HasMaxLength(250);
             b.Property(p => p.SpecificHint).IsRequired().HasMaxLength(250);
+            b.Property(p => p.Language).IsRequired().HasMaxLength(10).HasDefaultValue("es");
         });
 
         modelBuilder.Entity<Game>(b =>
@@ -34,6 +35,7 @@ public class DynamoDbContext : DbContext
             b.HasKey(g => g.Id);
             b.Property(g => g.Slug).IsRequired().HasMaxLength(100);
             b.Property(g => g.Name).IsRequired().HasMaxLength(200);
+            b.Property(g => g.Language).IsRequired().HasMaxLength(10).HasDefaultValue("es");
             b.Property(g => g.SupportedModes)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
@@ -45,6 +47,7 @@ public class DynamoDbContext : DbContext
         {
             b.HasKey(s => s.Id);
             b.Property(s => s.RoomCode).IsRequired().HasMaxLength(10);
+            b.Property(s => s.Language).IsRequired().HasMaxLength(10).HasDefaultValue("es");
             b.HasIndex(s => s.RoomCode);
 
             b.HasMany(s => s.Clients)
@@ -88,6 +91,7 @@ public class DynamoDbContext : DbContext
                 ThumbnailUrl = "/assets/games/trivia.png",
                 SupportedModes = new List<MultiplayerMode> { MultiplayerMode.RoomBased, MultiplayerMode.SharedScreen },
                 SettingsSchemaJson = "{\"maxPlayers\": 12, \"defaultRounds\": 5, \"defaultTime\": 30}",
+                Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             },
@@ -100,6 +104,7 @@ public class DynamoDbContext : DbContext
                 ThumbnailUrl = "/assets/games/charades.png",
                 SupportedModes = new List<MultiplayerMode> { MultiplayerMode.SharedScreen },
                 SettingsSchemaJson = "{\"maxPlayers\": 20, \"defaultRounds\": 3, \"defaultTime\": 60}",
+                Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             },
@@ -112,6 +117,7 @@ public class DynamoDbContext : DbContext
                 ThumbnailUrl = "/assets/games/scripture.png",
                 SupportedModes = new List<MultiplayerMode> { MultiplayerMode.RoomBased },
                 SettingsSchemaJson = "{\"maxPlayers\": 8, \"defaultRounds\": 4, \"defaultTime\": 45}",
+                Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             },
@@ -124,39 +130,177 @@ public class DynamoDbContext : DbContext
                 ThumbnailUrl = "/assets/games/roulette.png",
                 SupportedModes = new List<MultiplayerMode> { MultiplayerMode.SharedScreen, MultiplayerMode.BiblicalRoulette },
                 SettingsSchemaJson = "{\"maxPlayers\": 6, \"defaultRounds\": 3, \"defaultTime\": 45}",
+                Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             }
         );
 
         modelBuilder.Entity<Phrase>().HasData(
+            // Spanish Phrases (Language = "es")
             new
             {
                 Id = Guid.Parse("a1111111-1111-1111-1111-111111111111"),
-                Text = "FOR GOD SO LOVED THE WORLD",
-                GeneralHint = "Gospel of John",
-                SpecificHint = "John 3:16 - The golden verse",
-                Category = "Gospels",
+                Text = "PORQUE DE TAL MANERA AMO DIOS AL MUNDO",
+                GeneralHint = "Evangelio de Juan",
+                SpecificHint = "Juan 3:16 - El versículo de oro",
+                Category = "Evangelios",
+                Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             },
             new
             {
                 Id = Guid.Parse("b2222222-2222-2222-2222-222222222222"),
-                Text = "THE LORD IS MY SHEPHERD",
-                GeneralHint = "Psalms of David",
-                SpecificHint = "Psalm 23:1 - Written by King David",
-                Category = "Psalms",
+                Text = "JEHOVA ES MI PASTOR NADA ME FALTARA",
+                GeneralHint = "Salmos de David",
+                SpecificHint = "Salmo 23:1 - Salmo del Buen Pastor",
+                Category = "Salmos",
+                Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             },
             new
             {
                 Id = Guid.Parse("c3333333-3333-3333-3333-333333333333"),
+                Text = "TODO LO PUEDO EN CRISTO QUE ME FORTALECE",
+                GeneralHint = "Epístola Paulina",
+                SpecificHint = "Filipenses 4:13 - Escrito desde la prisión",
+                Category = "Epístolas",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("d4444444-4444-4444-4444-444444444444"),
+                Text = "EN EL PRINCIPIO CREO DIOS LOS CIELOS Y LA TIERRA",
+                GeneralHint = "Libro de Génesis",
+                SpecificHint = "Génesis 1:1 - La creación divina",
+                Category = "Pentateuco",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("e5555555-5555-5555-5555-555555555555"),
+                Text = "LAMPARA ES A MIS PIES TU PALABRA",
+                GeneralHint = "Libro de Salmos",
+                SpecificHint = "Salmo 119:105 - Lumbrera a mi camino",
+                Category = "Salmos",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("f6666666-6666-6666-6666-666666666666"),
+                Text = "EL AMOR ES PACIENTE ES BONDADOSO",
+                GeneralHint = "Primera a los Corintios",
+                SpecificHint = "1 Corintios 13:4 - El capítulo del amor",
+                Category = "Epístolas",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("a7777777-7777-7777-7777-777777777777"),
+                Text = "Y CONOCEREIS LA VERDAD Y LA VERDAD OS HARA LIBRES",
+                GeneralHint = "Evangelio de Juan",
+                SpecificHint = "Juan 8:32 - La libertad en Cristo",
+                Category = "Evangelios",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("b8888888-8888-8888-8888-888888888888"),
+                Text = "MIRA QUE TE MANDO QUE TE ESFUERCES Y SEAS VALIENTE",
+                GeneralHint = "Libro de Josué",
+                SpecificHint = "Josué 1:9 - No temas ni desmayes",
+                Category = "Históricos",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("c9999999-9999-9999-9999-999999999999"),
+                Text = "Y AHORA PERMANECEN LA FE LA ESPERANZA Y EL AMOR",
+                GeneralHint = "Primera a los Corintios",
+                SpecificHint = "1 Corintios 13:13 - Pero el mayor de ellos es el amor",
+                Category = "Epístolas",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                Text = "CONFIA EN JEHOVA CON TODO TU CORAZON",
+                GeneralHint = "Libro de Proverbios",
+                SpecificHint = "Proverbios 3:5 - Y no te apoyes en tu propia prudencia",
+                Category = "Sabiduría",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            // English Phrases (Language = "en")
+            new
+            {
+                Id = Guid.Parse("ea111111-1111-1111-1111-111111111111"),
+                Text = "FOR GOD SO LOVED THE WORLD",
+                GeneralHint = "Gospel of John",
+                SpecificHint = "John 3:16 - The golden verse",
+                Category = "Gospels",
+                Language = "en",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("eb222222-2222-2222-2222-222222222222"),
+                Text = "THE LORD IS MY SHEPHERD",
+                GeneralHint = "Psalms of David",
+                SpecificHint = "Psalm 23:1 - Written by King David",
+                Category = "Psalms",
+                Language = "en",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("ec333333-3333-3333-3333-333333333333"),
                 Text = "I CAN DO ALL THINGS THROUGH CHRIST",
                 GeneralHint = "Pauline Epistle",
                 SpecificHint = "Philippians 4:13 - Written from prison",
                 Category = "Epistles",
+                Language = "en",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("ed444444-4444-4444-4444-444444444444"),
+                Text = "IN THE BEGINNING GOD CREATED",
+                GeneralHint = "Book of Genesis",
+                SpecificHint = "Genesis 1:1 - Creation of heavens and earth",
+                Category = "Pentateuch",
+                Language = "en",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("ee555555-5555-5555-5555-555555555555"),
+                Text = "THY WORD IS A LAMP UNTO MY FEET",
+                GeneralHint = "Book of Psalms",
+                SpecificHint = "Psalm 119:105 - A light unto my path",
+                Category = "Psalms",
+                Language = "en",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
             }

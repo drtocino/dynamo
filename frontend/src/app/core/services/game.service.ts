@@ -45,15 +45,17 @@ export class GameService {
       description: 'Spin the wheel, reveal letters, and solve the hidden verse with live dynamic vowel pricing.',
       thumbnailUrl: 'assets/games/roulette.png',
       supportedModes: ['SharedScreen'],
-      settingsSchemaJson: '{"maxPlayers": 6, "defaultRounds": 3, "defaultTime": 45}'
+      settingsSchemaJson: '{"maxPlayers": 6, "defaultRounds": 3, "defaultTime": 45}',
+      language: 'es'
     }
   ];
 
-  getGames(): Observable<Game[]> {
-    return this.http.get<Game[]>(this.apiUrl).pipe(
+  getGames(language?: string): Observable<Game[]> {
+    const url = language ? `${this.apiUrl}?language=${encodeURIComponent(language)}` : this.apiUrl;
+    return this.http.get<Game[]>(url).pipe(
       catchError((err) => {
         console.warn('API error fetching games, falling back to cached catalog:', err);
-        return of(this.fallbackGames);
+        return of(this.fallbackGames.filter(g => !language || !g.language || g.language.toLowerCase() === language.toLowerCase()));
       })
     );
   }

@@ -10,22 +10,25 @@ import { TurnTrackerComponent } from './turn-tracker.component';
 import { GameStore } from '../../../store/game.store';
 import { InputService } from '../../../core/services/input.service';
 import { BiblicalRouletteComponent } from '../../games/biblical-roulette';
+import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
 @Component({
   selector: 'app-active-match',
   standalone: true,
-  imports: [CommonModule, TurnTrackerComponent, BiblicalRouletteComponent],
+  imports: [CommonModule, TurnTrackerComponent, BiblicalRouletteComponent, TranslatePipe],
   template: `
     <div *ngIf="session" class="w-full flex flex-col">
-      <!-- Active Match Top Bar (No top distance, reduced height, same elements) -->
+      <!-- Active Match Top Bar -->
       <header class="w-full bg-white border-b-3 border-neo-black px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2 shadow-none select-none shrink-0 sticky top-0 z-40">
         <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <span class="px-2 py-0.5 rounded bg-neo-black text-white font-black text-xs uppercase tracking-wider">LIVE</span>
+          <span class="px-2 py-0.5 rounded bg-neo-black text-white font-black text-xs uppercase tracking-wider">
+            {{ 'activeMatch.live' | translate }}
+          </span>
           <h1 class="text-sm sm:text-base font-black text-neo-black flex items-center gap-1.5 leading-none">
-            <span>⚡</span> {{ session.gameName }}
+            <span>⚡</span> {{ getGameNameKey(session.gameSlug) | translate }}
           </h1>
           <span class="text-xs font-bold text-neo-muted">
-            Room: <b class="text-neo-black font-mono uppercase">{{ session.roomCode }}</b>
+            {{ 'activeMatch.room' | translate }} <b class="text-neo-black font-mono uppercase">{{ session.roomCode }}</b>
           </span>
         </div>
 
@@ -33,12 +36,12 @@ import { BiblicalRouletteComponent } from '../../games/biblical-roulette';
           <button 
             (click)="returnToLobby()"
             class="neo-btn-secondary text-xs py-1 px-2.5 font-black">
-            🔄 Lobby
+            {{ 'activeMatch.btnLobby' | translate }}
           </button>
           <button 
             (click)="exitToHub()"
             class="neo-btn-secondary text-xs py-1 px-2.5 font-black text-red-600 hover:text-red-700">
-            ✕ Exit
+            {{ 'activeMatch.btnExit' | translate }}
           </button>
         </div>
       </header>
@@ -73,37 +76,34 @@ import { BiblicalRouletteComponent } from '../../games/biblical-roulette';
             </p>
           </div>
 
-          <!-- Real-Time Interactive Actions (Client-Side Prediction Demo) -->
+          <!-- Real-Time Interactive Actions -->
           <div class="flex flex-wrap justify-center gap-4 py-4">
             <button 
               (click)="handleBuzz()"
               class="neo-btn-primary bg-neo-yellow text-neo-black text-sm py-3 px-6 hover:translate-y-0.5 transition-transform flex items-center gap-2">
-              <span>⚡</span> Buzz In (+10 pts)
+              {{ 'activeMatch.buzzIn' | translate }}
             </button>
             <button 
               (click)="handleAnswer()"
               class="neo-btn-primary bg-neo-pink text-white text-sm py-3 px-6 hover:translate-y-0.5 transition-transform flex items-center gap-2">
-              <span>🎯</span> Submit Answer (+20 pts)
+              {{ 'activeMatch.submitAnswer' | translate }}
             </button>
           </div>
 
           <!-- Simulated Interactive Scoreboard -->
           <div class="pt-6 border-t-3 border-neo-black">
             <h3 class="text-sm font-black uppercase tracking-wider text-neo-muted mb-3 flex items-center justify-center gap-2">
-              <span>🏆</span> Authoritative Multiplayer Scores
+              <span>🏆</span> {{ 'activeMatch.scoresTitle' | translate }}
               <span *ngIf="gameStore.unacknowledgedIntents().length" class="text-xs bg-neo-yellow px-2 py-0.5 rounded font-bold border border-neo-black">
-                {{ gameStore.unacknowledgedIntents().length }} pending sync
+                {{ 'activeMatch.pendingSync' | translate:{ count: gameStore.unacknowledgedIntents().length } }}
               </span>
             </h3>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div 
                 *ngFor="let p of session.players; let idx = index"
-                [class.border-neo-yellow]="p.id === activePlayer?.id"
-                class="p-3 bg-neo-bg rounded-xl border-3 border-neo-black flex flex-col items-center">
-                <span class="font-black text-sm text-neo-black truncate">{{ p.name }}</span>
-                <span class="text-xs font-bold text-neo-muted mt-1">
-                  Score: {{ getPlayerScore(p.clientId || p.id) }} pts
-                </span>
+                class="p-3 rounded-xl border-2 border-neo-black bg-white flex flex-col items-center">
+                <span class="font-black text-xs text-neo-black truncate">{{ p.name }}</span>
+                <span class="text-lg font-black text-neo-pink mt-1">{{ getPlayerScore(p.clientId) }} pts</span>
               </div>
             </div>
           </div>
@@ -120,6 +120,7 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
   private realtime = inject(RealtimeService);
   public gameStore = inject(GameStore);
   private inputService = inject(InputService);
+  private translationService = inject(TranslationService);
 
   session: Session | undefined;
   currentRound: number = 1;
@@ -149,6 +150,12 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
   get activePlayer(): Player | undefined {
     if (!this.session || !this.session.players.length) return undefined;
     return this.session.players.find(p => p.id === this.session!.activePlayerId) || this.session.players[0];
+  }
+
+  getGameNameKey(slug: string | undefined): string {
+    if (!slug) return 'hub.games.biblicalRoulette.name';
+    const camel = slug.replace(/-([a-z])/g, (_, g) => g.toUpperCase());
+    return `hub.games.${camel}.name`;
   }
 
   getPlayerScore(clientId: string): number {
@@ -239,7 +246,6 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
   returnToLobby(): void {
     if (!this.session) return;
     this.gameStore.resetState();
-    // FR-021: return to lobby for a rematch
     this.sessionService.changeState(this.session.id, 'Lobby').subscribe(() => {
       this.router.navigate(['/lobby', this.session!.id]);
     });
@@ -258,15 +264,15 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
 
   getMockGamePromptTitle(): string {
     if (this.session?.gameSlug === 'trivia-pro') {
-      return 'Round 1: Which disciple walked on water with Jesus?';
+      return this.translationService.t('activeMatch.mockTriviaTitle');
     }
     if (this.session?.gameSlug === 'charades-flash') {
-      return 'Act Out Without Speaking: Noah Building the Ark!';
+      return this.translationService.t('activeMatch.mockCharadesTitle');
     }
-    return 'Complete the Scripture: "The Lord is my shepherd; I shall not..."';
+    return this.translationService.t('activeMatch.mockDefaultTitle');
   }
 
   getMockGamePromptDescription(): string {
-    return 'Active turn participant performs the action. Scores and turns update automatically for all connected devices.';
+    return this.translationService.t('activeMatch.mockPromptDescription');
   }
 }

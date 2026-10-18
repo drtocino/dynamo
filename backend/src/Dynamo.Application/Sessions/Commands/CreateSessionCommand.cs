@@ -14,6 +14,7 @@ public class CreateSessionRequest
     public int Rounds { get; set; } = 3;
     public int TimeLimitSeconds { get; set; } = 60;
     public string GameSettingsJson { get; set; } = "{}";
+    public string Language { get; set; } = "es";
 }
 
 public class SessionDto
@@ -30,6 +31,7 @@ public class SessionDto
     public int Rounds { get; set; }
     public int TimeLimitSeconds { get; set; }
     public string GameSettingsJson { get; set; } = "{}";
+    public string Language { get; set; } = "es";
     public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }
     public Guid? ActivePlayerId { get; set; }
@@ -91,6 +93,7 @@ public class CreateSessionCommandHandler : ICreateSessionCommandHandler
             Rounds = request.Rounds > 0 ? request.Rounds : 3,
             TimeLimitSeconds = request.TimeLimitSeconds > 0 ? request.TimeLimitSeconds : 60,
             GameSettingsJson = request.GameSettingsJson,
+            Language = string.IsNullOrWhiteSpace(request.Language) ? (game.Language ?? "es") : request.Language,
             ExpiresAt = DateTime.UtcNow.AddMinutes(15),
             CreatedAt = DateTime.UtcNow
         };
@@ -137,6 +140,7 @@ public class CreateSessionCommandHandler : ICreateSessionCommandHandler
             Rounds = session.Rounds,
             TimeLimitSeconds = session.TimeLimitSeconds,
             GameSettingsJson = session.GameSettingsJson,
+            Language = session.Language ?? "es",
             CreatedAt = session.CreatedAt,
             ExpiresAt = session.ExpiresAt,
             ActivePlayerId = session.ActivePlayerId,

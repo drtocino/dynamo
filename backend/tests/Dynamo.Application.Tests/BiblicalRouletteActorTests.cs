@@ -179,7 +179,7 @@ public class BiblicalRouletteActorTests
     {
         var broadcaster = new TestBroadcaster();
         var sessionId = "roulette-session-random";
-        var actor = new BiblicalRouletteActor(sessionId, broadcaster);
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster, _testPhrases);
         actor.Start();
 
         var player1 = "player-1";

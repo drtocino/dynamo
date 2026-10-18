@@ -18,6 +18,7 @@ public class Session : BaseEntity
     public int Rounds { get; set; } = 3;
     public int TimeLimitSeconds { get; set; } = 60;
     public string GameSettingsJson { get; set; } = "{}";
+    public string Language { get; set; } = "es";
 
     public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddMinutes(15);
 

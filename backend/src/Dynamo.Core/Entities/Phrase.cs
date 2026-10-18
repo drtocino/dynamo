@@ -8,4 +8,5 @@ public class Phrase : BaseEntity
     public string GeneralHint { get; set; } = string.Empty;
     public string SpecificHint { get; set; } = string.Empty;
     public string? Category { get; set; }
+    public string Language { get; set; } = "es";
 }

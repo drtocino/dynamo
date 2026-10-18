@@ -23,6 +23,7 @@ export interface Session {
   rounds: number;
   timeLimitSeconds: number;
   gameSettingsJson?: string;
+  language?: string;
   createdAt: string;
   expiresAt: string;
   activePlayerId?: string;
@@ -37,6 +38,7 @@ export interface CreateSessionRequest {
   rounds: number;
   timeLimitSeconds: number;
   gameSettingsJson?: string;
+  language?: string;
 }
 
 export interface CreateSharedScreenSessionRequest extends CreateSessionRequest {

@@ -48,15 +48,18 @@ public class BiblicalRouletteActor : SessionActor
     private readonly Dictionary<string, string> _playerClientIds = new();
     private readonly HashSet<Guid> _usedPhraseIds = new();
     private Session? _session;
+    private string _language = "es";
 
     public BiblicalRouletteState RouletteState => _rouletteState;
 
     public BiblicalRouletteActor(
         string sessionId, 
         IGameStateBroadcaster broadcaster,
-        List<Phrase>? phrases = null) 
+        List<Phrase>? phrases = null,
+        string language = "es") 
         : base(sessionId, broadcaster)
     {
+        _language = string.IsNullOrWhiteSpace(language) ? "es" : language;
         _rouletteState = new BiblicalRouletteState
         {
             TotalRounds = 3,
@@ -66,8 +69,8 @@ public class BiblicalRouletteActor : SessionActor
         };
 
         _phraseCatalog = phrases != null && phrases.Count > 0 
-            ? phrases 
-            : GetDefaultPhrases();
+            ? new List<Phrase>(phrases) 
+            : new List<Phrase>();
 
         _state.Payload = _rouletteState;
     }
@@ -83,7 +86,24 @@ public class BiblicalRouletteActor : SessionActor
         }
     }
 
-    public void InitializeMatch(Session? session = null)
+    public void SetPhrases(List<Phrase> phrases)
+    {
+        lock (_stateLock)
+        {
+            if (phrases != null && phrases.Count > 0)
+            {
+                _phraseCatalog.Clear();
+                _phraseCatalog.AddRange(phrases);
+                _usedPhraseIds.Clear();
+                if (_rouletteState.TurnStep == "SelectConsonantOrBuy" && _rouletteState.RevealedConsonants.Count == 0 && _rouletteState.RevealedVowels.Count == 0)
+                {
+                    StartRound(_rouletteState.CurrentRoundIndex);
+                }
+            }
+        }
+    }
+
+    public void InitializeMatch(Session? session = null, List<Phrase>? phrases = null)
     {
         lock (_stateLock)
         {
@@ -92,10 +112,20 @@ public class BiblicalRouletteActor : SessionActor
             if (session != null)
             {
                 _session = session;
+                if (!string.IsNullOrWhiteSpace(session.Language))
+                {
+                    _language = session.Language;
+                }
             }
             else if (_session != null)
             {
                 session = _session;
+            }
+
+            if (phrases != null && phrases.Count > 0)
+            {
+                _phraseCatalog.Clear();
+                _phraseCatalog.AddRange(phrases);
             }
 
             if (session != null)
@@ -158,12 +188,27 @@ public class BiblicalRouletteActor : SessionActor
             availablePhrases = _phraseCatalog.ToList();
         }
 
-        int phraseIndex = availablePhrases.Count > 1 
-            ? RandomNumberGenerator.GetInt32(availablePhrases.Count) 
-            : 0;
+        if (availablePhrases.Count == 0)
+        {
+            _currentPhrase = new Phrase
+            {
+                Id = Guid.NewGuid(),
+                Text = "DYNAMO",
+                GeneralHint = "Biblia",
+                SpecificHint = "Versículo bíblico",
+                Language = _language
+            };
+        }
+        else
+        {
+            int phraseIndex = availablePhrases.Count > 1 
+                ? RandomNumberGenerator.GetInt32(availablePhrases.Count) 
+                : 0;
 
-        _currentPhrase = availablePhrases[phraseIndex];
-        _usedPhraseIds.Add(_currentPhrase.Id);
+            _currentPhrase = availablePhrases[phraseIndex];
+            _usedPhraseIds.Add(_currentPhrase.Id);
+        }
+
         _rouletteState.CurrentPhraseId = _currentPhrase.Id;
         _rouletteState.GeneralHint = _currentPhrase.GeneralHint;
         _rouletteState.SpecificHint = _currentPhrase.SpecificHint;
@@ -232,6 +277,14 @@ public class BiblicalRouletteActor : SessionActor
 
             case "ADVANCE_TURN":
                 AdvanceToNextTurn();
+                break;
+
+            case "SET_PHRASES":
+                HandleSetPhrases(intent.Payload);
+                break;
+
+            case "SET_LANGUAGE":
+                HandleSetLanguage(intent.Payload);
                 break;
         }
 
@@ -616,80 +669,65 @@ public class BiblicalRouletteActor : SessionActor
         return payload.ToString() ?? string.Empty;
     }
 
-    private static List<Phrase> GetDefaultPhrases()
+    private void HandleSetPhrases(object? payload)
     {
-        return new List<Phrase>
+        if (payload == null) return;
+        try
         {
-            new()
+            List<Phrase>? list = null;
+            if (payload is JsonElement elem)
             {
-                Id = Guid.Parse("a1111111-1111-1111-1111-111111111111"),
-                Text = "FOR GOD SO LOVED THE WORLD",
-                GeneralHint = "Gospel of John",
-                SpecificHint = "John 3:16 - The golden verse"
-            },
-            new()
-            {
-                Id = Guid.Parse("b2222222-2222-2222-2222-222222222222"),
-                Text = "THE LORD IS MY SHEPHERD",
-                GeneralHint = "Psalms of David",
-                SpecificHint = "Psalm 23:1 - Written by King David"
-            },
-            new()
-            {
-                Id = Guid.Parse("c3333333-3333-3333-3333-333333333333"),
-                Text = "I CAN DO ALL THINGS THROUGH CHRIST",
-                GeneralHint = "Pauline Epistle",
-                SpecificHint = "Philippians 4:13 - Written from prison"
-            },
-            new()
-            {
-                Id = Guid.Parse("d4444444-4444-4444-4444-444444444444"),
-                Text = "IN THE BEGINNING GOD CREATED",
-                GeneralHint = "Book of Genesis",
-                SpecificHint = "Genesis 1:1 - Creation of heavens and earth"
-            },
-            new()
-            {
-                Id = Guid.Parse("e5555555-5555-5555-5555-555555555555"),
-                Text = "THY WORD IS A LAMP UNTO MY FEET",
-                GeneralHint = "Book of Psalms",
-                SpecificHint = "Psalm 119:105 - A light unto my path"
-            },
-            new()
-            {
-                Id = Guid.Parse("f6666666-6666-6666-6666-666666666666"),
-                Text = "LOVE IS PATIENT LOVE IS KIND",
-                GeneralHint = "First Corinthians",
-                SpecificHint = "1 Corinthians 13:4 - The love chapter"
-            },
-            new()
-            {
-                Id = Guid.Parse("a7777777-7777-7777-7777-777777777777"),
-                Text = "THE TRUTH SHALL SET YOU FREE",
-                GeneralHint = "Gospel of John",
-                SpecificHint = "John 8:32 - Discipleship and truth"
-            },
-            new()
-            {
-                Id = Guid.Parse("b8888888-8888-8888-8888-888888888888"),
-                Text = "BE STRONG AND COURAGEOUS",
-                GeneralHint = "Book of Joshua",
-                SpecificHint = "Joshua 1:9 - Do not be afraid or discouraged"
-            },
-            new()
-            {
-                Id = Guid.Parse("c9999999-9999-9999-9999-999999999999"),
-                Text = "FAITH HOPE AND LOVE",
-                GeneralHint = "First Corinthians",
-                SpecificHint = "1 Corinthians 13:13 - The greatest of these is love"
-            },
-            new()
-            {
-                Id = Guid.Parse("daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                Text = "TRUST IN THE LORD WITH ALL THINE HEART",
-                GeneralHint = "Book of Proverbs",
-                SpecificHint = "Proverbs 3:5 - Lean not on your own understanding"
+                var targetElem = elem;
+                if (elem.ValueKind == JsonValueKind.Object && elem.TryGetProperty("phrases", out var pArray))
+                {
+                    targetElem = pArray;
+                }
+
+                if (targetElem.ValueKind == JsonValueKind.Array)
+                {
+                    try
+                    {
+                        list = JsonSerializer.Deserialize<List<Phrase>>(targetElem.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    }
+                    catch
+                    {
+                        var strList = JsonSerializer.Deserialize<List<string>>(targetElem.GetRawText());
+                        if (strList != null)
+                        {
+                            list = strList.Select(s => new Phrase { Text = s, GeneralHint = "Biblia", SpecificHint = s, Category = "General", Language = _language }).ToList();
+                        }
+                    }
+                }
             }
-        };
+
+            if (list != null && list.Count > 0)
+            {
+                SetPhrases(list);
+            }
+        }
+        catch
+        {
+            // Ignore invalid payload format
+        }
+    }
+
+    private void HandleSetLanguage(object? payload)
+    {
+        if (payload == null) return;
+        string? lang = null;
+        if (payload is JsonElement elem)
+        {
+            if (elem.ValueKind == JsonValueKind.String) lang = elem.GetString();
+            else if (elem.ValueKind == JsonValueKind.Object && elem.TryGetProperty("language", out var lProp)) lang = lProp.GetString();
+        }
+        else
+        {
+            lang = payload.ToString();
+        }
+
+        if (!string.IsNullOrWhiteSpace(lang))
+        {
+            _language = lang;
+        }
     }
 }

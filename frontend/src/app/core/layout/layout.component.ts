@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
+import { TranslatePipe } from '../i18n';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, CommonModule],
+  imports: [RouterOutlet, RouterLink, CommonModule, TranslatePipe],
   template: `
     <div class="min-h-screen flex flex-col bg-neo-bg text-neo-black">
       <!-- Top Navigation Banner (Hidden in game match view) -->
@@ -21,7 +22,7 @@ import { filter } from 'rxjs';
                 DYNAMO
               </span>
               <span class="text-[10px] font-black uppercase tracking-widest text-neo-black/70">
-                Youth Games Hub
+                {{ 'layout.hubSubtitle' | translate }}
               </span>
             </div>
           </a>
@@ -30,12 +31,12 @@ import { filter } from 'rxjs';
           <nav class="flex items-center gap-3">
             <a routerLink="/" 
                class="px-4 py-2 font-bold text-sm rounded-lg hover:bg-neo-gray transition-colors">
-              🎮 Browse Games
+              🎮 {{ 'layout.browseGames' | translate }}
             </a>
             <a routerLink="/join" 
                class="neo-btn-primary text-sm py-2 px-4 flex items-center gap-2">
               <span>🎟️</span>
-              <span>Join with Code</span>
+              <span>{{ 'layout.joinWithCode' | translate }}</span>
             </a>
           </nav>
         </div>
@@ -51,12 +52,12 @@ import { filter } from 'rxjs';
         <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-neo-black/80">
           <div class="flex items-center gap-2">
             <span class="px-2 py-0.5 rounded bg-neo-cyan border-2 border-neo-black text-[10px] font-black">
-              WHOLESOME & SAFE
+              {{ 'layout.wholesomeBadge' | translate }}
             </span>
-            <span>Built for Christian Youth Fellowships & Retreats</span>
+            <span>{{ 'layout.footerTagline' | translate }}</span>
           </div>
           <div>
-            <span>Dynamo Games Platform &copy; 2026</span>
+            <span>{{ 'layout.copyright' | translate }}</span>
           </div>
         </div>
       </footer>
@@ -73,4 +74,3 @@ export class LayoutComponent {
     });
   }
 }
-

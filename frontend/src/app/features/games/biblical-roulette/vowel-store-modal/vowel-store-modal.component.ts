@@ -2,29 +2,30 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { TranslatePipe } from '../../../../core/i18n';
 
 @Component({
   selector: 'app-vowel-store-modal',
   standalone: true,
-  imports: [CommonModule, ModalComponent, ButtonComponent],
+  imports: [CommonModule, ModalComponent, ButtonComponent, TranslatePipe],
   template: `
     <app-modal 
       modalId="vowelStore"
       [isOpen]="isOpen"
-      title="Vowel Store"
-      subtitle="Select and confirm a vowel for your current turn"
+      [title]="'game.biblicalRoulette.vowelStoreTitle' | translate"
+      [subtitle]="'game.biblicalRoulette.vowelStoreSubtitle' | translate"
       icon="🔤"
       (close)="handleClose()">
       
       <!-- Pricing & Balance Banner -->
       <div class="flex items-center justify-between p-3 bg-neo-bg rounded-xl border-2 border-neo-black">
         <div>
-          <span class="text-xs font-black uppercase text-neo-muted block">Base Price</span>
-          <span class="text-lg font-black text-neo-pink">{{ vowelCost }} pts / letter</span>
+          <span class="text-xs font-black uppercase text-neo-muted block">{{ 'game.biblicalRoulette.basePrice' | translate }}</span>
+          <span class="text-lg font-black text-neo-pink">{{ 'game.biblicalRoulette.costPerLetter' | translate:{ cost: vowelCost } }}</span>
         </div>
         <div class="text-right">
-          <span class="text-xs font-black uppercase text-neo-muted block">Your Points</span>
-          <span class="text-lg font-black text-neo-black">{{ playerPoints }} pts</span>
+          <span class="text-xs font-black uppercase text-neo-muted block">{{ 'game.biblicalRoulette.yourPoints' | translate }}</span>
+          <span class="text-lg font-black text-neo-black">{{ playerPoints }} {{ 'common.points' | translate }}</span>
         </div>
       </div>
 
@@ -42,39 +43,39 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
               'bg-neo-gray text-neo-muted opacity-40 cursor-not-allowed': isPurchased(vowel) || playerPoints < vowelCost
             }">
             <span>{{ vowel }}</span>
-            <span class="text-[9px] font-bold" *ngIf="isPurchased(vowel)">SOLD</span>
-            <span class="text-[9px] font-bold text-white uppercase" *ngIf="selectedVowel === vowel">READY</span>
+            <span class="text-[9px] font-bold" *ngIf="isPurchased(vowel)">{{ 'game.biblicalRoulette.sold' | translate }}</span>
+            <span class="text-[9px] font-bold text-white uppercase" *ngIf="selectedVowel === vowel">{{ 'game.biblicalRoulette.ready' | translate }}</span>
           </button>
         </div>
 
         <div class="text-[11px] font-bold text-center text-neo-muted">
           <span *ngIf="selectedVowel" class="text-neo-black font-black">
-            Selected '{{ selectedVowel }}' · Tap Confirm below to purchase
+            {{ 'game.biblicalRoulette.vowelSelected' | translate:{ vowel: selectedVowel } }}
           </span>
           <span *ngIf="!selectedVowel">
-            Tap a vowel to select it, then confirm purchase
+            {{ 'game.biblicalRoulette.tapVowel' | translate }}
           </span>
         </div>
       </div>
 
       <!-- Pricing Notice -->
       <p class="text-[11px] font-bold text-center text-neo-muted">
-        ⚠️ Total cost is multiplied by the count of letters found in the phrase ({{ vowelCost }} pts per letter). Base price scales: 100 → 250 → 500 → 1,000 pts.
+        {{ 'game.biblicalRoulette.vowelNotice' | translate:{ cost: vowelCost } }}
       </p>
 
-      <!-- Confirmation and Cancel Actions (Reduced spacing) -->
+      <!-- Confirmation and Cancel Actions -->
       <div class="space-y-1.5 flex flex-col pt-1.5 border-t border-neo-black/10">
         <app-button 
           variant="yellow"
           [disabled]="!selectedVowel || isPurchased(selectedVowel) || playerPoints < vowelCost"
           (onClick)="confirmPurchase()">
-          <span>Confirm Purchase {{ selectedVowel ? "('" + selectedVowel + "')" : '' }} ({{ vowelCost }} pts/letter)</span>
+          <span>{{ 'game.biblicalRoulette.confirmPurchase' | translate:{ letter: (selectedVowel ? "('" + selectedVowel + "')" : ''), cost: vowelCost } }}</span>
         </app-button>
 
         <app-button 
           variant="secondary"
           (onClick)="handleClose()">
-          Cancel & Return to Game
+          {{ 'game.biblicalRoulette.cancelReturn' | translate }}
         </app-button>
       </div>
     </app-modal>

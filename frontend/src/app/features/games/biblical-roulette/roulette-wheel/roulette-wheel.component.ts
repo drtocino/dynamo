@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '../../../../core/i18n';
 
 export interface WheelWedge {
   label: string;
@@ -12,7 +13,7 @@ export interface WheelWedge {
 @Component({
   selector: 'app-roulette-wheel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="relative w-full flex flex-col items-center select-none">
       <!-- Roulette Framing Container (Right half visible, overflowing left/center) -->
@@ -50,7 +51,7 @@ export interface WheelWedge {
                 [style.color]="wedge.textColor"
                 [class.bg-neo-black]="wedge.type === 'bankrupt' || wedge.type === 'miss'"
                 [class.text-white]="wedge.type === 'bankrupt' || wedge.type === 'miss'">
-                {{ wedge.label }}
+                {{ (wedge.type === 'miss' ? 'game.biblicalRoulette.missTurn' : (wedge.type === 'bankrupt' ? 'game.biblicalRoulette.bankrupt' : wedge.label)) | translate }}
               </span>
             </div>
           </div>

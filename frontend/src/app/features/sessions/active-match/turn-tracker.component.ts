@@ -1,21 +1,22 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Player } from '../../../core/models/player.model';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-turn-tracker',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="neo-card bg-white space-y-4">
       <div class="flex items-center justify-between border-b-3 border-neo-black pb-3">
         <div class="flex items-center gap-2">
           <span class="text-2xl">⏳</span>
-          <span class="font-black text-lg text-neo-black">Turn Order & Timer</span>
+          <span class="font-black text-lg text-neo-black">{{ 'activeMatch.turnOrderTimer' | translate }}</span>
         </div>
         <div class="flex items-center gap-2 font-black text-sm">
           <span class="px-2 py-0.5 rounded bg-neo-yellow border-2 border-neo-black">
-            Round {{ currentRound }} / {{ totalRounds }}
+            {{ 'activeMatch.roundIndicator' | translate:{ current: currentRound, total: totalRounds } }}
           </span>
           <span 
             [class.text-red-600]="secondsLeft <= 10"
@@ -33,10 +34,10 @@ import { Player } from '../../../core/models/player.model';
           </div>
           <div>
             <span class="text-[10px] font-black uppercase tracking-wider text-neo-black/80 block">
-              CURRENT TURN
+              {{ 'activeMatch.currentTurn' | translate }}
             </span>
             <span class="text-2xl font-black text-neo-black">
-              {{ activePlayer?.name || 'Waiting for player...' }}
+              {{ activePlayer?.name || ('activeMatch.waitingForPlayer' | translate) }}
             </span>
           </div>
         </div>
@@ -44,14 +45,14 @@ import { Player } from '../../../core/models/player.model';
         <button 
           (click)="onAdvanceTurn()"
           class="neo-btn-primary bg-white hover:bg-neo-gray text-neo-black text-sm py-2 px-4">
-          Next Turn ⏩
+          {{ 'activeMatch.nextTurn' | translate }}
         </button>
       </div>
 
       <!-- Turn Order Queue -->
       <div class="space-y-1">
         <span class="text-xs font-black text-neo-muted uppercase tracking-wider block">
-          Upcoming Queue
+          {{ 'activeMatch.upcomingQueue' | translate }}
         </span>
         <div class="flex flex-wrap gap-2 pt-1">
           <div 

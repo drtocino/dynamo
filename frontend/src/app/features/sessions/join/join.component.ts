@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { SessionService } from '../../../core/services/session.service';
+import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
 @Component({
   selector: 'app-join',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   template: `
     <div class="max-w-md mx-auto space-y-6">
       <div class="text-center">
@@ -15,10 +16,10 @@ import { SessionService } from '../../../core/services/session.service';
           🎟️
         </div>
         <h1 class="text-3xl font-black text-neo-black">
-          Join a Match
+          {{ 'join.title' | translate }}
         </h1>
         <p class="font-bold text-sm text-neo-muted mt-1">
-          Enter the room code shared by your game host
+          {{ 'join.subtitle' | translate }}
         </p>
       </div>
 
@@ -26,27 +27,27 @@ import { SessionService } from '../../../core/services/session.service';
         <!-- Room Code Input -->
         <div>
           <label class="block font-black text-sm text-neo-black mb-1">
-            Room Code
+            {{ 'join.roomCodeLabel' | translate }}
           </label>
           <input 
             type="text" 
             [(ngModel)]="roomCode" 
             (input)="roomCode = roomCode.toUpperCase()"
             maxlength="6"
-            placeholder="e.g. 7X9K2"
+            [placeholder]="'join.roomCodePlaceholder' | translate"
             class="neo-input text-center text-2xl font-black tracking-widest uppercase" />
         </div>
 
         <!-- Player Name Input -->
         <div>
           <label class="block font-black text-sm text-neo-black mb-1">
-            Your Nickname
+            {{ 'join.nicknameLabel' | translate }}
           </label>
           <input 
             type="text" 
             [(ngModel)]="playerName" 
             maxlength="30"
-            placeholder="e.g. Daniel, Grace, Joshua"
+            [placeholder]="'join.nicknamePlaceholder' | translate"
             class="neo-input" />
         </div>
 
@@ -62,13 +63,13 @@ import { SessionService } from '../../../core/services/session.service';
           (click)="onJoin()" 
           [disabled]="!roomCode.trim() || !playerName.trim() || isSubmitting"
           class="neo-btn-primary w-full py-3.5 text-base flex items-center justify-center gap-2">
-          <span *ngIf="!isSubmitting">Enter Lobby 🚀</span>
-          <span *ngIf="isSubmitting">Joining Session...</span>
+          <span *ngIf="!isSubmitting">{{ 'join.btnEnter' | translate }}</span>
+          <span *ngIf="isSubmitting">{{ 'join.btnJoining' | translate }}</span>
         </button>
 
         <div class="text-center pt-2">
           <a routerLink="/" class="text-xs font-bold text-neo-muted hover:text-neo-black underline">
-            Cancel and return to Game Hub
+            {{ 'join.cancelReturn' | translate }}
           </a>
         </div>
       </div>
@@ -77,6 +78,7 @@ import { SessionService } from '../../../core/services/session.service';
 })
 export class JoinComponent {
   private sessionService = inject(SessionService);
+  private translationService = inject(TranslationService);
   private router = inject(Router);
 
   roomCode: string = '';
@@ -94,13 +96,13 @@ export class JoinComponent {
       next: (session) => {
         if (!session) {
           this.isSubmitting = false;
-          this.errorMessage = 'Room not found or code expired. Check with the host!';
+          this.errorMessage = this.translationService.t('join.errorNotFound');
           return;
         }
 
         if (session.state === 'Active' || session.state === 'Ended') {
           this.isSubmitting = false;
-          this.errorMessage = 'This match is already in progress or has ended.';
+          this.errorMessage = this.translationService.t('join.errorInProgress');
           return;
         }
 
@@ -110,13 +112,13 @@ export class JoinComponent {
           },
           error: (err) => {
             this.isSubmitting = false;
-            this.errorMessage = err.error?.message || 'Failed to join session.';
+            this.errorMessage = err.error?.message || this.translationService.t('join.errorFailed');
           }
         });
       },
       error: () => {
         this.isSubmitting = false;
-        this.errorMessage = 'Unable to connect to match room.';
+        this.errorMessage = this.translationService.t('join.errorConnect');
       }
     });
   }

@@ -12,11 +12,12 @@ public class GameDto
     public string ThumbnailUrl { get; set; } = string.Empty;
     public List<string> SupportedModes { get; set; } = new();
     public string SettingsSchemaJson { get; set; } = "{}";
+    public string Language { get; set; } = "es";
 }
 
 public interface IGetGamesQueryHandler
 {
-    Task<IReadOnlyList<GameDto>> HandleAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<GameDto>> HandleAsync(string? language = null, CancellationToken cancellationToken = default);
 }
 
 public class GetGamesQueryHandler : IGetGamesQueryHandler
@@ -28,9 +29,14 @@ public class GetGamesQueryHandler : IGetGamesQueryHandler
         _gameRepository = gameRepository;
     }
 
-    public async Task<IReadOnlyList<GameDto>> HandleAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<GameDto>> HandleAsync(string? language = null, CancellationToken cancellationToken = default)
     {
         var games = await _gameRepository.GetAllAsync(cancellationToken);
+        if (!string.IsNullOrWhiteSpace(language))
+        {
+            games = games.Where(g => string.Equals(g.Language, language, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         return games.Select(g => new GameDto
         {
             Id = g.Id,
@@ -39,7 +45,8 @@ public class GetGamesQueryHandler : IGetGamesQueryHandler
             Description = g.Description,
             ThumbnailUrl = g.ThumbnailUrl,
             SupportedModes = g.SupportedModes.Select(m => m.ToString()).ToList(),
-            SettingsSchemaJson = g.SettingsSchemaJson
+            SettingsSchemaJson = g.SettingsSchemaJson,
+            Language = g.Language
         }).ToList();
     }
 }

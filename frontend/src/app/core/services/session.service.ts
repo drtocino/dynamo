@@ -35,7 +35,12 @@ export class SessionService {
   }
 
   createSession(request: CreateSessionRequest): Observable<Session> {
-    return this.http.post<Session>(this.apiUrl, request).pipe(
+    const lang = request.language || localStorage.getItem('dynamo_language') || 'es';
+    const payload: CreateSessionRequest = {
+      ...request,
+      language: lang
+    };
+    return this.http.post<Session>(this.apiUrl, payload).pipe(
       tap(session => this.cacheSession(session)),
       catchError(err => {
         console.warn('Backend API offline, creating local resilient session:', err);
@@ -51,6 +56,7 @@ export class SessionService {
           maxPlayers: request.maxPlayers || 8,
           rounds: request.rounds || 3,
           timeLimitSeconds: request.timeLimitSeconds || 60,
+          language: lang,
           createdAt: new Date().toISOString(),
           expiresAt: new Date(Date.now() + 15 * 60000).toISOString(),
           players: []
@@ -62,7 +68,12 @@ export class SessionService {
   }
 
   createSharedScreenSession(request: CreateSharedScreenSessionRequest): Observable<Session> {
-    return this.http.post<Session>(`${this.apiUrl}/shared-screen`, request).pipe(
+    const lang = request.language || localStorage.getItem('dynamo_language') || 'es';
+    const payload: CreateSharedScreenSessionRequest = {
+      ...request,
+      language: lang
+    };
+    return this.http.post<Session>(`${this.apiUrl}/shared-screen`, payload).pipe(
       tap(session => this.cacheSession(session)),
       catchError(err => {
         console.warn('Backend API offline, creating local shared-screen session:', err);
@@ -86,6 +97,7 @@ export class SessionService {
           maxPlayers: request.maxPlayers || 8,
           rounds: request.rounds || 3,
           timeLimitSeconds: request.timeLimitSeconds || 60,
+          language: lang,
           createdAt: new Date().toISOString(),
           expiresAt: new Date(Date.now() + 15 * 60000).toISOString(),
           activePlayerId: players.length > 0 ? players[0].id : undefined,

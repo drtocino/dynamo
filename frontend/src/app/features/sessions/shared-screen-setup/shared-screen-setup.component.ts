@@ -5,19 +5,20 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SessionService } from '../../../core/services/session.service';
 import { GameService } from '../../../core/services/game.service';
 import { Game } from '../../../core/models/game.model';
+import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
 @Component({
   selector: 'app-shared-screen-setup',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   template: `
     <div class="max-w-2xl mx-auto space-y-6">
       <div class="flex items-center justify-between">
         <a routerLink="/" class="font-bold text-sm text-neo-black hover:underline flex items-center gap-1">
-          ← Back to Games Hub
+          {{ 'sharedScreenSetup.back' | translate }}
         </a>
         <span class="neo-badge bg-neo-pink text-white">
-          Shared Screen Setup
+          {{ 'sharedScreenSetup.badge' | translate }}
         </span>
       </div>
 
@@ -27,10 +28,10 @@ import { Game } from '../../../core/models/game.model';
           <span class="text-3xl">📺</span>
           <div>
             <h1 class="text-2xl font-black text-neo-black">
-              Register Local Players
+              {{ 'sharedScreenSetup.title' | translate }}
             </h1>
             <p class="text-xs font-semibold text-neo-muted">
-              Add everyone playing on this device. Turns will cycle automatically.
+              {{ 'sharedScreenSetup.subtitle' | translate }}
             </p>
           </div>
         </div>
@@ -42,14 +43,14 @@ import { Game } from '../../../core/models/game.model';
             [(ngModel)]="newPlayerName" 
             (keyup.enter)="addPlayer()"
             maxlength="25"
-            placeholder="Type player name and hit enter..."
+            [placeholder]="'sharedScreenSetup.placeholder' | translate"
             class="neo-input flex-1" />
           <button 
             type="button" 
             (click)="addPlayer()" 
             [disabled]="!newPlayerName.trim()"
             class="neo-btn-primary px-6">
-            + Add
+            {{ 'sharedScreenSetup.btnAdd' | translate }}
           </button>
         </div>
       </div>
@@ -58,15 +59,15 @@ import { Game } from '../../../core/models/game.model';
       <div class="neo-card bg-white space-y-4">
         <div class="flex items-center justify-between border-b-3 border-neo-black pb-3">
           <h2 class="text-lg font-black text-neo-black">
-            Turn Order Roster ({{ players.length }} Players)
+            {{ 'sharedScreenSetup.rosterTitle' | translate:{ count: players.length } }}
           </h2>
           <span class="text-xs font-bold text-neo-muted">
-            Minimum 2 players recommended
+            {{ 'sharedScreenSetup.minRecommended' | translate }}
           </span>
         </div>
 
         <div *ngIf="players.length === 0" class="p-8 text-center border-2 border-dashed border-neo-black/20 rounded-xl">
-          <p class="font-bold text-sm text-neo-muted">No players added yet. Type a name above to add participants!</p>
+          <p class="font-bold text-sm text-neo-muted">{{ 'sharedScreenSetup.noPlayers' | translate }}</p>
         </div>
 
         <div class="space-y-2">
@@ -83,8 +84,7 @@ import { Game } from '../../../core/models/game.model';
                 </span>
                 <span 
                   class="font-black text-base text-neo-black truncate cursor-pointer hover:underline decoration-2"
-                  (click)="startEditing(i)"
-                  title="Click to edit name">
+                  (click)="startEditing(i)">
                   {{ p }}
                 </span>
               </div>
@@ -93,13 +93,13 @@ import { Game } from '../../../core/models/game.model';
                   type="button"
                   (click)="startEditing(i)"
                   class="px-2.5 py-1 text-xs font-black rounded-lg border-2 border-neo-black bg-white hover:bg-neo-yellow text-neo-black transition active:scale-95 cursor-pointer flex items-center gap-1">
-                  <span>✏️</span> Edit
+                  <span>✏️</span> {{ 'sharedScreenSetup.btnEdit' | translate }}
                 </button>
                 <button 
                   type="button"
                   (click)="removePlayer(i)"
                   class="px-2.5 py-1 text-xs font-black rounded-lg border-2 border-neo-black bg-white hover:bg-red-50 text-red-600 transition active:scale-95 cursor-pointer flex items-center gap-1">
-                  <span>✕</span> Remove
+                  <span>✕</span> {{ 'sharedScreenSetup.btnRemove' | translate }}
                 </button>
               </div>
             </div>
@@ -116,7 +116,7 @@ import { Game } from '../../../core/models/game.model';
                   (keyup.enter)="saveEdit(i)"
                   (keyup.escape)="cancelEdit()"
                   maxlength="25"
-                  placeholder="Enter player name..."
+                  [placeholder]="'sharedScreenSetup.editPlaceholder' | translate"
                   class="neo-input flex-1 py-1 px-3 text-sm font-black border-2 border-neo-black"
                   autofocus />
                 <button 
@@ -124,13 +124,13 @@ import { Game } from '../../../core/models/game.model';
                   (click)="saveEdit(i)" 
                   [disabled]="!editingName.trim()"
                   class="px-3 py-1.5 text-xs font-black rounded-lg border-2 border-neo-black bg-neo-cyan hover:bg-emerald-300 text-neo-black transition active:scale-95 cursor-pointer flex items-center gap-1">
-                  <span>✓</span> Save
+                  <span>✓</span> {{ 'sharedScreenSetup.btnSave' | translate }}
                 </button>
                 <button 
                   type="button"
                   (click)="cancelEdit()" 
                   class="px-2.5 py-1.5 text-xs font-black rounded-lg border-2 border-neo-black bg-neo-gray hover:bg-gray-200 text-neo-muted transition active:scale-95 cursor-pointer">
-                  Cancel
+                  {{ 'sharedScreenSetup.btnCancel' | translate }}
                 </button>
               </div>
               <p *ngIf="editError" class="text-[11px] font-bold text-red-600 pl-9">
@@ -144,14 +144,14 @@ import { Game } from '../../../core/models/game.model';
       <!-- Actions -->
       <div class="flex gap-3 pt-2">
         <a routerLink="/" class="neo-btn-secondary flex-1 py-3 text-center">
-          Cancel
+          {{ 'common.cancel' | translate }}
         </a>
         <button 
           (click)="launchMatch()" 
           [disabled]="players.length < 1 || isLaunching"
           class="neo-btn-primary flex-1 py-3 text-center">
-          <span *ngIf="!isLaunching">🚀 Start Match with {{ players.length }} Players</span>
-          <span *ngIf="isLaunching">Starting...</span>
+          <span *ngIf="!isLaunching">{{ 'sharedScreenSetup.startMatch' | translate:{ count: players.length } }}</span>
+          <span *ngIf="isLaunching">{{ 'sharedScreenSetup.starting' | translate }}</span>
         </button>
       </div>
     </div>
@@ -162,10 +162,11 @@ export class SharedScreenSetupComponent implements OnInit {
   private router = inject(Router);
   private sessionService = inject(SessionService);
   private gameService = inject(GameService);
+  private translationService = inject(TranslationService);
 
   game: Game | undefined;
   newPlayerName = '';
-  players: string[] = ['Youth Team 1', 'Youth Team 2'];
+  players: string[] = [];
   isLaunching = false;
 
   editingIndex: number | null = null;
@@ -181,6 +182,11 @@ export class SharedScreenSetupComponent implements OnInit {
     this.gameService.getGames().subscribe(games => {
       this.game = games.find(g => g.slug === slug) || games[0];
     });
+
+    this.players = [
+      this.translationService.t('sharedScreenSetup.defaultPlayer1'),
+      this.translationService.t('sharedScreenSetup.defaultPlayer2')
+    ];
   }
 
   addPlayer(): void {
@@ -210,12 +216,12 @@ export class SharedScreenSetupComponent implements OnInit {
   saveEdit(index: number): void {
     const trimmed = this.editingName.trim();
     if (!trimmed) {
-      this.editError = 'Name cannot be empty';
+      this.editError = this.translationService.t('sharedScreenSetup.errorEmpty');
       return;
     }
     const duplicate = this.players.some((p, i) => i !== index && p.toLowerCase() === trimmed.toLowerCase());
     if (duplicate) {
-      this.editError = 'A player with this name already exists';
+      this.editError = this.translationService.t('sharedScreenSetup.errorDuplicate');
       return;
     }
     this.players[index] = trimmed;

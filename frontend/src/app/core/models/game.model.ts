@@ -8,4 +8,5 @@ export interface Game {
   thumbnailUrl: string;
   supportedModes: MultiplayerMode[];
   settingsSchemaJson?: string;
+  language?: string;
 }

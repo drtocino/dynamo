@@ -12,9 +12,9 @@
 
 **Purpose**: Create project directory structure, base translation files, and type definitions.
 
-- [ ] T001 Create directory structure for translation assets in `frontend/public/i18n/` and core service module in `frontend/src/app/core/i18n/`
-- [ ] T002 [P] Define core types, interfaces, and constants (`LanguageCode`, `LanguageOption`, `TranslationParams`, `DEFAULT_LANGUAGE`) in `frontend/src/app/core/i18n/translation.types.ts`
-- [ ] T003 [P] Create initial base JSON files with shared common keys in `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json`
+- [X] T001 Create directory structure for translation assets in `frontend/public/i18n/` and core service module in `frontend/src/app/core/i18n/`
+- [X] T002 [P] Define core types, interfaces, and constants (`LanguageCode`, `LanguageOption`, `TranslationParams`, `DEFAULT_LANGUAGE`) in `frontend/src/app/core/i18n/translation.types.ts`
+- [X] T003 [P] Create initial base JSON files with shared common keys in `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json`
 
 ---
 
@@ -24,10 +24,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Implement `TranslationService` in `frontend/src/app/core/i18n/translation.service.ts` managing reactive Signals (`currentLang`, `translations`, `fallbackTranslations`, `isLoaded`), `HttpClient` asset fetching, two-tier fallback resolution, token interpolation, and safe `localStorage` access
-- [ ] T005 [P] Implement standalone `TranslatePipe` in `frontend/src/app/core/i18n/translate.pipe.ts` with `pure: false` for instant change reactivity on language switch
-- [ ] T006 [P] Create public module barrel exports in `frontend/src/app/core/i18n/index.ts`
-- [ ] T007 Register `APP_INITIALIZER` provider in `frontend/src/app/app.config.ts` to pre-load default Spanish translations during Angular bootstrap
+- [X] T004 Implement `TranslationService` in `frontend/src/app/core/i18n/translation.service.ts` managing reactive Signals (`currentLang`, `translations`, `fallbackTranslations`, `isLoaded`), `HttpClient` asset fetching, two-tier fallback resolution, token interpolation, and safe `localStorage` access
+- [X] T005 [P] Implement standalone `TranslatePipe` in `frontend/src/app/core/i18n/translate.pipe.ts` with `pure: false` for instant change reactivity on language switch
+- [X] T006 [P] Create public module barrel exports in `frontend/src/app/core/i18n/index.ts`
+- [X] T007 Register `APP_INITIALIZER` provider in `frontend/src/app/app.config.ts` to pre-load default Spanish translations during Angular bootstrap
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -39,14 +39,14 @@
 
 **Independent Test**: Clear browser `localStorage` (or open fresh incognito window), navigate to `http://localhost:4200`, and verify all visible strings across all screens and components render in Spanish.
 
-- [ ] T008 [US1] Author comprehensive Spanish translation dictionary covering all features (`common.*`, `hub.*`, `configure.*`, `join.*`, `lobby.*`, `sharedScreenSetup.*`, `activeMatch.*`, `game.biblicalRoulette.*`) in `frontend/public/i18n/es.json`
-- [ ] T009 [P] [US1] Replace hardcoded strings in Hub view with `TranslatePipe` and localize game catalog metadata in `frontend/src/app/features/hub/hub.component.ts`
-- [ ] T010 [P] [US1] Replace hardcoded strings in Session Configure view with `TranslatePipe` in `frontend/src/app/features/sessions/configure/configure.component.ts`
-- [ ] T011 [P] [US1] Replace hardcoded strings in Session Join view with `TranslatePipe` in `frontend/src/app/features/sessions/join/join.component.ts`
-- [ ] T012 [P] [US1] Replace hardcoded strings in Session Lobby view with `TranslatePipe` in `frontend/src/app/features/sessions/lobby/lobby.component.ts`
-- [ ] T013 [P] [US1] Replace hardcoded strings in Shared Screen Setup view with `TranslatePipe` in `frontend/src/app/features/sessions/shared-screen-setup/shared-screen-setup.component.ts`
-- [ ] T014 [P] [US1] Replace hardcoded strings in Active Match shell and Turn Tracker with `TranslatePipe` in `frontend/src/app/features/sessions/active-match/active-match.component.ts` and `frontend/src/app/features/sessions/active-match/turn-tracker.component.ts`
-- [ ] T015 [US1] Replace hardcoded strings in Biblical Roulette gameplay, phrase board, roulette wheel, vowel store modal, and win/log modals with `TranslatePipe` across `frontend/src/app/features/games/biblical-roulette/biblical-roulette.component.ts`, `frontend/src/app/features/games/biblical-roulette/phrase-board/phrase-board.component.ts`, `frontend/src/app/features/games/biblical-roulette/roulette-wheel/roulette-wheel.component.ts`, and `frontend/src/app/features/games/biblical-roulette/vowel-store-modal/vowel-store-modal.component.ts`
+- [X] T008 [US1] Author comprehensive Spanish translation dictionary covering all features (`common.*`, `hub.*`, `configure.*`, `join.*`, `lobby.*`, `sharedScreenSetup.*`, `activeMatch.*`, `game.biblicalRoulette.*`) in `frontend/public/i18n/es.json`
+- [X] T009 [P] [US1] Replace hardcoded strings in Hub view with `TranslatePipe` and localize game catalog metadata in `frontend/src/app/features/hub/hub.component.ts`
+- [X] T010 [P] [US1] Replace hardcoded strings in Session Configure view with `TranslatePipe` in `frontend/src/app/features/sessions/configure/configure.component.ts`
+- [X] T011 [P] [US1] Replace hardcoded strings in Session Join view with `TranslatePipe` in `frontend/src/app/features/sessions/join/join.component.ts`
+- [X] T012 [P] [US1] Replace hardcoded strings in Session Lobby view with `TranslatePipe` in `frontend/src/app/features/sessions/lobby/lobby.component.ts`
+- [X] T013 [P] [US1] Replace hardcoded strings in Shared Screen Setup view with `TranslatePipe` in `frontend/src/app/features/sessions/shared-screen-setup/shared-screen-setup.component.ts`
+- [X] T014 [P] [US1] Replace hardcoded strings in Active Match shell and Turn Tracker with `TranslatePipe` in `frontend/src/app/features/sessions/active-match/active-match.component.ts` and `frontend/src/app/features/sessions/active-match/turn-tracker.component.ts`
+- [X] T015 [US1] Replace hardcoded strings in Biblical Roulette gameplay, phrase board, roulette wheel, vowel store modal, and win/log modals with `TranslatePipe` across `frontend/src/app/features/games/biblical-roulette/biblical-roulette.component.ts`, `frontend/src/app/features/games/biblical-roulette/phrase-board/phrase-board.component.ts`, `frontend/src/app/features/games/biblical-roulette/roulette-wheel/roulette-wheel.component.ts`, and `frontend/src/app/features/games/biblical-roulette/vowel-store-modal/vowel-store-modal.component.ts`
 
 **Checkpoint**: User Story 1 is functional as an MVP — entire app defaults to Spanish on initial visit.
 
@@ -58,10 +58,10 @@
 
 **Independent Test**: On the Hub screen, click the language selector, select English, and verify all UI text immediately updates to English. Click Spanish, and verify it immediately updates back to Spanish.
 
-- [ ] T016 [US2] Author comprehensive English translation dictionary matching 100% of keys in `frontend/public/i18n/en.json`
-- [ ] T017 [US2] Implement Neobrutalist `LanguageSelectorComponent` with chunky borders, bold typography, and flag indicators in `frontend/src/app/features/hub/components/language-selector/language-selector.component.ts`
-- [ ] T018 [US2] Integrate `LanguageSelectorComponent` into the header of `frontend/src/app/features/hub/hub.component.ts`
-- [ ] T019 [US2] Verify instant reactive switching between Spanish and English without full page reload across all active views
+- [X] T016 [US2] Author comprehensive English translation dictionary matching 100% of keys in `frontend/public/i18n/en.json`
+- [X] T017 [US2] Implement Neobrutalist `LanguageSelectorComponent` with chunky borders, bold typography, and flag indicators in `frontend/src/app/features/hub/components/language-selector/language-selector.component.ts`
+- [X] T018 [US2] Integrate `LanguageSelectorComponent` into the header of `frontend/src/app/features/hub/hub.component.ts`
+- [X] T019 [US2] Verify instant reactive switching between Spanish and English without full page reload across all active views
 
 **Checkpoint**: User Stories 1 AND 2 are fully functional — app starts in Spanish, switches smoothly to English and back.
 
@@ -73,8 +73,8 @@
 
 **Independent Test**: Switch language to English, reload or restart the browser, and confirm the app remains in English. Open a separate browser or incognito window and confirm it defaults to Spanish.
 
-- [ ] T020 [US3] Implement persistent language saving and hydration with safe error handling in `frontend/src/app/core/i18n/translation.service.ts`
-- [ ] T021 [US3] Verify per-browser scoping and storage recovery (clearing `localStorage` resets to Spanish default without errors)
+- [X] T020 [US3] Implement persistent language saving and hydration with safe error handling in `frontend/src/app/core/i18n/translation.service.ts`
+- [X] T021 [US3] Verify per-browser scoping and storage recovery (clearing `localStorage` resets to Spanish default without errors)
 
 **Checkpoint**: User Stories 1, 2, AND 3 work together — user preference persists across sessions and is isolated per browser.
 
@@ -86,9 +86,9 @@
 
 **Independent Test**: Audit all screens with dynamic placeholders (e.g. player count in lobby, round numbers in match) and verify dynamic parameters are correctly interpolated. Test missing English key and verify Spanish fallback renders.
 
-- [ ] T022 [US4] Update shared components (`frontend/src/app/shared/components/button/button.component.ts` and `frontend/src/app/shared/components/modal/modal.component.ts`) to ensure clean support for translated content and labels
-- [ ] T023 [US4] Implement and verify parameterized token replacement (`{{count}}`, `{{name}}`, `{{pts}}`) in `TranslationService` and test in lobby, shared-screen setup, and active match top bar
-- [ ] T024 [US4] Verify two-tier fallback resolution chain in `frontend/src/app/core/i18n/translation.service.ts` (Active Language → Spanish Default → Raw Key)
+- [X] T022 [US4] Update shared components (`frontend/src/app/shared/components/button/button.component.ts` and `frontend/src/app/shared/components/modal/modal.component.ts`) to ensure clean support for translated content and labels
+- [X] T023 [US4] Implement and verify parameterized token replacement (`{{count}}`, `{{name}}`, `{{pts}}`) in `TranslationService` and test in lobby, shared-screen setup, and active match top bar
+- [X] T024 [US4] Verify two-tier fallback resolution chain in `frontend/src/app/core/i18n/translation.service.ts` (Active Language → Spanish Default → Raw Key)
 
 **Checkpoint**: All 4 user stories are fully implemented, verified, and integrated.
 
@@ -98,10 +98,10 @@
 
 **Purpose**: Quality assurance, code cleanup, strict build checks, and end-to-end verification.
 
-- [ ] T025 [P] Audit all HTML templates and TypeScript files in `frontend/src/app/` for any leftover hardcoded text strings
-- [ ] T026 [P] Verify key parity between `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json` to guarantee no missing keys exist in either dictionary
-- [ ] T027 Run Angular production compilation check (`npm run build`) in `frontend` to verify strict template type checking and absence of syntax errors
-- [ ] T028 Execute full end-to-end scenario verification following all 5 test scenarios in `specs/004-i18n-translation-system/quickstart.md`
+- [X] T025 [P] Audit all HTML templates and TypeScript files in `frontend/src/app/` for any leftover hardcoded text strings
+- [X] T026 [P] Verify key parity between `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json` to guarantee no missing keys exist in either dictionary
+- [X] T027 Run Angular production compilation check (`npm run build`) in `frontend` to verify strict template type checking and absence of syntax errors
+- [X] T028 Execute full end-to-end scenario verification following all 5 test scenarios in `specs/004-i18n-translation-system/quickstart.md`
 
 ---
 

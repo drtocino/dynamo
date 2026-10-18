@@ -5,14 +5,14 @@ import { Subscription } from 'rxjs';
 import { SessionService } from '../../../core/services/session.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
 import { Session } from '../../../core/models/session.model';
-import { Player } from '../../../core/models/player.model';
 import { GameStore } from '../../../store/game.store';
 import { InputService } from '../../../core/services/input.service';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-lobby',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div *ngIf="session" class="max-w-3xl mx-auto space-y-6">
       <!-- Lobby Header Card -->
@@ -21,26 +21,26 @@ import { InputService } from '../../../core/services/input.service';
           <div>
             <div class="flex items-center gap-2 mb-2">
               <span class="neo-badge bg-neo-black text-white">
-                {{ session.gameName }}
+                {{ getGameNameKey(session.gameSlug) | translate }}
               </span>
               <span 
                 [class.bg-neo-cyan]="session.mode === 'RoomBased'"
                 [class.bg-neo-pink]="session.mode === 'SharedScreen'"
                 [class.text-white]="session.mode === 'SharedScreen'"
                 class="neo-badge text-neo-black">
-                {{ session.mode === 'RoomBased' ? 'Room-Based' : 'Shared Screen' }}
+                {{ (session.mode === 'RoomBased' ? 'hub.badgeRoomBased' : 'hub.badgeSharedScreen') | translate }}
               </span>
             </div>
-            <h1 class="text-3xl font-black text-neo-black">Match Lobby</h1>
+            <h1 class="text-3xl font-black text-neo-black">{{ 'lobby.title' | translate }}</h1>
             <p class="font-bold text-sm text-neo-black/80">
-              {{ session.rounds }} Rounds &bull; {{ session.timeLimitSeconds }}s per turn &bull; Max {{ session.maxPlayers }} players
+              {{ 'lobby.details' | translate:{ rounds: session.rounds, seconds: session.timeLimitSeconds, max: session.maxPlayers } }}
             </p>
           </div>
 
           <!-- Room Code Callout -->
           <div class="bg-white border-3 border-neo-black rounded-xl p-4 text-center min-w-[160px]">
             <span class="text-[10px] font-black uppercase tracking-widest text-neo-muted block">
-              ROOM CODE
+              {{ 'lobby.roomCode' | translate }}
             </span>
             <div class="text-3xl font-black text-neo-black tracking-widest my-1 select-all">
               {{ session.roomCode }}
@@ -48,7 +48,7 @@ import { InputService } from '../../../core/services/input.service';
             <button 
               (click)="copyCode()"
               class="text-xs font-bold text-neo-black hover:underline cursor-pointer">
-              {{ copied ? '✓ Copied!' : '📋 Copy Code' }}
+              {{ (copied ? 'lobby.copied' : 'lobby.copyCode') | translate }}
             </button>
           </div>
         </div>
@@ -60,11 +60,11 @@ import { InputService } from '../../../core/services/input.service';
           <div class="flex items-center gap-2">
             <span class="text-2xl">👥</span>
             <h2 class="text-xl font-black text-neo-black">
-              Joined Participants ({{ session.players.length }}/{{ session.maxPlayers }})
+              {{ 'lobby.joinedParticipants' | translate:{ count: session.players.length, max: session.maxPlayers } }}
             </h2>
           </div>
           <span *ngIf="session.players.length < 2" class="text-xs font-bold text-neo-muted">
-            Waiting for more players to join...
+            {{ 'lobby.waitingForPlayers' | translate }}
           </span>
         </div>
 
@@ -77,7 +77,7 @@ import { InputService } from '../../../core/services/input.service';
             <span 
               *ngIf="player.clientId === session.hostClientId" 
               class="absolute -top-2.5 -right-2 bg-neo-yellow text-neo-black text-[10px] font-black px-2 py-0.5 rounded-full border-2 border-neo-black">
-              👑 HOST
+              {{ 'lobby.hostBadge' | translate }}
             </span>
 
             <div class="w-12 h-12 rounded-full border-2 border-neo-black bg-white flex items-center justify-center text-xl mb-2 font-black">
@@ -93,7 +93,7 @@ import { InputService } from '../../../core/services/input.service';
             *ngFor="let slot of emptySlots"
             class="p-3 rounded-xl border-3 border-dashed border-neo-black/30 flex flex-col items-center justify-center text-neo-muted min-h-[104px]">
             <span class="text-xl opacity-40">👤</span>
-            <span class="text-xs font-bold mt-1 opacity-60">Open Slot</span>
+            <span class="text-xs font-bold mt-1 opacity-60">{{ 'lobby.openSlot' | translate }}</span>
           </div>
         </div>
       </div>
@@ -103,7 +103,7 @@ import { InputService } from '../../../core/services/input.service';
         <button 
           (click)="leaveMatch()" 
           class="neo-btn-secondary w-full sm:w-auto text-sm py-2.5">
-          🚪 Leave Match
+          {{ 'lobby.leaveMatch' | translate }}
         </button>
 
         <!-- Host Start Button or Waiting Banner -->
@@ -113,14 +113,14 @@ import { InputService } from '../../../core/services/input.service';
             [disabled]="session.players.length < 1 || isStarting"
             class="neo-btn-primary w-full sm:w-auto py-3 px-8 text-base font-black flex items-center justify-center gap-2">
             <span>🎮</span>
-            <span>{{ isStarting ? 'Starting...' : 'START MATCH' }}</span>
+            <span>{{ (isStarting ? 'lobby.starting' : 'lobby.startMatch') | translate }}</span>
           </button>
         </div>
 
         <ng-template #guestWaiting>
           <div class="flex items-center gap-2 font-bold text-sm text-neo-muted animate-pulse">
             <span class="w-3 h-3 rounded-full bg-neo-cyan border-2 border-neo-black"></span>
-            Waiting for host to start the game...
+            {{ 'lobby.waitingForHost' | translate }}
           </div>
         </ng-template>
       </div>
@@ -207,6 +207,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
       }, 2000);
       this.subs.push({ unsubscribe: () => clearInterval(pollInterval) } as Subscription);
     });
+  }
+
+  getGameNameKey(slug: string | undefined): string {
+    if (!slug) return 'hub.games.biblicalRoulette.name';
+    const camel = slug.replace(/-([a-z])/g, (_, g) => g.toUpperCase());
+    return `hub.games.${camel}.name`;
   }
 
   ngOnDestroy(): void {

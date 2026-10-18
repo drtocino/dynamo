@@ -11,4 +11,5 @@ public class Game : BaseEntity
     public string ThumbnailUrl { get; set; } = string.Empty;
     public List<MultiplayerMode> SupportedModes { get; set; } = new();
     public string SettingsSchemaJson { get; set; } = "{}";
+    public string Language { get; set; } = "es";
 }

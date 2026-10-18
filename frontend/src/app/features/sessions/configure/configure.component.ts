@@ -5,20 +5,21 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GameService } from '../../../core/services/game.service';
 import { SessionService } from '../../../core/services/session.service';
 import { Game, MultiplayerMode } from '../../../core/models/game.model';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-configure',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   template: `
     <div class="max-w-2xl mx-auto space-y-6">
       <!-- Back Navigation Header -->
       <div class="flex items-center justify-between">
         <a routerLink="/" class="font-bold text-sm text-neo-black hover:underline flex items-center gap-1">
-          ← Back to Games Hub
+          {{ 'configure.back' | translate }}
         </a>
         <span class="neo-badge bg-neo-yellow text-neo-black">
-          Step 1: Match Setup
+          {{ 'configure.step1' | translate }}
         </span>
       </div>
 
@@ -29,8 +30,8 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
             {{ getGameIcon(game.slug) }}
           </div>
           <div>
-            <h2 class="text-2xl font-black text-neo-black">{{ game.name }}</h2>
-            <p class="text-xs font-semibold text-neo-muted">{{ game.description }}</p>
+            <h2 class="text-2xl font-black text-neo-black">{{ getGameNameKey(game.slug) | translate }}</h2>
+            <p class="text-xs font-semibold text-neo-muted">{{ getGameDescKey(game.slug) | translate }}</p>
           </div>
         </div>
         <span 
@@ -39,32 +40,32 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
           [class.text-white]="mode === 'SharedScreen'"
           [class.text-neo-black]="mode === 'RoomBased'"
           class="neo-badge">
-          {{ mode === 'RoomBased' ? 'Room-Based' : 'Shared Screen' }}
+          {{ (mode === 'RoomBased' ? 'hub.badgeRoomBased' : 'hub.badgeSharedScreen') | translate }}
         </span>
       </div>
 
       <!-- Settings Configuration Form -->
       <div class="neo-card bg-white space-y-6">
         <h3 class="text-xl font-black text-neo-black border-b-3 border-neo-black pb-3">
-          Configure Match Settings
+          {{ 'configure.title' | translate }}
         </h3>
 
         <!-- Host Name Field -->
         <div>
           <label class="block font-black text-sm text-neo-black mb-1">
-            Host Display Name *
+            {{ 'configure.hostNameLabel' | translate }}
           </label>
           <input 
             type="text" 
             [(ngModel)]="hostName" 
-            placeholder="e.g. Pastor David, Sarah, Youth Leader"
+            [placeholder]="'configure.hostNamePlaceholder' | translate"
             class="neo-input" />
         </div>
 
         <!-- Mode Toggle if both supported -->
         <div *ngIf="game && game.supportedModes.length > 1">
           <label class="block font-black text-sm text-neo-black mb-2">
-            Multiplayer Mode
+            {{ 'configure.multiplayerMode' | translate }}
           </label>
           <div class="grid grid-cols-2 gap-3">
             <button 
@@ -73,7 +74,7 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
               [class.bg-neo-cyan]="mode === 'RoomBased'"
               [class.bg-white]="mode !== 'RoomBased'"
               class="neo-btn text-sm py-2">
-              📱 Room-Based (Separate Phones)
+              {{ 'configure.modeRoomBasedBtn' | translate }}
             </button>
             <button 
               type="button"
@@ -82,7 +83,7 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
               [class.text-white]="mode === 'SharedScreen'"
               [class.bg-white]="mode !== 'SharedScreen'"
               class="neo-btn text-sm py-2">
-              📺 Shared Screen (TV / Projector)
+              {{ 'configure.modeSharedScreenBtn' | translate }}
             </button>
           </div>
         </div>
@@ -90,9 +91,9 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
         <!-- Maximum Players -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="font-black text-sm text-neo-black">Max Players</label>
+            <label class="font-black text-sm text-neo-black">{{ 'configure.maxPlayers' | translate }}</label>
             <span class="font-black text-sm px-2 py-0.5 rounded bg-neo-gray border-2 border-neo-black">
-              {{ maxPlayers }} Players
+              {{ 'configure.playersCount' | translate:{ count: maxPlayers } }}
             </span>
           </div>
           <input 
@@ -106,9 +107,9 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
         <!-- Rounds -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="font-black text-sm text-neo-black">Rounds</label>
+            <label class="font-black text-sm text-neo-black">{{ 'configure.rounds' | translate }}</label>
             <span class="font-black text-sm px-2 py-0.5 rounded bg-neo-gray border-2 border-neo-black">
-              {{ rounds }} Rounds
+              {{ 'configure.roundsCount' | translate:{ count: rounds } }}
             </span>
           </div>
           <input 
@@ -122,9 +123,9 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
         <!-- Time Limit -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="font-black text-sm text-neo-black">Turn Time Limit</label>
+            <label class="font-black text-sm text-neo-black">{{ 'configure.turnTimeLimit' | translate }}</label>
             <span class="font-black text-sm px-2 py-0.5 rounded bg-neo-gray border-2 border-neo-black">
-              {{ timeLimitSeconds }}s
+              {{ 'configure.turnTimeLimitSeconds' | translate:{ seconds: timeLimitSeconds } }}
             </span>
           </div>
           <input 
@@ -139,15 +140,15 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
         <!-- Submit Action -->
         <div class="pt-4 border-t-3 border-neo-black flex gap-3">
           <a routerLink="/" class="neo-btn-secondary flex-1 py-3 text-center">
-            Cancel
+            {{ 'common.cancel' | translate }}
           </a>
           <button 
             type="button"
             (click)="createMatch()" 
             [disabled]="!hostName.trim() || isSubmitting"
             class="neo-btn-primary flex-1 py-3 text-center">
-            <span *ngIf="!isSubmitting">⚡ {{ mode === 'SharedScreen' ? 'Setup Local Players →' : 'Launch Match Lobby →' }}</span>
-            <span *ngIf="isSubmitting">Creating Match...</span>
+            <span *ngIf="!isSubmitting">{{ (mode === 'SharedScreen' ? 'configure.btnSetupLocal' : 'configure.btnLaunchLobby') | translate }}</span>
+            <span *ngIf="isSubmitting">{{ 'configure.btnCreating' | translate }}</span>
           </button>
         </div>
       </div>
@@ -183,6 +184,16 @@ export class ConfigureComponent implements OnInit {
     });
   }
 
+  getGameNameKey(slug: string): string {
+    const camel = slug.replace(/-([a-z])/g, (_, g) => g.toUpperCase());
+    return `hub.games.${camel}.name`;
+  }
+
+  getGameDescKey(slug: string): string {
+    const camel = slug.replace(/-([a-z])/g, (_, g) => g.toUpperCase());
+    return `hub.games.${camel}.description`;
+  }
+
   getGameIcon(slug: string): string {
     switch (slug) {
       case 'trivia-pro': return '📖';
@@ -197,14 +208,13 @@ export class ConfigureComponent implements OnInit {
     if (!this.game || !this.hostName.trim()) return;
 
     if (this.mode === 'SharedScreen') {
-      // Direct to shared screen roster setup
       this.router.navigate(['/shared-screen-setup', this.game.slug], {
         state: {
-          gameId: this.game.id,
           hostName: this.hostName.trim(),
           maxPlayers: this.maxPlayers,
           rounds: this.rounds,
-          timeLimitSeconds: this.timeLimitSeconds
+          timeLimitSeconds: this.timeLimitSeconds,
+          mode: this.mode
         }
       });
       return;
@@ -215,7 +225,7 @@ export class ConfigureComponent implements OnInit {
 
     this.sessionService.createSession({
       gameId: this.game.id,
-      mode: 'RoomBased',
+      mode: this.mode,
       hostClientId: clientId,
       maxPlayers: this.maxPlayers,
       rounds: this.rounds,
@@ -223,13 +233,18 @@ export class ConfigureComponent implements OnInit {
     }).subscribe({
       next: (session) => {
         // Also register host as player
-        this.sessionService.joinSession(session.id, this.hostName.trim()).subscribe(() => {
-          this.router.navigate(['/lobby', session.id]);
+        this.sessionService.joinSession(session.id, this.hostName.trim()).subscribe({
+          next: () => {
+            this.router.navigate(['/lobby', session.id]);
+          },
+          error: () => {
+            this.router.navigate(['/lobby', session.id]);
+          }
         });
       },
       error: (err) => {
         this.isSubmitting = false;
-        console.error('Failed to create session:', err);
+        console.error('Failed to create match session:', err);
       }
     });
   }
