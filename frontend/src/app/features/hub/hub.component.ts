@@ -30,7 +30,7 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
         </div>
 
         <!-- Comic decorative sticker -->
-        <div class="hidden md:flex absolute right-6 -bottom-4 transform rotate-12 bg-white border-4 border-neo-black rounded-2xl p-4 shadow-neo-lg text-center font-black">
+        <div class="hidden md:flex absolute right-6 -bottom-4 transform rotate-12 bg-white border-4 border-neo-black rounded-2xl p-4 text-center font-black">
           <span class="text-3xl block">⚡</span>
           <span class="text-xs uppercase tracking-widest text-neo-black">NO ACCOUNTS<br/>INSTANT PLAY</span>
         </div>
@@ -47,7 +47,7 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
           </div>
 
           <!-- Mode Filter Buttons -->
-          <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border-3 border-neo-black shadow-neo-sm">
+          <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border-3 border-neo-black">
             <button 
               (click)="selectedMode = 'ALL'"
               [class.bg-neo-black]="selectedMode === 'ALL'"
@@ -78,7 +78,7 @@ import { Game, MultiplayerMode } from '../../core/models/game.model';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div 
             *ngFor="let game of filteredGames" 
-            class="neo-card flex flex-col justify-between hover:-translate-y-1 hover:shadow-neo-lg transition-all duration-200">
+            class="neo-card flex flex-col justify-between hover:bg-neo-bg transition-colors duration-200">
             <div>
               <!-- Game Card Header Badges -->
               <div class="flex items-center justify-between gap-2 mb-4">

@@ -22,11 +22,11 @@ module.exports = {
         }
       },
       boxShadow: {
-        'neo': '4px 4px 0px #121212',
-        'neo-sm': '2px 2px 0px #121212',
-        'neo-lg': '6px 6px 0px #121212',
-        'neo-xl': '8px 8px 0px #121212',
-        'neo-hover': '1px 1px 0px #121212',
+        'neo': 'none',
+        'neo-sm': 'none',
+        'neo-lg': 'none',
+        'neo-xl': 'none',
+        'neo-hover': 'none',
       },
       borderWidth: {
         '3': '3px',

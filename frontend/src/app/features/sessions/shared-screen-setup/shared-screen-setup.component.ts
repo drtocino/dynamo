@@ -72,18 +72,71 @@ import { Game } from '../../../core/models/game.model';
         <div class="space-y-2">
           <div 
             *ngFor="let p of players; let i = index" 
-            class="p-3 bg-neo-bg border-2 border-neo-black rounded-lg flex items-center justify-between shadow-neo-sm">
-            <div class="flex items-center gap-3">
-              <span class="w-7 h-7 rounded-full bg-neo-yellow border-2 border-neo-black font-black text-xs flex items-center justify-center">
-                {{ i + 1 }}
-              </span>
-              <span class="font-black text-base text-neo-black">{{ p }}</span>
+            class="p-3 bg-neo-bg border-2 border-neo-black rounded-xl transition-all"
+            [ngClass]="{ 'ring-2 ring-neo-black bg-white': editingIndex === i }">
+            
+            <!-- Display Mode -->
+            <div *ngIf="editingIndex !== i" class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-7 h-7 rounded-full bg-neo-yellow border-2 border-neo-black font-black text-xs flex items-center justify-center shrink-0">
+                  {{ i + 1 }}
+                </span>
+                <span 
+                  class="font-black text-base text-neo-black truncate cursor-pointer hover:underline decoration-2"
+                  (click)="startEditing(i)"
+                  title="Click to edit name">
+                  {{ p }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button 
+                  type="button"
+                  (click)="startEditing(i)"
+                  class="px-2.5 py-1 text-xs font-black rounded-lg border-2 border-neo-black bg-white hover:bg-neo-yellow text-neo-black transition active:scale-95 cursor-pointer flex items-center gap-1">
+                  <span>✏️</span> Edit
+                </button>
+                <button 
+                  type="button"
+                  (click)="removePlayer(i)"
+                  class="px-2.5 py-1 text-xs font-black rounded-lg border-2 border-neo-black bg-white hover:bg-red-50 text-red-600 transition active:scale-95 cursor-pointer flex items-center gap-1">
+                  <span>✕</span> Remove
+                </button>
+              </div>
             </div>
-            <button 
-              (click)="removePlayer(i)"
-              class="text-xs font-bold text-red-600 hover:text-red-800 p-1">
-              ✕ Remove
-            </button>
+
+            <!-- Inline Edit Mode -->
+            <div *ngIf="editingIndex === i" class="space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full bg-neo-cyan border-2 border-neo-black font-black text-xs flex items-center justify-center shrink-0">
+                  {{ i + 1 }}
+                </span>
+                <input 
+                  type="text" 
+                  [(ngModel)]="editingName" 
+                  (keyup.enter)="saveEdit(i)"
+                  (keyup.escape)="cancelEdit()"
+                  maxlength="25"
+                  placeholder="Enter player name..."
+                  class="neo-input flex-1 py-1 px-3 text-sm font-black border-2 border-neo-black"
+                  autofocus />
+                <button 
+                  type="button"
+                  (click)="saveEdit(i)" 
+                  [disabled]="!editingName.trim()"
+                  class="px-3 py-1.5 text-xs font-black rounded-lg border-2 border-neo-black bg-neo-cyan hover:bg-emerald-300 text-neo-black transition active:scale-95 cursor-pointer flex items-center gap-1">
+                  <span>✓</span> Save
+                </button>
+                <button 
+                  type="button"
+                  (click)="cancelEdit()" 
+                  class="px-2.5 py-1.5 text-xs font-black rounded-lg border-2 border-neo-black bg-neo-gray hover:bg-gray-200 text-neo-muted transition active:scale-95 cursor-pointer">
+                  Cancel
+                </button>
+              </div>
+              <p *ngIf="editError" class="text-[11px] font-bold text-red-600 pl-9">
+                ⚠️ {{ editError }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -115,6 +168,10 @@ export class SharedScreenSetupComponent implements OnInit {
   players: string[] = ['Youth Team 1', 'Youth Team 2'];
   isLaunching = false;
 
+  editingIndex: number | null = null;
+  editingName: string = '';
+  editError: string = '';
+
   private configState: any = null;
 
   ngOnInit(): void {
@@ -128,17 +185,55 @@ export class SharedScreenSetupComponent implements OnInit {
 
   addPlayer(): void {
     const name = this.newPlayerName.trim();
-    if (name && !this.players.includes(name)) {
+    if (name) {
+      if (this.players.some(p => p.toLowerCase() === name.toLowerCase())) {
+        return;
+      }
       this.players.push(name);
       this.newPlayerName = '';
     }
   }
 
   removePlayer(index: number): void {
+    if (this.editingIndex === index) {
+      this.cancelEdit();
+    }
     this.players.splice(index, 1);
   }
 
+  startEditing(index: number): void {
+    this.editingIndex = index;
+    this.editingName = this.players[index];
+    this.editError = '';
+  }
+
+  saveEdit(index: number): void {
+    const trimmed = this.editingName.trim();
+    if (!trimmed) {
+      this.editError = 'Name cannot be empty';
+      return;
+    }
+    const duplicate = this.players.some((p, i) => i !== index && p.toLowerCase() === trimmed.toLowerCase());
+    if (duplicate) {
+      this.editError = 'A player with this name already exists';
+      return;
+    }
+    this.players[index] = trimmed;
+    this.editingIndex = null;
+    this.editingName = '';
+    this.editError = '';
+  }
+
+  cancelEdit(): void {
+    this.editingIndex = null;
+    this.editingName = '';
+    this.editError = '';
+  }
+
   launchMatch(): void {
+    if (this.editingIndex !== null) {
+      this.saveEdit(this.editingIndex);
+    }
     if (!this.game || this.players.length === 0) return;
     this.isLaunching = true;
 

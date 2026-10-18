@@ -43,15 +43,27 @@ public class GameHub : Hub<IGameHubClient>
                 {
                     mode = s.Mode.ToString();
                     gameSlug = s.GameSlug;
+
+                    _actorManager.RegisterPlayer(sessionId, clientId);
+                    var actor = _actorManager.GetOrCreateActor(sessionId, mode, gameSlug);
+                    if (actor is Dynamo.Application.Actors.BiblicalRouletteActor rouletteActor)
+                    {
+                        rouletteActor.InitializeMatch(s);
+                    }
+                    var snapshot = actor.GetSnapshot();
+
+                    await Clients.Caller.ReceiveStateSnapshot(snapshot);
+                    _logger.LogInformation("Client {ClientId} joined game session {SessionId}", clientId, sessionId);
+                    return;
                 }
             }
         }
 
         _actorManager.RegisterPlayer(sessionId, clientId);
-        var actor = _actorManager.GetOrCreateActor(sessionId, mode, gameSlug);
-        var snapshot = actor.GetSnapshot();
+        var defaultActor = _actorManager.GetOrCreateActor(sessionId, mode, gameSlug);
+        var defaultSnapshot = defaultActor.GetSnapshot();
 
-        await Clients.Caller.ReceiveStateSnapshot(snapshot);
+        await Clients.Caller.ReceiveStateSnapshot(defaultSnapshot);
         _logger.LogInformation("Client {ClientId} joined game session {SessionId}", clientId, sessionId);
     }
 

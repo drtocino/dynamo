@@ -38,7 +38,7 @@ import { InputService } from '../../../core/services/input.service';
           </div>
 
           <!-- Room Code Callout -->
-          <div class="bg-white border-3 border-neo-black rounded-xl p-4 shadow-neo text-center min-w-[160px]">
+          <div class="bg-white border-3 border-neo-black rounded-xl p-4 text-center min-w-[160px]">
             <span class="text-[10px] font-black uppercase tracking-widest text-neo-muted block">
               ROOM CODE
             </span>
@@ -76,11 +76,11 @@ import { InputService } from '../../../core/services/input.service';
             <!-- Host Indicator Badge -->
             <span 
               *ngIf="player.clientId === session.hostClientId" 
-              class="absolute -top-2.5 -right-2 bg-neo-yellow text-neo-black text-[10px] font-black px-2 py-0.5 rounded-full border-2 border-neo-black shadow-neo-sm">
+              class="absolute -top-2.5 -right-2 bg-neo-yellow text-neo-black text-[10px] font-black px-2 py-0.5 rounded-full border-2 border-neo-black">
               👑 HOST
             </span>
 
-            <div class="w-12 h-12 rounded-full border-2 border-neo-black bg-white flex items-center justify-center text-xl mb-2 font-black shadow-neo-sm">
+            <div class="w-12 h-12 rounded-full border-2 border-neo-black bg-white flex items-center justify-center text-xl mb-2 font-black">
               {{ getAvatarEmoji(player.name) }}
             </div>
             <span class="font-black text-sm text-neo-black truncate max-w-full">

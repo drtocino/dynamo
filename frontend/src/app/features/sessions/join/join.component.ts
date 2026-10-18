@@ -11,7 +11,7 @@ import { SessionService } from '../../../core/services/session.service';
   template: `
     <div class="max-w-md mx-auto space-y-6">
       <div class="text-center">
-        <div class="w-16 h-16 mx-auto mb-3 bg-neo-yellow border-3 border-neo-black rounded-2xl flex items-center justify-center text-3xl shadow-neo">
+        <div class="w-16 h-16 mx-auto mb-3 bg-neo-yellow border-3 border-neo-black rounded-2xl flex items-center justify-center text-3xl">
           🎟️
         </div>
         <h1 class="text-3xl font-black text-neo-black">

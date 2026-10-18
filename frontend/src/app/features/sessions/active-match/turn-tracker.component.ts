@@ -26,7 +26,7 @@ import { Player } from '../../../core/models/player.model';
       </div>
 
       <!-- Current Turn Highlight -->
-      <div class="p-4 bg-neo-yellow rounded-xl border-3 border-neo-black shadow-neo flex items-center justify-between">
+      <div class="p-4 bg-neo-yellow rounded-xl border-3 border-neo-black flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-full bg-white border-2 border-neo-black flex items-center justify-center text-2xl font-black">
             🎯

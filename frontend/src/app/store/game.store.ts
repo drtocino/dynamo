@@ -112,6 +112,7 @@ export const GameStore = signalStore(
       const newAuth: GameState = {
         ...currentAuth,
         sequenceNumber: delta.sequenceNumber,
+        sessionId: patch.SessionId ?? patch.sessionId ?? currentAuth.sessionId,
         serverTimeMs: patch.ServerTimeMs ?? patch.serverTimeMs ?? currentAuth.serverTimeMs,
         status: patch.Status ?? patch.status ?? currentAuth.status,
         players: updatedPlayers,
@@ -140,8 +141,30 @@ export const GameStore = signalStore(
       });
     },
 
+    resetState() {
+      patchState(store, {
+        authoritativeState: {
+          sequenceNumber: 0,
+          sessionId: '',
+          status: 'Lobby',
+          serverTimeMs: 0,
+          players: {},
+          payload: null
+        },
+        unacknowledgedIntents: []
+      });
+    },
+
     initSync(sessionId: string, clientId: string) {
-      patchState(store, { clientId });
+      this.resetState();
+      patchState(store, {
+        clientId,
+        authoritativeState: {
+          ...store.authoritativeState(),
+          sessionId,
+          status: 'InProgress'
+        }
+      });
       connectionService.connect(sessionId, clientId);
 
       connectionService.stateDelta$.subscribe(delta => {

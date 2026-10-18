@@ -17,7 +17,7 @@
 @layer components {
   /* Neobrutalist Core Button */
   .neo-btn {
-    @apply inline-flex items-center justify-center font-bold px-5 py-2.5 rounded-lg border-3 border-neo-black shadow-neo transition-all duration-150 active:translate-x-1 active:translate-y-1 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed select-none;
+    @apply inline-flex items-center justify-center font-bold px-5 py-2.5 rounded-lg border-3 border-neo-black transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed select-none;
   }
 
   .neo-btn-primary {
@@ -38,21 +38,21 @@
 
   /* Neobrutalist Card */
   .neo-card {
-    @apply bg-white border-3 border-neo-black rounded-xl p-6 shadow-neo;
+    @apply bg-white border-3 border-neo-black rounded-xl p-6;
   }
 
   .neo-card-interactive {
-    @apply neo-card transition-all duration-150 hover:-translate-y-1 hover:shadow-neo-lg cursor-pointer;
+    @apply neo-card transition-all duration-150 hover:bg-neo-bg cursor-pointer;
   }
 
   /* Neobrutalist Badge / Tag */
   .neo-badge {
-    @apply inline-flex items-center text-xs font-black uppercase tracking-wider px-3 py-1 rounded-md border-2 border-neo-black shadow-neo-sm;
+    @apply inline-flex items-center text-xs font-black uppercase tracking-wider px-3 py-1 rounded-md border-2 border-neo-black;
   }
 
   /* Neobrutalist Input */
   .neo-input {
-    @apply w-full px-4 py-3 bg-white border-3 border-neo-black rounded-lg font-medium text-neo-black placeholder-neo-muted shadow-neo-sm focus:outline-none focus:shadow-neo focus:border-neo-black transition-all;
+    @apply w-full px-4 py-3 bg-white border-3 border-neo-black rounded-lg font-medium text-neo-black placeholder-neo-muted focus:outline-none focus:border-neo-black transition-all;
   }
 
   /* Comic-style decorative speech bubble tail */

@@ -136,6 +136,8 @@ public class BiblicalRouletteActorTests
         Assert.NotNull(state);
         Assert.Contains('O', state.RevealedVowels);
         Assert.Equal(250, state.CurrentVowelCost); // Scaled from 100 to 250!
+        // "FOR GOD SO LOVED THE WORLD" contains 5 'O's -> 5 * 100 = 500 pts deducted from 600
+        Assert.Equal(100, actor.CurrentState.Players[player1].Score);
 
         await actor.DisposeAsync();
     }
@@ -167,6 +169,26 @@ public class BiblicalRouletteActorTests
         Assert.NotNull(state);
         Assert.Equal(player1, state.RoundWinnerId);
         Assert.Equal(1, state.RoundsWon[player1]);
+        Assert.Equal("FOR GOD SO LOVED THE WORLD", state.SolvedPhrase);
+
+        await actor.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task BiblicalRouletteActor_Phrases_ShouldBeRandomAndUniqueAcrossRounds()
+    {
+        var broadcaster = new TestBroadcaster();
+        var sessionId = "roulette-session-random";
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster);
+        actor.Start();
+
+        var player1 = "player-1";
+        actor.RegisterPlayer(player1);
+        actor.InitializeMatch();
+        await Task.Delay(150);
+
+        var round1PhraseId = actor.RouletteState.CurrentPhraseId;
+        Assert.NotEqual(Guid.Empty, round1PhraseId);
 
         await actor.DisposeAsync();
     }

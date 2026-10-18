@@ -1,73 +1,86 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { ButtonComponent } from '../../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-vowel-store-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ModalComponent, ButtonComponent],
   template: `
-    <div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neo-black/60 backdrop-blur-sm animate-fade-in">
-      <div class="relative w-full max-w-md bg-white rounded-2xl border-4 border-neo-black shadow-neo p-6 space-y-6">
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between border-b-3 border-neo-black pb-4">
-          <div class="flex items-center gap-2">
-            <span class="text-3xl">🔤</span>
-            <div>
-              <h2 class="text-2xl font-black text-neo-black">Vowel Store</h2>
-              <p class="text-xs font-bold text-neo-muted">Buy a vowel for your current turn</p>
-            </div>
-          </div>
-          <button 
-            (click)="close.emit()"
-            class="w-8 h-8 rounded-full border-2 border-neo-black bg-neo-pink text-white font-black hover:bg-red-600 transition flex items-center justify-center text-sm shadow-neo-sm">
-            ✕
-          </button>
+    <app-modal 
+      modalId="vowelStore"
+      [isOpen]="isOpen"
+      title="Vowel Store"
+      subtitle="Select and confirm a vowel for your current turn"
+      icon="🔤"
+      (close)="handleClose()">
+      
+      <!-- Pricing & Balance Banner -->
+      <div class="flex items-center justify-between p-3 bg-neo-bg rounded-xl border-2 border-neo-black">
+        <div>
+          <span class="text-xs font-black uppercase text-neo-muted block">Base Price</span>
+          <span class="text-lg font-black text-neo-pink">{{ vowelCost }} pts / letter</span>
         </div>
-
-        <!-- Pricing & Balance Banner -->
-        <div class="flex items-center justify-between p-3 bg-neo-bg rounded-xl border-2 border-neo-black">
-          <div>
-            <span class="text-xs font-black uppercase text-neo-muted block">Current Price</span>
-            <span class="text-lg font-black text-neo-pink">{{ vowelCost }} pts</span>
-          </div>
-          <div class="text-right">
-            <span class="text-xs font-black uppercase text-neo-muted block">Your Points</span>
-            <span class="text-lg font-black text-neo-black">{{ playerPoints }} pts</span>
-          </div>
+        <div class="text-right">
+          <span class="text-xs font-black uppercase text-neo-muted block">Your Points</span>
+          <span class="text-lg font-black text-neo-black">{{ playerPoints }} pts</span>
         </div>
+      </div>
 
-        <!-- Vowel Selection Tiles -->
-        <div class="grid grid-cols-5 gap-3">
+      <!-- Vowel Selection Tiles -->
+      <div class="space-y-1.5">
+        <div class="grid grid-cols-5 gap-2 sm:gap-2.5">
           <button
             *ngFor="let vowel of vowels"
             [disabled]="isPurchased(vowel) || playerPoints < vowelCost"
             (click)="selectVowel(vowel)"
-            class="h-16 rounded-xl border-3 border-neo-black font-black text-2xl flex flex-col items-center justify-center transition transform active:translate-y-1 shadow-neo-sm"
+            class="h-14 sm:h-16 rounded-xl border-3 border-neo-black font-black text-xl sm:text-2xl flex flex-col items-center justify-center transition active:scale-95 shadow-none"
             [ngClass]="{
-              'bg-neo-yellow hover:bg-yellow-300 text-neo-black hover:-translate-y-0.5 cursor-pointer': !isPurchased(vowel) && playerPoints >= vowelCost,
+              'bg-neo-pink text-white ring-2 ring-neo-black cursor-pointer': selectedVowel === vowel,
+              'bg-white hover:bg-neo-yellow text-neo-black cursor-pointer': selectedVowel !== vowel && !isPurchased(vowel) && playerPoints >= vowelCost,
               'bg-neo-gray text-neo-muted opacity-40 cursor-not-allowed': isPurchased(vowel) || playerPoints < vowelCost
             }">
             <span>{{ vowel }}</span>
-            <span class="text-[10px] font-bold" *ngIf="isPurchased(vowel)">SOLD</span>
+            <span class="text-[9px] font-bold" *ngIf="isPurchased(vowel)">SOLD</span>
+            <span class="text-[9px] font-bold text-white uppercase" *ngIf="selectedVowel === vowel">READY</span>
           </button>
         </div>
 
-        <!-- Notice -->
-        <p class="text-xs font-bold text-center text-neo-muted">
-          ⚠️ Price scales with each purchase: 100 → 250 → 500 → 1,000 pts. Limit 1 vowel per turn.
-        </p>
-
-        <!-- Cancel Button -->
-        <button 
-          (click)="close.emit()"
-          class="w-full neo-btn-secondary py-2.5 text-sm font-black">
-          Cancel & Return to Game
-        </button>
+        <div class="text-[11px] font-bold text-center text-neo-muted">
+          <span *ngIf="selectedVowel" class="text-neo-black font-black">
+            Selected '{{ selectedVowel }}' · Tap Confirm below to purchase
+          </span>
+          <span *ngIf="!selectedVowel">
+            Tap a vowel to select it, then confirm purchase
+          </span>
+        </div>
       </div>
-    </div>
+
+      <!-- Pricing Notice -->
+      <p class="text-[11px] font-bold text-center text-neo-muted">
+        ⚠️ Total cost is multiplied by the count of letters found in the phrase ({{ vowelCost }} pts per letter). Base price scales: 100 → 250 → 500 → 1,000 pts.
+      </p>
+
+      <!-- Confirmation and Cancel Actions (Reduced spacing) -->
+      <div class="space-y-1.5 flex flex-col pt-1.5 border-t border-neo-black/10">
+        <app-button 
+          variant="yellow"
+          [disabled]="!selectedVowel || isPurchased(selectedVowel) || playerPoints < vowelCost"
+          (onClick)="confirmPurchase()">
+          <span>Confirm Purchase {{ selectedVowel ? "('" + selectedVowel + "')" : '' }} ({{ vowelCost }} pts/letter)</span>
+        </app-button>
+
+        <app-button 
+          variant="secondary"
+          (onClick)="handleClose()">
+          Cancel & Return to Game
+        </app-button>
+      </div>
+    </app-modal>
   `
 })
-export class VowelStoreModalComponent {
+export class VowelStoreModalComponent implements OnChanges {
   @Input() isOpen: boolean = false;
   @Input() vowelCost: number = 100;
   @Input() playerPoints: number = 0;
@@ -77,14 +90,32 @@ export class VowelStoreModalComponent {
   @Output() close = new EventEmitter<void>();
 
   vowels: string[] = ['A', 'E', 'I', 'O', 'U'];
+  selectedVowel: string | null = null;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen'] && !this.isOpen) {
+      this.selectedVowel = null;
+    }
+  }
 
   isPurchased(vowel: string): boolean {
     return this.revealedVowels.includes(vowel);
   }
 
   selectVowel(vowel: string): void {
-    if (!this.isPurchased(vowel) && this.playerPoints >= this.vowelCost) {
-      this.vowelSelected.emit(vowel);
+    if (this.isPurchased(vowel) || this.playerPoints < this.vowelCost) return;
+    this.selectedVowel = this.selectedVowel === vowel ? null : vowel;
+  }
+
+  confirmPurchase(): void {
+    if (this.selectedVowel && !this.isPurchased(this.selectedVowel) && this.playerPoints >= this.vowelCost) {
+      this.vowelSelected.emit(this.selectedVowel);
+      this.selectedVowel = null;
     }
+  }
+
+  handleClose(): void {
+    this.selectedVowel = null;
+    this.close.emit();
   }
 }

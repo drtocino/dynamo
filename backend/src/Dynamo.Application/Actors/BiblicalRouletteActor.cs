@@ -46,6 +46,8 @@ public class BiblicalRouletteActor : SessionActor
     private string _hostClientId = string.Empty;
     private readonly Dictionary<string, string> _playerNames = new();
     private readonly Dictionary<string, string> _playerClientIds = new();
+    private readonly HashSet<Guid> _usedPhraseIds = new();
+    private Session? _session;
 
     public BiblicalRouletteState RouletteState => _rouletteState;
 
@@ -85,6 +87,17 @@ public class BiblicalRouletteActor : SessionActor
     {
         lock (_stateLock)
         {
+            _state.Status = "InProgress";
+            _usedPhraseIds.Clear();
+            if (session != null)
+            {
+                _session = session;
+            }
+            else if (_session != null)
+            {
+                session = _session;
+            }
+
             if (session != null)
             {
                 _isSharedScreen = session.Mode == MultiplayerMode.SharedScreen;
@@ -121,6 +134,13 @@ public class BiblicalRouletteActor : SessionActor
     private void StartRound(int roundIndex)
     {
         _rouletteState.CurrentRoundIndex = roundIndex;
+        if (roundIndex == 1)
+        {
+            _rouletteState.RoundWinnerId = null;
+            _rouletteState.OverallWinnerId = null;
+            _rouletteState.SolvedPhrase = string.Empty;
+            _usedPhraseIds.Clear();
+        }
         _rouletteState.RevealedConsonants.Clear();
         _rouletteState.RevealedVowels.Clear();
         _rouletteState.HintRevealed = false;
@@ -130,9 +150,20 @@ public class BiblicalRouletteActor : SessionActor
         _rouletteState.LastRevealedCount = 0;
         _rouletteState.LastPointsEarned = 0;
 
-        // Pick phrase for this round
-        var phraseIndex = (roundIndex - 1) % _phraseCatalog.Count;
-        _currentPhrase = _phraseCatalog[phraseIndex];
+        // Pick phrase randomly for this round without repeating phrases in the match
+        var availablePhrases = _phraseCatalog.Where(p => !_usedPhraseIds.Contains(p.Id)).ToList();
+        if (availablePhrases.Count == 0)
+        {
+            _usedPhraseIds.Clear();
+            availablePhrases = _phraseCatalog.ToList();
+        }
+
+        int phraseIndex = availablePhrases.Count > 1 
+            ? RandomNumberGenerator.GetInt32(availablePhrases.Count) 
+            : 0;
+
+        _currentPhrase = availablePhrases[phraseIndex];
+        _usedPhraseIds.Add(_currentPhrase.Id);
         _rouletteState.CurrentPhraseId = _currentPhrase.Id;
         _rouletteState.GeneralHint = _currentPhrase.GeneralHint;
         _rouletteState.SpecificHint = _currentPhrase.SpecificHint;
@@ -159,6 +190,11 @@ public class BiblicalRouletteActor : SessionActor
             ? pName
             : _rouletteState.CurrentTurnPlayerId;
         _rouletteState.PlayerNames = new Dictionary<string, string>(_playerNames);
+
+        if (_session != null && Guid.TryParse(_rouletteState.CurrentTurnPlayerId, out var activeGuid))
+        {
+            _session.ActivePlayerId = activeGuid;
+        }
     }
 
     protected override void ApplyIntent(PlayerIntent intent)
@@ -246,6 +282,8 @@ public class BiblicalRouletteActor : SessionActor
             return;
         }
 
+        _rouletteState.RoundWinnerId = null;
+        _rouletteState.SolvedPhrase = string.Empty;
         _rouletteState.StagedConsonant = letter;
         _rouletteState.TurnStep = "AwaitingSpin";
     }
@@ -254,6 +292,9 @@ public class BiblicalRouletteActor : SessionActor
     {
         if (!IsTurnAuthorized(clientId)) return;
         if (_rouletteState.TurnStep != "AwaitingSpin" && _rouletteState.TurnStep != "SelectConsonantOrBuy") return;
+
+        _rouletteState.RoundWinnerId = null;
+        _rouletteState.SolvedPhrase = string.Empty;
 
         // If payload contains consonant letter, stage it
         if (!_rouletteState.StagedConsonant.HasValue && payload != null)
@@ -354,6 +395,9 @@ public class BiblicalRouletteActor : SessionActor
         if (!IsTurnAuthorized(clientId)) return;
         if (_rouletteState.TurnStep != "SelectConsonantOrBuy" && _rouletteState.TurnStep != "AwaitingSpin") return;
 
+        _rouletteState.RoundWinnerId = null;
+        _rouletteState.SolvedPhrase = string.Empty;
+
         char? guessedChar = ExtractChar(payload);
         if (!guessedChar.HasValue) return;
 
@@ -363,8 +407,15 @@ public class BiblicalRouletteActor : SessionActor
         var turnPlayer = GetCurrentTurnPlayerState();
         if (turnPlayer.Score < _rouletteState.CurrentVowelCost) return;
 
-        // Deduct score
-        turnPlayer.Score -= _rouletteState.CurrentVowelCost;
+        string textUpper = _currentPhrase.Text.ToUpperInvariant();
+        int count = textUpper.Count(c => c == vowel);
+        bool found = count > 0;
+
+        // Multiply vowel purchase price by the count of letters found in the phrase
+        int totalCost = _rouletteState.CurrentVowelCost * count;
+        turnPlayer.Score = Math.Max(0, turnPlayer.Score - totalCost);
+        _rouletteState.LastRevealedCount = count;
+        _rouletteState.LastPointsEarned = totalCost;
 
         // Advance vowel tier: 100 -> 250 -> 500 -> 1000
         int currentTierIndex = Array.IndexOf(VowelPriceTiers, _rouletteState.CurrentVowelCost);
@@ -380,9 +431,6 @@ public class BiblicalRouletteActor : SessionActor
 
         _rouletteState.StagedConsonant = null;
         UpdateMaskedPhrase();
-
-        string textUpper = _currentPhrase.Text.ToUpperInvariant();
-        bool found = textUpper.Contains(vowel);
 
         if (IsPhraseFullyRevealed())
         {
@@ -402,6 +450,9 @@ public class BiblicalRouletteActor : SessionActor
     {
         if (!IsTurnAuthorized(clientId)) return;
         if (_rouletteState.HintRevealed) return;
+
+        _rouletteState.RoundWinnerId = null;
+        _rouletteState.SolvedPhrase = string.Empty;
 
         var turnPlayer = GetCurrentTurnPlayerState();
         if (turnPlayer.Score < 500) return;
@@ -423,7 +474,8 @@ public class BiblicalRouletteActor : SessionActor
         if (string.Equals(cleanActual, cleanGuess, StringComparison.OrdinalIgnoreCase))
         {
             RevealAllLetters();
-            AwardRoundWin(turnPlayer.ClientId);
+            var winnerId = !string.IsNullOrEmpty(turnPlayer.ClientId) ? turnPlayer.ClientId : clientId;
+            AwardRoundWin(winnerId);
         }
         else
         {
@@ -433,6 +485,8 @@ public class BiblicalRouletteActor : SessionActor
 
     private void AwardRoundWin(string playerId)
     {
+        _rouletteState.SolvedPhrase = _currentPhrase.Text;
+        RevealAllLetters();
         _rouletteState.RoundWinnerId = playerId;
         if (!_rouletteState.RoundsWon.ContainsKey(playerId))
         {
@@ -475,6 +529,11 @@ public class BiblicalRouletteActor : SessionActor
         _rouletteState.CurrentTurnPlayerName = _playerNames.TryGetValue(_rouletteState.CurrentTurnPlayerId, out var name)
             ? name
             : _rouletteState.CurrentTurnPlayerId;
+
+        if (_session != null && Guid.TryParse(_rouletteState.CurrentTurnPlayerId, out var activeGuid))
+        {
+            _session.ActivePlayerId = activeGuid;
+        }
     }
 
     private void UpdateMaskedPhrase()
@@ -581,6 +640,55 @@ public class BiblicalRouletteActor : SessionActor
                 Text = "I CAN DO ALL THINGS THROUGH CHRIST",
                 GeneralHint = "Pauline Epistle",
                 SpecificHint = "Philippians 4:13 - Written from prison"
+            },
+            new()
+            {
+                Id = Guid.Parse("d4444444-4444-4444-4444-444444444444"),
+                Text = "IN THE BEGINNING GOD CREATED",
+                GeneralHint = "Book of Genesis",
+                SpecificHint = "Genesis 1:1 - Creation of heavens and earth"
+            },
+            new()
+            {
+                Id = Guid.Parse("e5555555-5555-5555-5555-555555555555"),
+                Text = "THY WORD IS A LAMP UNTO MY FEET",
+                GeneralHint = "Book of Psalms",
+                SpecificHint = "Psalm 119:105 - A light unto my path"
+            },
+            new()
+            {
+                Id = Guid.Parse("f6666666-6666-6666-6666-666666666666"),
+                Text = "LOVE IS PATIENT LOVE IS KIND",
+                GeneralHint = "First Corinthians",
+                SpecificHint = "1 Corinthians 13:4 - The love chapter"
+            },
+            new()
+            {
+                Id = Guid.Parse("a7777777-7777-7777-7777-777777777777"),
+                Text = "THE TRUTH SHALL SET YOU FREE",
+                GeneralHint = "Gospel of John",
+                SpecificHint = "John 8:32 - Discipleship and truth"
+            },
+            new()
+            {
+                Id = Guid.Parse("b8888888-8888-8888-8888-888888888888"),
+                Text = "BE STRONG AND COURAGEOUS",
+                GeneralHint = "Book of Joshua",
+                SpecificHint = "Joshua 1:9 - Do not be afraid or discouraged"
+            },
+            new()
+            {
+                Id = Guid.Parse("c9999999-9999-9999-9999-999999999999"),
+                Text = "FAITH HOPE AND LOVE",
+                GeneralHint = "First Corinthians",
+                SpecificHint = "1 Corinthians 13:13 - The greatest of these is love"
+            },
+            new()
+            {
+                Id = Guid.Parse("daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                Text = "TRUST IN THE LORD WITH ALL THINE HEART",
+                GeneralHint = "Book of Proverbs",
+                SpecificHint = "Proverbs 3:5 - Lean not on your own understanding"
             }
         };
     }

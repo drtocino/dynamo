@@ -6,41 +6,39 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="neo-card bg-white p-6 space-y-5 border-3 border-neo-black shadow-neo">
-      <!-- Hints Section -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-neo-bg rounded-xl border-2 border-neo-black">
+    <div class="neo-card bg-white p-0 border-3 border-neo-black rounded-2xl overflow-hidden flex flex-col justify-between h-full select-none shadow-none">
+      <!-- Integrated Hints Header: Same height as revealed letters component -->
+      <div class="w-full bg-neo-yellow border-b-3 border-neo-black px-4 py-2 min-h-[42px] flex items-center justify-between gap-2.5">
         <div class="flex items-center gap-2">
-          <span class="text-xl">📜</span>
-          <div>
-            <span class="text-xs font-black uppercase text-neo-muted">General Hint</span>
-            <p class="font-extrabold text-sm text-neo-black">{{ generalHint || 'Biblical Verse' }}</p>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-xs font-black uppercase text-neo-black/70">Category:</span>
+            <span class="font-black text-sm text-neo-black uppercase tracking-tight">{{ generalHint || 'Biblical Verse' }}</span>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
-          <span class="text-xl">💡</span>
-          <div *ngIf="hintRevealed; else hintLocked">
-            <span class="text-xs font-black uppercase text-neo-pink">Specific Hint Unlocked</span>
-            <p class="font-extrabold text-sm text-neo-black">{{ specificHint }}</p>
+          <div *ngIf="hintRevealed; else hintLocked" class="flex items-center gap-1.5">
+            <span class="text-xs font-black uppercase text-neo-pink">Hint:</span>
+            <span class="font-extrabold text-sm text-neo-black">{{ specificHint }}</span>
           </div>
           <ng-template #hintLocked>
-            <div class="text-right">
-              <span class="text-xs font-black uppercase text-neo-muted">Specific Hint</span>
-              <p class="text-xs font-bold text-neo-muted italic">🔒 Locked (Buy for 500 pts)</p>
+            <div class="flex items-center gap-1 text-xs font-bold text-neo-black/70">
+              <span class="uppercase font-black">Specific Clue:</span>
+              <span class="italic font-bold">🔒 Locked (Buy for 500 pts)</span>
             </div>
           </ng-template>
         </div>
       </div>
 
-      <!-- Phrase Tiles Display Grid -->
-      <div class="flex flex-wrap justify-center gap-y-4 gap-x-2 py-4 select-none min-h-[120px] items-center">
+      <!-- Phrase Tiles Display Grid: Reduced padding -->
+      <div class="flex-1 p-2.5 sm:p-3.5 flex flex-wrap justify-center gap-y-2.5 gap-x-1.5 min-h-[140px] items-center">
         <ng-container *ngFor="let word of words">
-          <div class="flex gap-1.5 mx-2">
+          <div class="flex gap-1 sm:gap-1.5 mx-1">
             <div 
               *ngFor="let char of word" 
-              class="w-10 h-12 sm:w-12 sm:h-14 rounded-lg flex items-center justify-center font-black text-xl sm:text-2xl border-3 border-neo-black transition-all duration-200 transform"
+              class="w-9 h-11 sm:w-11 sm:h-13 rounded-lg flex items-center justify-center font-black text-lg sm:text-xl border-3 border-neo-black transition-all duration-200 transform"
               [ngClass]="{
-                'bg-neo-yellow text-neo-black shadow-neo-sm scale-105': char !== '_',
+                'bg-neo-yellow text-neo-black scale-105 shadow-none': char !== '_',
                 'bg-neo-bg text-transparent border-dashed': char === '_'
               }">
               <span>{{ char === '_' ? '•' : char }}</span>
@@ -49,14 +47,14 @@ import { CommonModule } from '@angular/common';
         </ng-container>
       </div>
 
-      <!-- Letter Statistics Badges -->
-      <div class="flex flex-wrap items-center justify-center gap-4 pt-3 border-t-2 border-neo-black text-xs font-bold">
+      <!-- Letter Statistics Badges: Same height as hint component (min-h-[42px] py-2 px-4) -->
+      <div class="flex flex-wrap items-center justify-center gap-3 py-2 px-4 border-t-3 border-neo-black bg-neo-bg text-xs font-bold min-h-[42px]">
         <div class="flex items-center gap-1.5">
           <span class="font-black uppercase text-neo-muted">Revealed Consonants:</span>
           <span *ngIf="revealedConsonants.length === 0" class="text-neo-muted italic">None yet</span>
           <span 
             *ngFor="let c of revealedConsonants" 
-            class="px-2 py-0.5 bg-neo-cyan text-neo-black rounded font-black border border-neo-black">
+            class="px-1.5 py-0.5 bg-neo-cyan text-neo-black rounded font-black border border-neo-black">
             {{ c }}
           </span>
         </div>
@@ -66,7 +64,7 @@ import { CommonModule } from '@angular/common';
           <span *ngIf="revealedVowels.length === 0" class="text-neo-muted italic">None yet</span>
           <span 
             *ngFor="let v of revealedVowels" 
-            class="px-2 py-0.5 bg-neo-pink text-white rounded font-black border border-neo-black">
+            class="px-1.5 py-0.5 bg-neo-pink text-white rounded font-black border border-neo-black">
             {{ v }}
           </span>
         </div>

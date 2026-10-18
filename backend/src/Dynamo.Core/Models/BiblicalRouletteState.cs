@@ -73,6 +73,9 @@ public class BiblicalRouletteState
     [JsonPropertyName("overallWinnerId")]
     public string? OverallWinnerId { get; set; }
 
+    [JsonPropertyName("solvedPhrase")]
+    public string SolvedPhrase { get; set; } = string.Empty;
+
     [JsonPropertyName("roundsWon")]
     public Dictionary<string, int> RoundsWon { get; set; } = new();
 }

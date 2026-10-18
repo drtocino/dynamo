@@ -25,7 +25,7 @@ import { Game, MultiplayerMode } from '../../../core/models/game.model';
       <!-- Game Summary Card -->
       <div *ngIf="game" class="neo-card bg-white flex items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-          <div class="w-14 h-14 bg-neo-yellow border-3 border-neo-black rounded-xl flex items-center justify-center text-3xl shadow-neo-sm">
+          <div class="w-14 h-14 bg-neo-yellow border-3 border-neo-black rounded-xl flex items-center justify-center text-3xl">
             {{ getGameIcon(game.slug) }}
           </div>
           <div>

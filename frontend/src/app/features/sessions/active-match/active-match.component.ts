@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -16,36 +16,40 @@ import { BiblicalRouletteComponent } from './biblical-roulette/biblical-roulette
   standalone: true,
   imports: [CommonModule, TurnTrackerComponent, BiblicalRouletteComponent],
   template: `
-    <div *ngIf="session" class="max-w-4xl mx-auto space-y-6">
-      <!-- Active Match Header Banner -->
-      <div class="neo-card bg-neo-cyan text-neo-black flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div class="flex items-center gap-2 mb-1">
-            <span class="neo-badge bg-neo-black text-white">LIVE MATCH</span>
-            <span class="text-xs font-black uppercase tracking-wider">Room: {{ session.roomCode }}</span>
-          </div>
-          <h1 class="text-3xl font-black">{{ session.gameName }}</h1>
+    <div *ngIf="session" class="w-full flex flex-col">
+      <!-- Active Match Top Bar (No top distance, reduced height, same elements) -->
+      <header class="w-full bg-white border-b-3 border-neo-black px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2 shadow-none select-none shrink-0 sticky top-0 z-40">
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <span class="px-2 py-0.5 rounded bg-neo-black text-white font-black text-xs uppercase tracking-wider">LIVE</span>
+          <h1 class="text-sm sm:text-base font-black text-neo-black flex items-center gap-1.5 leading-none">
+            <span>⚡</span> {{ session.gameName }}
+          </h1>
+          <span class="text-xs font-bold text-neo-muted">
+            Room: <b class="text-neo-black font-mono uppercase">{{ session.roomCode }}</b>
+          </span>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto">
+        <div class="flex items-center gap-2">
           <button 
             (click)="returnToLobby()"
-            class="neo-btn-primary bg-white hover:bg-neo-gray text-neo-black text-xs py-2 px-4">
-            🔄 Return to Lobby
+            class="neo-btn-secondary text-xs py-1 px-2.5 font-black">
+            🔄 Lobby
           </button>
           <button 
             (click)="exitToHub()"
-            class="neo-btn-secondary text-xs py-2 px-3">
-            ✕ Exit Match
+            class="neo-btn-secondary text-xs py-1 px-2.5 font-black text-red-600 hover:text-red-700">
+            ✕ Exit
           </button>
         </div>
-      </div>
+      </header>
 
-      <!-- Biblical Roulette Mode Container -->
-      <app-biblical-roulette 
-        *ngIf="session.gameSlug === 'biblical-roulette' || session.mode === 'BiblicalRoulette'; else genericGameView"
-        [session]="session">
-      </app-biblical-roulette>
+      <!-- Match Content Container -->
+      <div class="w-full px-2 sm:px-4 pt-2.5 pb-4 space-y-3">
+        <!-- Biblical Roulette Mode Container -->
+        <app-biblical-roulette 
+          *ngIf="session.gameSlug === 'biblical-roulette' || session.mode === 'BiblicalRoulette'; else genericGameView"
+          [session]="session">
+        </app-biblical-roulette>
 
       <!-- Generic Game Sandbox Display Container -->
       <ng-template #genericGameView>
@@ -61,7 +65,7 @@ import { BiblicalRouletteComponent } from './biblical-roulette/biblical-roulette
         </app-turn-tracker>
 
         <div class="neo-card bg-white p-8 text-center space-y-6">
-          <div class="inline-block p-4 bg-neo-bg rounded-2xl border-3 border-neo-black shadow-neo">
+          <div class="inline-block p-4 bg-neo-bg rounded-2xl border-3 border-neo-black">
             <span class="text-5xl block mb-2">{{ getMockGameIcon() }}</span>
             <h2 class="text-2xl font-black text-neo-black">{{ getMockGamePromptTitle() }}</h2>
             <p class="font-bold text-sm text-neo-muted max-w-md mx-auto mt-2">
@@ -73,12 +77,12 @@ import { BiblicalRouletteComponent } from './biblical-roulette/biblical-roulette
           <div class="flex flex-wrap justify-center gap-4 py-4">
             <button 
               (click)="handleBuzz()"
-              class="neo-btn-primary bg-neo-yellow text-neo-black text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
+              class="neo-btn-primary bg-neo-yellow text-neo-black text-sm py-3 px-6 hover:translate-y-0.5 transition-transform flex items-center gap-2">
               <span>⚡</span> Buzz In (+10 pts)
             </button>
             <button 
               (click)="handleAnswer()"
-              class="neo-btn-primary bg-neo-pink text-white text-sm py-3 px-6 shadow-neo-sm hover:translate-y-0.5 transition-transform flex items-center gap-2">
+              class="neo-btn-primary bg-neo-pink text-white text-sm py-3 px-6 hover:translate-y-0.5 transition-transform flex items-center gap-2">
               <span>🎯</span> Submit Answer (+20 pts)
             </button>
           </div>
@@ -105,6 +109,7 @@ import { BiblicalRouletteComponent } from './biblical-roulette/biblical-roulette
           </div>
         </div>
       </ng-template>
+      </div>
     </div>
   `
 })
@@ -119,6 +124,17 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
   session: Session | undefined;
   currentRound: number = 1;
   private subs: Subscription[] = [];
+
+  constructor() {
+    effect(() => {
+      const payload = this.gameStore.effectiveState().payload as any;
+      if (payload?.currentTurnPlayerId && this.session) {
+        if (this.session.activePlayerId !== payload.currentTurnPlayerId) {
+          this.session.activePlayerId = payload.currentTurnPlayerId;
+        }
+      }
+    });
+  }
 
   get isHost(): boolean {
     if (!this.session) return false;
@@ -176,8 +192,10 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
         this.realtime.stateChanged$.subscribe(state => {
           const stateStr = typeof state === 'string' ? state : (state as any)?.state;
           if (stateStr === 'Lobby' && this.session) {
+            this.gameStore.resetState();
             this.router.navigate(['/lobby', this.session.id]);
           } else if (stateStr === 'Ended') {
+            this.gameStore.resetState();
             this.router.navigate(['/']);
           }
         })
@@ -191,8 +209,10 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
             this.session.players = refreshed.players;
             this.session.state = refreshed.state;
             if (refreshed.state === 'Lobby') {
+              this.gameStore.resetState();
               this.router.navigate(['/lobby', refreshed.id]);
             } else if (refreshed.state === 'Ended') {
+              this.gameStore.resetState();
               this.router.navigate(['/']);
             }
           }
@@ -204,6 +224,7 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
+    this.gameStore.resetState();
   }
 
   handleAdvanceTurn(): void {
@@ -217,6 +238,7 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
 
   returnToLobby(): void {
     if (!this.session) return;
+    this.gameStore.resetState();
     // FR-021: return to lobby for a rematch
     this.sessionService.changeState(this.session.id, 'Lobby').subscribe(() => {
       this.router.navigate(['/lobby', this.session!.id]);
@@ -224,6 +246,7 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
   }
 
   exitToHub(): void {
+    this.gameStore.resetState();
     this.router.navigate(['/']);
   }
 

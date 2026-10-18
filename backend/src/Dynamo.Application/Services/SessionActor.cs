@@ -139,6 +139,7 @@ public class SessionActor : IAsyncDisposable
                         SequenceNumber = _state.SequenceNumber,
                         Patch = new
                         {
+                            SessionId = _state.SessionId,
                             ServerTimeMs = _state.ServerTimeMs,
                             Status = _state.Status,
                             Players = _state.Players,
