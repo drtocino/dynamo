@@ -137,7 +137,7 @@
   "game.biblicalRoulette.spinWithLetter": "Girar ({{letter}})",
   "game.biblicalRoulette.vowel": "Vocal",
   "game.biblicalRoulette.hint": "Pista",
-  "game.biblicalRoulette.solveVerse": "Resolver Versículo",
+  "game.biblicalRoulette.solveVerse": "Resolver",
   "game.biblicalRoulette.actionsDynamic": "Las acciones actualizan el turno dinámicamente",
   "game.biblicalRoulette.consonants": "Consonantes",
   "game.biblicalRoulette.selectedLetter": "Seleccionada: '{{letter}}' ➡️ ¡Presiona Girar a la izquierda!",

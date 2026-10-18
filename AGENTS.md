@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/004-i18n-translation-system/plan.md
+at specs/005-card-qa-game/plan.md
 <!-- SPECKIT END -->
