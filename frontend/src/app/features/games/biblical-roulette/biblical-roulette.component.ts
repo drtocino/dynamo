@@ -1,16 +1,16 @@
 import { Component, Input, OnDestroy, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GameStore } from '../../../../store/game.store';
-import { InputService } from '../../../../core/services/input.service';
-import { SessionService } from '../../../../core/services/session.service';
-import { ModalService } from '../../../../core/services/modal.service';
-import { Session } from '../../../../core/models/session.model';
+import { GameStore } from '../../../store/game.store';
+import { InputService } from '../../../core/services/input.service';
+import { SessionService } from '../../../core/services/session.service';
+import { ModalService } from '../../../core/services/modal.service';
+import { Session } from '../../../core/models/session.model';
 import { PhraseBoardComponent } from './phrase-board/phrase-board.component';
 import { RouletteWheelComponent } from './roulette-wheel/roulette-wheel.component';
 import { VowelStoreModalComponent } from './vowel-store-modal/vowel-store-modal.component';
-import { ModalComponent } from '../../../../shared/components/modal/modal.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 export interface BiblicalRouletteState {
   currentRoundIndex: number;

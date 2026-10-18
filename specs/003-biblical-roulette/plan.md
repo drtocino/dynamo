@@ -73,13 +73,17 @@ frontend/
 ├── src/
 │   ├── app/
 │   │   └── features/
-│   │       └── sessions/
-│   │           └── active-match/
-│   │               ├── biblical-roulette/
-│   │               │   ├── roulette-wheel/
-│   │               │   ├── vowel-store-modal/
-│   │               │   ├── phrase-board/
-│   │               │   └── biblical-roulette.component.ts
+│   │       ├── sessions/
+│   │       │   └── active-match/
+│   │       │       ├── active-match.component.ts
+│   │       │       └── turn-tracker.component.ts
+│   │       └── games/
+│   │           └── biblical-roulette/
+│   │               ├── roulette-wheel/
+│   │               ├── vowel-store-modal/
+│   │               ├── phrase-board/
+│   │               ├── index.ts
+│   │               └── biblical-roulette.component.ts
 │   └── styles.scss
 └── tests/
 ```

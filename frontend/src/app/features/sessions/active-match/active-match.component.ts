@@ -9,7 +9,7 @@ import { Player } from '../../../core/models/player.model';
 import { TurnTrackerComponent } from './turn-tracker.component';
 import { GameStore } from '../../../store/game.store';
 import { InputService } from '../../../core/services/input.service';
-import { BiblicalRouletteComponent } from './biblical-roulette/biblical-roulette.component';
+import { BiblicalRouletteComponent } from '../../games/biblical-roulette';
 
 @Component({
   selector: 'app-active-match',

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SessionService } from '../../../core/services/session.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
@@ -12,7 +12,7 @@ import { InputService } from '../../../core/services/input.service';
 @Component({
   selector: 'app-lobby',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   template: `
     <div *ngIf="session" class="max-w-3xl mx-auto space-y-6">
       <!-- Lobby Header Card -->
