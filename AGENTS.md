@@ -1,4 +1,5 @@
 <!-- SPECKIT START -->
-Read the active implementation plan for the current feature:
-c:\projects\dinamo\dynamo\specs\003-biblical-roulette\plan.md
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+at specs/004-i18n-translation-system/plan.md
 <!-- SPECKIT END -->

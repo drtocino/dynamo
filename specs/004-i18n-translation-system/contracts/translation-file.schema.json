@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DynamoTranslationFile",
+  "description": "Schema for Dynamo language translation JSON files (e.g. es.json, en.json)",
+  "type": "object",
+  "additionalProperties": {
+    "type": "string"
+  },
+  "required": [
+    "common.cancel",
+    "common.confirm",
+    "common.loading",
+    "common.error",
+    "hub.title",
+    "hub.subtitle",
+    "hub.games.biblicalRoulette.name",
+    "hub.games.biblicalRoulette.description"
+  ]
+}
