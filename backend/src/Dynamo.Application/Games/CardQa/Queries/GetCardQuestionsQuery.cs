@@ -11,6 +11,7 @@ public class CardQuestionDto
     public string Text { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
     public List<string>? Options { get; set; }
+    public List<string>? SubPoints { get; set; }
     public string Answer { get; set; } = string.Empty;
     public string Language { get; set; } = "es";
     public string Source { get; set; } = "database";
@@ -48,7 +49,8 @@ public class GetCardQuestionsQueryHandler : IGetCardQuestionsQueryHandler
             Id = q.Id,
             Text = q.Text,
             Type = MapTypeToString(q.Type),
-            Options = DeserializeOptions(q.OptionsJson),
+            Options = q.Type == CardQuestionType.OptionSelection ? DeserializeOptions(q.OptionsJson) : null,
+            SubPoints = q.Type == CardQuestionType.OpenQuestion ? DeserializeOptions(q.OptionsJson) : null,
             Answer = q.Answer,
             Language = q.Language,
             Source = "database"

@@ -17,7 +17,7 @@ import { TranslatePipe } from '../../../../../core/i18n';
         <!-- Cols 1 & 2: True/False & Option Selection (Red) -->
         <div class="col-span-2 p-2 sm:p-2.5 rounded-xl border-3 border-neo-black bg-rose-500 text-white font-black text-xs sm:text-sm text-center shadow-neo-sm uppercase tracking-wider flex items-center justify-center gap-1.5">
           <span class="text-sm">🔴</span>
-          <span class="truncate">V/F & Opciones</span>
+          <span class="truncate">Verdadero/Falso & Selección</span>
         </div>
 
         <!-- Cols 3 & 4: Open Questions (Blue) -->

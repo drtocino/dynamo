@@ -25,8 +25,25 @@
 
 .card-front {
   transform: rotateY(0deg);
+  z-index: 2;
 }
 
 .card-back {
   transform: rotateY(180deg);
+  z-index: 1;
 }
+
+.card-flipper:not(.flipped) .card-back {
+  pointer-events: none;
+}
+
+.card-flipper.flipped .card-front {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-flipper.flipped .card-back {
+  pointer-events: auto;
+  z-index: 2;
+}
+

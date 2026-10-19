@@ -22,12 +22,40 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure CORS for frontend Angular app
+// Configure CORS for frontend Angular app (supports localhost, *.vercel.app, and custom origins)
+var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        policy.SetIsOriginAllowed(origin =>
+              {
+                  if (string.IsNullOrWhiteSpace(origin)) return false;
+                  if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                  {
+                      // Allow localhost on any port
+                      if (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                          uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase))
+                      {
+                          return true;
+                      }
+
+                      // Allow all Vercel deployments (*.vercel.app)
+                      if (uri.Host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase) ||
+                          uri.Host.Equals("vercel.app", StringComparison.OrdinalIgnoreCase))
+                      {
+                          return true;
+                      }
+
+                      // Allow explicitly configured origins
+                      if (configuredOrigins.Any(co => string.Equals(co.TrimEnd('/'), origin.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)))
+                      {
+                          return true;
+                      }
+                  }
+                  return false;
+              })
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

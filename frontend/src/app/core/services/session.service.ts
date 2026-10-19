@@ -4,6 +4,7 @@ import { Observable, of, tap, catchError } from 'rxjs';
 import { Session, CreateSessionRequest, CreateSharedScreenSessionRequest, SessionState } from '../models/session.model';
 import { Player } from '../models/player.model';
 import { RealtimeService } from './realtime.service';
+import { getApiUrl } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,9 @@ import { RealtimeService } from './realtime.service';
 export class SessionService {
   private http = inject(HttpClient);
   private realtime = inject(RealtimeService);
-  private apiUrl = 'http://localhost:5000/api/v1/sessions';
+  private get apiUrl(): string {
+    return `${getApiUrl()}/sessions`;
+  }
 
   // In-memory sessions storage for local resilience / demo
   private localSessions = new Map<string, Session>();
@@ -58,7 +61,7 @@ export class SessionService {
           timeLimitSeconds: request.timeLimitSeconds || 60,
           language: lang,
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 15 * 60000).toISOString(),
+          expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
           players: []
         };
         this.cacheSession(fallbackSession);
@@ -99,7 +102,7 @@ export class SessionService {
           timeLimitSeconds: request.timeLimitSeconds || 60,
           language: lang,
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 15 * 60000).toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           activePlayerId: players.length > 0 ? players[0].id : undefined,
           players
         };

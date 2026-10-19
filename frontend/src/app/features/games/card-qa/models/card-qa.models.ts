@@ -10,10 +10,11 @@ export interface CardQuestion {
   id: string;
   text: string;
   type: CardQuestionType;
-  options?: string[]; // Candidate options for 'option-selection'
-  answer: string;     // Correct answer or proposed reference answer
+  options?: string[];   // Candidate options for 'option-selection'
+  subPoints?: string[]; // Sub-points / items to explain for 'open-question'
+  answer: string;       // Correct answer or proposed reference answer (optional/empty if none)
   language: 'es' | 'en';
-  source: 'database' | 'custom';
+  source?: 'database' | 'custom';
 }
 
 export interface BoardCard {
@@ -62,6 +63,7 @@ export interface GameConfiguration {
   questionsPerTurn: number;     // Default 5 (e.g. 3, 5, 10)
   questionSource: 'database' | 'custom';
   language: 'es' | 'en';
+  matchName?: string;
 }
 
 export interface CustomQuestionPackExport {

@@ -24,86 +24,93 @@ import { Session } from '../../../core/models/session.model';
     CustomQuestionsModalComponent
   ],
   template: `
-    <div class="w-full space-y-3">
+    <div class="w-full space-y-2">
       
       <!-- Consolidated Compact Top Bar: Title, Active Turn, Roster & Actions -->
-      <div class="neo-card bg-white border-3 border-neo-black p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm select-none">
+      <div class="neo-card bg-white border-3 border-neo-black py-1.5 px-2.5 sm:px-3 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 shadow-sm select-none">
         
         <!-- Left: Game Icon, Title, and Active Turn Status -->
-        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <div class="w-8 h-8 rounded-lg border-2 border-neo-black bg-neo-yellow flex items-center justify-center text-base shrink-0 font-black">
+        <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+          <div class="w-7 h-7 rounded-lg border-2 border-neo-black bg-neo-yellow flex items-center justify-center text-sm shrink-0 font-black">
             🃏
           </div>
           <div class="flex items-center gap-1.5">
-            <h2 class="text-sm sm:text-base font-black text-neo-black leading-none">
-              {{ 'game.cardQa.title' | translate }}
+            <h2 class="text-xs sm:text-sm font-black text-neo-black leading-none truncate max-w-[180px] sm:max-w-xs" [title]="matchTitle">
+              {{ matchTitle }}
             </h2>
             <span 
+              *ngIf="session?.roomCode" 
+              class="px-1.5 py-0.2 rounded text-[9px] font-mono font-black bg-white border-2 border-neo-black text-neo-black">
+              #{{ session!.roomCode }}
+            </span>
+            <span 
               *ngIf="service.isOfflineMode()" 
-              class="px-1.5 py-0.5 rounded text-[9px] font-black bg-neo-yellow border border-neo-black text-neo-black">
+              class="px-1 py-0.2 rounded text-[8px] font-black bg-neo-yellow border border-neo-black text-neo-black">
               {{ 'game.cardQa.offlineBadge' | translate }}
             </span>
           </div>
 
-          <span class="hidden md:inline-block w-px h-5 bg-neo-black/20 mx-0.5"></span>
+          <span class="hidden md:inline-block w-px h-4 bg-neo-black/20 mx-0.5"></span>
 
           <!-- Active Turn Badge -->
-          <div class="flex items-center gap-1.5 bg-neo-bg px-2.5 py-1 rounded-xl border-2 border-neo-black text-xs">
-            <span class="text-[10px] font-black uppercase text-neo-muted">Turno:</span>
-            <span class="font-black text-xs sm:text-sm text-neo-black flex items-center gap-1 truncate max-w-[130px] sm:max-w-none">
+          <div class="flex items-center gap-1 bg-neo-bg px-2 py-0.5 rounded-lg border-2 border-neo-black text-xs">
+            <span class="text-[9px] font-black uppercase text-neo-muted">Turno:</span>
+            <span class="font-black text-xs text-neo-black flex items-center gap-1 truncate max-w-[120px] sm:max-w-none">
               <span>🎯</span> {{ service.activePlayerName() }}
             </span>
-            <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-400 font-black text-[9px]">
+            <span class="px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-400 font-black text-[8px]">
               1 pick
             </span>
           </div>
 
           <!-- Next Player Tag -->
           <div *ngIf="service.nextPlayerName()" class="hidden lg:flex items-center gap-1 text-xs">
-            <span class="font-bold text-neo-muted text-[11px]">Siguiente:</span>
-            <span class="px-2 py-0.5 rounded-lg bg-white border border-neo-black font-black text-neo-black text-xs">
+            <span class="font-bold text-neo-muted text-[10px]">Siguiente:</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-white border-2 border-neo-black font-black text-neo-black text-xs">
               {{ service.nextPlayerName() }}
             </span>
           </div>
 
           <!-- Remaining Cards Counter -->
-          <div class="flex items-center gap-1 text-xs font-black px-2 py-1 rounded-lg bg-gray-50 border border-neo-black">
+          <div class="flex items-center gap-1 text-xs font-black px-1.5 py-0.5 rounded-md bg-gray-50 border-2 border-neo-black">
             <span>🎴</span>
             <span>{{ service.remainingCardsCount() }} / {{ service.cards().length }}</span>
           </div>
         </div>
 
-        <!-- Right: Actions Toolbar with Fullscreen -->
-        <div class="flex items-center gap-1.5 flex-wrap">
-          <!-- Fullscreen Toggle Button -->
+        <!-- Right: Actions Toolbar with Smaller Buttons -->
+        <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <!-- Share Match Link Button -->
           <app-button
-            variant="secondary"
-            (onClick)="toggleFullscreen()"
-            [title]="isFullscreen ? ('game.cardQa.exitFullscreen' | translate) : ('game.cardQa.fullscreen' | translate)">
-            <span class="text-sm">{{ isFullscreen ? '🗗' : '⛶' }}</span>
-            <span class="hidden sm:inline text-xs font-black">
-              {{ isFullscreen ? ('game.cardQa.exitFullscreen' | translate) : ('game.cardQa.fullscreen' | translate) }}
-            </span>
+            size="sm"
+            variant="yellow"
+            (onClick)="onShareMatch()"
+            [title]="'game.cardQa.shareMatchTitle' | translate">
+            <span>🔗</span>
+            <span class="hidden sm:inline font-black">{{ 'game.cardQa.shareMatch' | translate }}</span>
           </app-button>
 
           <!-- Results Button -->
           <app-button
+            size="sm"
             variant="cyan"
             (onClick)="isResultsModalOpen = true">
             <span>📊</span>
-            <span class="hidden sm:inline text-xs">{{ 'game.cardQa.viewResults' | translate }}</span>
+            <span class="hidden sm:inline">{{ 'game.cardQa.viewResults' | translate }}</span>
           </app-button>
 
           <!-- Custom Questions Button -->
           <app-button
+            size="sm"
             variant="secondary"
             (onClick)="isCustomQuestionsOpen = true">
             <span>✏️</span>
-            <span class="hidden md:inline text-xs">{{ 'game.cardQa.manageCustomQuestions' | translate }}</span>
+            <span class="hidden md:inline">{{ 'game.cardQa.manageCustomQuestions' | translate }}</span>
           </app-button>
 
           <!-- Config / Settings Button -->
           <app-button
+            size="sm"
             variant="secondary"
             (onClick)="isConfigModalOpen = true">
             <span>⚙️</span>
@@ -144,10 +151,17 @@ import { Session } from '../../../core/models/session.model';
         (close)="isCustomQuestionsOpen = false">
       </app-custom-questions-modal>
 
+      <!-- Copied Link Toast Notification -->
+      <div 
+        *ngIf="copiedLinkToast" 
+        class="fixed top-14 right-4 z-50 bg-neo-black text-white px-4 py-2.5 rounded-xl border-2 border-white shadow-neo-lg text-xs font-black flex items-center gap-2 animate-bounce-subtle select-none">
+        <span>✅</span> {{ 'game.cardQa.linkCopied' | translate }}
+      </div>
+
     </div>
   `
 })
-export class CardQaComponent implements OnInit, OnChanges, OnDestroy {
+export class CardQaComponent implements OnInit, OnChanges {
   readonly service = inject(CardQaService);
 
   @Input() session?: Session;
@@ -155,16 +169,32 @@ export class CardQaComponent implements OnInit, OnChanges, OnDestroy {
   isResultsModalOpen = false;
   isConfigModalOpen = false;
   isCustomQuestionsOpen = false;
-  isFullscreen = false;
+  copiedLinkToast = false;
 
-  private readonly fullscreenListener = () => {
-    this.isFullscreen = !!document.fullscreenElement;
-  };
+  get matchTitle(): string {
+    const configTitle = this.service.config().matchName?.trim();
+    if (configTitle) return configTitle;
+
+    if (this.session?.gameSettingsJson) {
+      try {
+        const parsed = JSON.parse(this.session.gameSettingsJson);
+        if (parsed.matchName?.trim()) {
+          return parsed.matchName.trim();
+        }
+      } catch (_) {}
+    }
+
+    const stored = localStorage.getItem('cardQa_matchName')?.trim();
+    if (stored) return stored;
+
+    if (this.session?.roomCode) {
+      return `Partida #${this.session.roomCode}`;
+    }
+    return 'Partida de Cartas Q&A';
+  }
 
   ngOnInit(): void {
     this.service.syncSession(this.session);
-    document.addEventListener('fullscreenchange', this.fullscreenListener);
-    document.addEventListener('webkitfullscreenchange', this.fullscreenListener);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -173,48 +203,23 @@ export class CardQaComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    document.removeEventListener('fullscreenchange', this.fullscreenListener);
-    document.removeEventListener('webkitfullscreenchange', this.fullscreenListener);
-  }
-
-  toggleFullscreen(): void {
-    if (!document.fullscreenElement) {
-      const docEl = document.documentElement as HTMLElement & {
-        requestFullscreen?: () => Promise<void>;
-        webkitRequestFullscreen?: () => Promise<void>;
-        mozRequestFullScreen?: () => Promise<void>;
-        msRequestFullscreen?: () => Promise<void>;
-      };
-      if (docEl.requestFullscreen) {
-        docEl.requestFullscreen().catch(() => {});
-      } else if (docEl.webkitRequestFullscreen) {
-        docEl.webkitRequestFullscreen();
-      } else if (docEl.mozRequestFullScreen) {
-        docEl.mozRequestFullScreen();
-      } else if (docEl.msRequestFullscreen) {
-        docEl.msRequestFullscreen();
-      }
-    } else {
-      const doc = document as Document & {
-        exitFullscreen?: () => Promise<void>;
-        webkitExitFullscreen?: () => Promise<void>;
-        mozCancelFullScreen?: () => Promise<void>;
-        msExitFullscreen?: () => Promise<void>;
-      };
-      if (doc.exitFullscreen) {
-        doc.exitFullscreen().catch(() => {});
-      } else if (doc.webkitExitFullscreen) {
-        doc.webkitExitFullscreen();
-      } else if (doc.mozCancelFullScreen) {
-        doc.mozCancelFullScreen();
-      } else if (doc.msExitFullscreen) {
-        doc.msExitFullscreen();
-      }
-    }
-  }
-
   onSelectCard(index: number): void {
     this.service.selectCard(index);
+  }
+
+  onShareMatch(): void {
+    const link = this.service.createShareableLink();
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(link).then(() => {
+        this.copiedLinkToast = true;
+        setTimeout(() => {
+          this.copiedLinkToast = false;
+        }, 3500);
+      }).catch(() => {
+        window.prompt('Copia este enlace de partida:', link);
+      });
+    } else {
+      window.prompt('Copia este enlace de partida:', link);
+    }
   }
 }

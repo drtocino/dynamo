@@ -33,6 +33,15 @@ public class ChangeSessionStateCommandHandler : IChangeSessionStateCommandHandle
         }
 
         session.State = newState;
+        if (session.Mode != MultiplayerMode.RoomBased)
+        {
+            session.ExpiresAt = DateTime.UtcNow.AddHours(24);
+        }
+        else if (newState == SessionState.Active)
+        {
+            session.ExpiresAt = DateTime.UtcNow.AddHours(2);
+        }
+
         await _sessionRepository.UpdateAsync(session, cancellationToken);
 
         return CreateSessionCommandHandler.ToDto(session);

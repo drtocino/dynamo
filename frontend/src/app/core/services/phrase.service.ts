@@ -2,13 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { Phrase } from '../models/phrase.model';
+import { getApiUrl } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PhraseService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5000/api/v1/phrases';
+  private get apiUrl(): string {
+    return `${getApiUrl()}/phrases`;
+  }
 
   private fallbackPhrases: Phrase[] = [
     {

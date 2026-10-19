@@ -7,6 +7,9 @@ import { GameService } from '../../../core/services/game.service';
 import { Game } from '../../../core/models/game.model';
 import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
+import { HttpClient } from '@angular/common/http';
+import { CardQaService } from '../../games/card-qa/services/card-qa.service';
+
 @Component({
   selector: 'app-shared-screen-setup',
   standalone: true,
@@ -163,6 +166,8 @@ export class SharedScreenSetupComponent implements OnInit {
   private sessionService = inject(SessionService);
   private gameService = inject(GameService);
   private translationService = inject(TranslationService);
+  private http = inject(HttpClient);
+  private cardQaService = inject(CardQaService);
 
   game: Game | undefined;
   newPlayerName = '';
@@ -179,14 +184,55 @@ export class SharedScreenSetupComponent implements OnInit {
     const slug = this.route.snapshot.paramMap.get('slug') || 'charades-flash';
     this.configState = history.state || {};
 
+    const queryParams = this.route.snapshot.queryParamMap;
+    const autoStart = queryParams.get('autoStart') === '1' || queryParams.get('autoStart') === 'true';
+    const playersParam = queryParams.get('players');
+    const preset = queryParams.get('preset');
+    const qParam = queryParams.get('q');
+
+    if (playersParam) {
+      const parsed = playersParam.split(',').map(p => p.trim()).filter(Boolean);
+      if (parsed.length > 0) {
+        this.players = parsed;
+      }
+    } else if (slug === 'card-qa') {
+      this.players = ['Equipo 1', 'Equipo 2', 'Equipo 3', 'Equipo 4'];
+    } else {
+      this.players = [
+        this.translationService.t('sharedScreenSetup.defaultPlayer1'),
+        this.translationService.t('sharedScreenSetup.defaultPlayer2')
+      ];
+    }
+
+    // Load custom questions / preset if present in share URL
+    if (preset === 'examen-hechos-epistolas') {
+      this.http.get<any>('/data/examen-hechos-epistolas.json').subscribe({
+        next: (data) => {
+          const list = Array.isArray(data) ? data : data?.questions;
+          if (list?.length) {
+            this.cardQaService.saveCustomQuestions(list);
+          }
+        },
+        error: () => {}
+      });
+    } else if (qParam) {
+      try {
+        const decoded = decodeURIComponent(escape(atob(qParam)));
+        const list = JSON.parse(decoded);
+        if (Array.isArray(list) && list.length) {
+          this.cardQaService.saveCustomQuestions(list);
+        }
+      } catch (err) {
+        console.warn('Failed to parse questions from URL param:', err);
+      }
+    }
+
     this.gameService.getGames().subscribe(games => {
       this.game = games.find(g => g.slug === slug) || games[0];
+      if (autoStart) {
+        setTimeout(() => this.launchMatch(), 100);
+      }
     });
-
-    this.players = [
-      this.translationService.t('sharedScreenSetup.defaultPlayer1'),
-      this.translationService.t('sharedScreenSetup.defaultPlayer2')
-    ];
   }
 
   addPlayer(): void {
@@ -245,13 +291,17 @@ export class SharedScreenSetupComponent implements OnInit {
 
     const clientId = this.sessionService.getClientId();
 
+    const matchName = this.configState?.matchName || localStorage.getItem('cardQa_matchName') || '';
+    const gameSettingsJson = matchName ? JSON.stringify({ matchName }) : undefined;
+
     this.sessionService.createSharedScreenSession({
       gameId: this.game.id,
       mode: 'SharedScreen',
       hostClientId: clientId,
-      maxPlayers: this.configState.maxPlayers || 8,
-      rounds: this.configState.rounds || 3,
-      timeLimitSeconds: this.configState.timeLimitSeconds || 60,
+      maxPlayers: this.configState?.maxPlayers || 8,
+      rounds: this.configState?.rounds || 3,
+      timeLimitSeconds: this.configState?.timeLimitSeconds || 60,
+      gameSettingsJson,
       playerNames: this.players
     }).subscribe({
       next: (session) => {

@@ -20,7 +20,7 @@ public class Session : BaseEntity
     public string GameSettingsJson { get; set; } = "{}";
     public string Language { get; set; } = "es";
 
-    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddMinutes(15);
+    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddHours(24);
 
     // Turn tracking (SharedScreen)
     public Guid? ActivePlayerId { get; set; }

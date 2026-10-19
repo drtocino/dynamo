@@ -2,13 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { Game } from '../models/game.model';
+import { getApiUrl } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5000/api/v1/games';
+  private get apiUrl(): string {
+    return `${getApiUrl()}/games`;
+  }
 
   private fallbackGames: Game[] = [
     {

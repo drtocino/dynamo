@@ -31,7 +31,14 @@ import { ButtonComponent } from '../../../../../shared/components/button/button.
             </app-button>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <app-button
+              variant="yellow"
+              (onClick)="onShareDirectLink()"
+              [title]="'game.cardQa.shareMatchTitle' | translate">
+              <span>🔗</span> {{ 'game.cardQa.shareMatch' | translate }}
+            </app-button>
+
             <app-button
               variant="secondary"
               (onClick)="onExportJson()">
@@ -276,5 +283,18 @@ export class CustomQuestionsModalComponent {
       input.value = '';
     };
     reader.readAsText(file);
+  }
+
+  onShareDirectLink(): void {
+    const link = this.service.createShareableLink();
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(link).then(() => {
+        alert('¡Enlace de partida copiado! Abre este enlace para iniciar la partida directamente con esta configuración.');
+      }).catch(() => {
+        window.prompt('Copia este enlace de partida:', link);
+      });
+    } else {
+      window.prompt('Copia este enlace de partida:', link);
+    }
   }
 }

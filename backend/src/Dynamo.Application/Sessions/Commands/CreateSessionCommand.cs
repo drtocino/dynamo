@@ -94,7 +94,9 @@ public class CreateSessionCommandHandler : ICreateSessionCommandHandler
             TimeLimitSeconds = request.TimeLimitSeconds > 0 ? request.TimeLimitSeconds : 60,
             GameSettingsJson = request.GameSettingsJson,
             Language = string.IsNullOrWhiteSpace(request.Language) ? (game.Language ?? "es") : request.Language,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+            ExpiresAt = request.Mode == MultiplayerMode.RoomBased 
+                ? DateTime.UtcNow.AddHours(2) 
+                : DateTime.UtcNow.AddHours(24),
             CreatedAt = DateTime.UtcNow
         };
 

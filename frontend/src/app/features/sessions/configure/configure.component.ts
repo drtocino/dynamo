@@ -50,8 +50,19 @@ import { TranslatePipe } from '../../../core/i18n';
           {{ 'configure.title' | translate }}
         </h3>
 
-        <!-- Host Name Field -->
-        <div>
+        <!-- Match Name / Host Name Field -->
+        <div *ngIf="game?.slug === 'card-qa'">
+          <label class="block font-black text-sm text-neo-black mb-1">
+            {{ 'configure.matchNameLabel' | translate }}
+          </label>
+          <input 
+            type="text" 
+            [(ngModel)]="matchName" 
+            [placeholder]="'configure.matchNamePlaceholder' | translate"
+            class="neo-input" />
+        </div>
+
+        <div *ngIf="game?.slug !== 'card-qa'">
           <label class="block font-black text-sm text-neo-black mb-1">
             {{ 'configure.hostNameLabel' | translate }}
           </label>
@@ -88,8 +99,8 @@ import { TranslatePipe } from '../../../core/i18n';
           </div>
         </div>
 
-        <!-- Maximum Players -->
-        <div>
+        <!-- Maximum Players (hidden for card-qa) -->
+        <div *ngIf="game?.slug !== 'card-qa'">
           <div class="flex justify-between items-center mb-1">
             <label class="font-black text-sm text-neo-black">{{ 'configure.maxPlayers' | translate }}</label>
             <span class="font-black text-sm px-2 py-0.5 rounded bg-neo-gray border-2 border-neo-black">
@@ -104,8 +115,8 @@ import { TranslatePipe } from '../../../core/i18n';
             class="w-full accent-neo-black cursor-pointer" />
         </div>
 
-        <!-- Rounds -->
-        <div>
+        <!-- Rounds (hidden for card-qa) -->
+        <div *ngIf="game?.slug !== 'card-qa'">
           <div class="flex justify-between items-center mb-1">
             <label class="font-black text-sm text-neo-black">{{ 'configure.rounds' | translate }}</label>
             <span class="font-black text-sm px-2 py-0.5 rounded bg-neo-gray border-2 border-neo-black">
@@ -120,8 +131,8 @@ import { TranslatePipe } from '../../../core/i18n';
             class="w-full accent-neo-black cursor-pointer" />
         </div>
 
-        <!-- Time Limit -->
-        <div>
+        <!-- Time Limit (hidden for card-qa) -->
+        <div *ngIf="game?.slug !== 'card-qa'">
           <div class="flex justify-between items-center mb-1">
             <label class="font-black text-sm text-neo-black">{{ 'configure.turnTimeLimit' | translate }}</label>
             <span class="font-black text-sm px-2 py-0.5 rounded bg-neo-gray border-2 border-neo-black">
@@ -145,7 +156,7 @@ import { TranslatePipe } from '../../../core/i18n';
           <button 
             type="button"
             (click)="createMatch()" 
-            [disabled]="!hostName.trim() || isSubmitting"
+            [disabled]="isSubmitDisabled"
             class="neo-btn-primary flex-1 py-3 text-center">
             <span *ngIf="!isSubmitting">{{ (mode === 'SharedScreen' ? 'configure.btnSetupLocal' : 'configure.btnLaunchLobby') | translate }}</span>
             <span *ngIf="isSubmitting">{{ 'configure.btnCreating' | translate }}</span>
@@ -164,10 +175,19 @@ export class ConfigureComponent implements OnInit {
   game: Game | undefined;
   mode: MultiplayerMode = 'RoomBased';
   hostName: string = '';
+  matchName: string = '';
   maxPlayers: number = 8;
   rounds: number = 3;
   timeLimitSeconds: number = 60;
   isSubmitting = false;
+
+  get isSubmitDisabled(): boolean {
+    if (this.isSubmitting) return true;
+    if (this.game?.slug === 'card-qa') {
+      return !this.matchName.trim();
+    }
+    return !this.hostName.trim();
+  }
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug') || 'trivia-pro';
@@ -180,6 +200,10 @@ export class ConfigureComponent implements OnInit {
       this.game = games.find(g => g.slug === slug) || games[0];
       if (this.game && !this.game.supportedModes.includes(this.mode)) {
         this.mode = this.game.supportedModes[0];
+      }
+      if (this.game?.slug === 'card-qa') {
+        const stored = localStorage.getItem('cardQa_matchName');
+        this.matchName = stored || 'Examen de Hechos y Epístolas';
       }
     });
   }
@@ -205,12 +229,25 @@ export class ConfigureComponent implements OnInit {
   }
 
   createMatch(): void {
-    if (!this.game || !this.hostName.trim()) return;
+    if (!this.game) return;
+
+    let effectiveHostName = this.hostName.trim();
+    let effectiveMatchName = '';
+
+    if (this.game.slug === 'card-qa') {
+      effectiveMatchName = this.matchName.trim() || 'Examen de Hechos y Epístolas';
+      effectiveHostName = effectiveMatchName;
+      this.hostName = effectiveHostName;
+      localStorage.setItem('cardQa_matchName', effectiveMatchName);
+    } else {
+      if (!effectiveHostName) return;
+    }
 
     if (this.mode === 'SharedScreen') {
       this.router.navigate(['/shared-screen-setup', this.game.slug], {
         state: {
-          hostName: this.hostName.trim(),
+          hostName: effectiveHostName,
+          matchName: effectiveMatchName,
           maxPlayers: this.maxPlayers,
           rounds: this.rounds,
           timeLimitSeconds: this.timeLimitSeconds,
@@ -229,11 +266,12 @@ export class ConfigureComponent implements OnInit {
       hostClientId: clientId,
       maxPlayers: this.maxPlayers,
       rounds: this.rounds,
-      timeLimitSeconds: this.timeLimitSeconds
+      timeLimitSeconds: this.timeLimitSeconds,
+      gameSettingsJson: effectiveMatchName ? JSON.stringify({ matchName: effectiveMatchName }) : undefined
     }).subscribe({
       next: (session) => {
         // Also register host as player
-        this.sessionService.joinSession(session.id, this.hostName.trim()).subscribe({
+        this.sessionService.joinSession(session.id, effectiveHostName).subscribe({
           next: () => {
             this.router.navigate(['/lobby', session.id]);
           },

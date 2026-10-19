@@ -60,7 +60,7 @@ public class CreateSharedScreenSessionCommandHandler : ICreateSharedScreenSessio
             TimeLimitSeconds = request.TimeLimitSeconds > 0 ? request.TimeLimitSeconds : 60,
             GameSettingsJson = request.GameSettingsJson,
             Language = string.IsNullOrWhiteSpace(request.Language) ? (game.Language ?? "es") : request.Language,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
             CreatedAt = DateTime.UtcNow
         };
 

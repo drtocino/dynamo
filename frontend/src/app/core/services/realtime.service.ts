@@ -3,6 +3,7 @@ import { Subject, Observable } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { Player } from '../models/player.model';
 import { SessionState } from '../models/session.model';
+import { getSessionHubUrl } from '../config/api.config';
 
 export interface PlayerLeftEvent {
   playerId: string;
@@ -26,7 +27,9 @@ export class RealtimeService {
   stateChanged$: Observable<SessionState> = this.stateChangedSubject.asObservable();
   turnAdvanced$: Observable<string> = this.turnAdvancedSubject.asObservable();
 
-  private hubUrl = 'http://localhost:5000/hubs/session';
+  private get hubUrl(): string {
+    return getSessionHubUrl();
+  }
 
   async listenToSession(sessionId: string): Promise<void> {
     if (this.currentSessionId === sessionId && this.hubConnection?.state === signalR.HubConnectionState.Connected) {

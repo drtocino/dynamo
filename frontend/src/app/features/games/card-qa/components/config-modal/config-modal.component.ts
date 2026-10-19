@@ -86,6 +86,18 @@ import { ButtonComponent } from '../../../../../shared/components/button/button.
           </div>
         </div>
 
+        <!-- Match Name Field -->
+        <div class="space-y-1">
+          <label class="block font-black text-sm text-neo-black">
+            {{ 'configure.matchNameLabel' | translate }}
+          </label>
+          <input 
+            type="text" 
+            [(ngModel)]="matchNameInput" 
+            [placeholder]="'configure.matchNamePlaceholder' | translate"
+            class="neo-input text-xs font-bold py-2" />
+        </div>
+
       </div>
 
       <!-- Footer Buttons -->
@@ -117,19 +129,26 @@ export class ConfigModalComponent {
   selectedCards = 20;
   selectedTurnQuota = 5;
   selectedSource: 'database' | 'custom' = 'database';
+  matchNameInput: string = '';
 
   ngOnInit(): void {
     const current = this.service.config();
     this.selectedCards = current.totalCardCount;
     this.selectedTurnQuota = current.questionsPerTurn;
     this.selectedSource = current.questionSource;
+    this.matchNameInput = current.matchName || localStorage.getItem('cardQa_matchName') || '';
   }
 
   saveAndApply(): void {
+    const trimmed = this.matchNameInput.trim();
+    if (trimmed) {
+      localStorage.setItem('cardQa_matchName', trimmed);
+    }
     this.service.updateConfig({
       totalCardCount: this.selectedCards,
       questionsPerTurn: this.selectedTurnQuota,
-      questionSource: this.selectedSource
+      questionSource: this.selectedSource,
+      matchName: trimmed
     });
     this.service.initializeMatch();
     this.close.emit();

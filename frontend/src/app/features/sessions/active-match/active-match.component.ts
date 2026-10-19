@@ -35,6 +35,13 @@ import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
         <div class="flex items-center gap-2">
           <button 
+            type="button"
+            (click)="toggleFullscreen()"
+            class="neo-btn-secondary text-sm py-1 px-2.5 font-black flex items-center justify-center cursor-pointer"
+            [title]="isFullscreen ? ('activeMatch.exitFullscreen' | translate) : ('activeMatch.fullscreen' | translate)">
+            <span class="text-base leading-none">{{ isFullscreen ? '🗗' : '⛶' }}</span>
+          </button>
+          <button 
             (click)="returnToLobby()"
             class="neo-btn-secondary text-xs py-1 px-2.5 font-black">
             {{ 'activeMatch.btnLobby' | translate }}
@@ -133,7 +140,12 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
 
   session: Session | undefined;
   currentRound: number = 1;
+  isFullscreen = false;
   private subs: Subscription[] = [];
+
+  private readonly fullscreenListener = () => {
+    this.isFullscreen = !!document.fullscreenElement;
+  };
 
   constructor() {
     effect(() => {
@@ -236,11 +248,52 @@ export class ActiveMatchComponent implements OnInit, OnDestroy {
       }, 3000);
       this.subs.push({ unsubscribe: () => clearInterval(pollInterval) } as Subscription);
     });
+
+    document.addEventListener('fullscreenchange', this.fullscreenListener);
+    document.addEventListener('webkitfullscreenchange', this.fullscreenListener);
   }
 
   ngOnDestroy(): void {
+    document.removeEventListener('fullscreenchange', this.fullscreenListener);
+    document.removeEventListener('webkitfullscreenchange', this.fullscreenListener);
     this.subs.forEach(s => s.unsubscribe());
     this.gameStore.resetState();
+  }
+
+  toggleFullscreen(): void {
+    if (!document.fullscreenElement) {
+      const docEl = document.documentElement as HTMLElement & {
+        requestFullscreen?: () => Promise<void>;
+        webkitRequestFullscreen?: () => Promise<void>;
+        mozRequestFullScreen?: () => Promise<void>;
+        msRequestFullscreen?: () => Promise<void>;
+      };
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(() => {});
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.mozRequestFullScreen) {
+        docEl.mozRequestFullScreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
+      }
+    } else {
+      const doc = document as Document & {
+        exitFullscreen?: () => Promise<void>;
+        webkitExitFullscreen?: () => Promise<void>;
+        mozCancelFullScreen?: () => Promise<void>;
+        msExitFullscreen?: () => Promise<void>;
+      };
+      if (doc.exitFullscreen) {
+        doc.exitFullscreen().catch(() => {});
+      } else if (doc.webkitExitFullscreen) {
+        doc.webkitExitFullscreen();
+      } else if (doc.mozCancelFullScreen) {
+        doc.mozCancelFullScreen();
+      } else if (doc.msExitFullscreen) {
+        doc.msExitFullscreen();
+      }
+    }
   }
 
   handleAdvanceTurn(): void {

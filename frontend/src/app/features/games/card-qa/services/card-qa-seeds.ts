@@ -2,325 +2,230 @@ import { CardQuestion } from '../models/card-qa.models';
 
 export const CARD_QA_SEEDS_ES: CardQuestion[] = [
   {
-    id: 'seed-es-01',
-    text: '¿En qué ciudad nació Jesús según los evangelios?',
-    type: 'option-selection',
-    options: ['A) Nazaret', 'B) Belén', 'C) Jerusalén', 'D) Jericó'],
-    answer: 'B) Belén (Mateo 2:1)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-tf-1",
+    "text": "En la carta de 1 Corintios se muestra el énfasis del pronto regreso de Jesús, de tal manera que algunos ya no querían trabajar.",
+    "type": "true-false",
+    "answer": "Falso",
+    "language": "es"
   },
   {
-    id: 'seed-es-02',
-    text: '¿El arca de Noé tenía tres pisos o compartimentos?',
-    type: 'true-false',
-    answer: 'Verdadero (Génesis 6:16)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-tf-2",
+    "text": "El propósito de la carta a los Gálatas es: corregir el informe de su autoridad apostólica y corregir la doctrina de los dones espirituales.",
+    "type": "true-false",
+    "answer": "Falso",
+    "language": "es"
   },
   {
-    id: 'seed-es-03',
-    text: '¿Quién fue el profeta que fue tragado por un gran pez?',
-    type: 'open-question',
-    answer: 'Jonás (Jonás 1:17)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-tf-3",
+    "text": "Pablo escribió cartas a los Romanos y a los Colosenses, iglesias que él no conocía personalmente, ni había fundado.",
+    "type": "true-false",
+    "answer": "Verdadero",
+    "language": "es"
   },
   {
-    id: 'seed-es-04',
-    text: '¿Cuántos días y noches llovió durante el diluvio universal?',
-    type: 'option-selection',
-    options: ['A) 7 días', 'B) 40 días', 'C) 120 días', 'D) 1 año'],
-    answer: 'B) 40 días y 40 noches (Génesis 7:12)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-tf-4",
+    "text": "“Estoy pronto a ser sacrificado. El tiempo de mi partida está cercano.”, se encuentra en la carta de 2 Timoteo.",
+    "type": "true-false",
+    "answer": "Verdadero",
+    "language": "es"
   },
   {
-    id: 'seed-es-05',
-    text: '¿Moisés guio al pueblo de Israel a través del Mar Rojo?',
-    type: 'true-false',
-    answer: 'Verdadero (Éxodo 14:21-22)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-tf-5",
+    "text": "Las cartas de Colosenses y Filemón fueron llevadas por Tiquico.",
+    "type": "true-false",
+    "answer": "Verdadero",
+    "language": "es"
   },
   {
-    id: 'seed-es-06',
-    text: '¿Cuál fue el primer milagro público que realizó Jesús?',
-    type: 'open-question',
-    answer: 'Convertir el agua en vino en las bodas de Caná (Juan 2:1-11)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-opt-1",
+    "text": "Pablo para desarrollar Romanos 4, utiliza de base el texto del AT de:",
+    "type": "option-selection",
+    "options": [
+      "a. Gen 12:1",
+      "b. Ex 20:8-11",
+      "c. Gen 15:6"
+    ],
+    "answer": "c. Gen 15:6",
+    "language": "es"
   },
   {
-    id: 'seed-es-07',
-    text: '¿Cuántos discípulos formaban el círculo íntimo original de Jesús?',
-    type: 'option-selection',
-    options: ['A) 10', 'B) 12', 'C) 7', 'D) 70'],
-    answer: 'B) 12 discípulos (Mateo 10:1-4)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-opt-2",
+    "text": "En esta carta no se habla de ninguna crisis acuciante (urgente). No se habla de ninguna situación local:",
+    "type": "option-selection",
+    "options": [
+      "a. Filipenses",
+      "b. Efesios",
+      "c. Colosenses"
+    ],
+    "answer": "b. Efesios",
+    "language": "es"
   },
   {
-    id: 'seed-es-08',
-    text: '¿El apóstol Pablo era originario de la ciudad de Tarso?',
-    type: 'true-false',
-    answer: 'Verdadero (Hechos 22:3)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-opt-3",
+    "text": "En esta carta paulina se describe una herejía que tiene estos elementos: misticismo helenista, legalismo judío y ascetismo riguroso",
+    "type": "option-selection",
+    "options": [
+      "a. Filipenses",
+      "b. Gálatas",
+      "c. Colosenses"
+    ],
+    "answer": "c. Colosenses",
+    "language": "es"
   },
   {
-    id: 'seed-es-09',
-    text: '¿Quién derrotó al gigante Goliat usando solo una honda y una piedra?',
-    type: 'open-question',
-    answer: 'David (1 Samuel 17:49)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-opt-4",
+    "text": "El texto que dice: “La mujer aprenda en silencio con toda sujeción. No permito a la mujer enseñar, ni ejercer dominio…ella se salvará engendrando hijos si permanece en fe, amor y santificación con modestia” se encuentra en la carta a:",
+    "type": "option-selection",
+    "options": [
+      "a. 2 Corintios",
+      "b. 1 Timoteo",
+      "c. 2 Timoteo"
+    ],
+    "answer": "b. 1 Timoteo",
+    "language": "es"
   },
   {
-    id: 'seed-es-10',
-    text: '¿Qué instrumento tocaba David para calmar al rey Saúl?',
-    type: 'option-selection',
-    options: ['A) Trompeta', 'B) Arpa', 'C) Flauta', 'D) Pandereta'],
-    answer: 'B) Arpa (1 Samuel 16:23)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-opt-5",
+    "text": "En esta carta, “la humildad” del cristiano se basa en la humillación de Cristo siendo obediente hasta la muerte.",
+    "type": "option-selection",
+    "options": [
+      "a. Filipenses",
+      "b. Colosenses",
+      "c. Romanos"
+    ],
+    "answer": "a. Filipenses",
+    "language": "es"
   },
   {
-    id: 'seed-es-11',
-    text: '¿Jesús resucitó al tercer día según las Escrituras?',
-    type: 'true-false',
-    answer: 'Verdadero (1 Corintios 15:4)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-1",
+    "text": "Pablo, ¿qué cartas escribe en su segundo viaje?",
+    "type": "open-question",
+    "subPoints": [
+      "1 y 2 Tesalonicenses"
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-12',
-    text: '¿Cuál es el libro más largo de la Biblia por número de capítulos?',
-    type: 'open-question',
-    answer: 'Salmos (150 capítulos)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-2",
+    "text": "Pablo, ¿qué cartas escribe en la prisión de Roma?",
+    "type": "open-question",
+    "subPoints": [
+      "Efesios, Colosenses, Filipenses y Filemón"
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-13',
-    text: '¿Quién fue arrojado al foso de los leones por orar a Dios?',
-    type: 'option-selection',
-    options: ['A) Daniel', 'B) José', 'C) Elías', 'D) Nehemías'],
-    answer: 'A) Daniel (Daniel 6:16)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-3",
+    "text": "¿Cuáles son las 4 cartas que Pablo pudo escribir a los Corintios?",
+    "type": "open-question",
+    "subPoints": [
+      "1. Carta previa (1 Cor 5:9)",
+      "2. 1 Corintios",
+      "3. 2 Corintios 10-13 (2 Cor 2:3,4; 7:8)",
+      "4. 2 Corintios 1-9"
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-14',
-    text: '¿Sansón perdió su gran fuerza cuando le cortaron el cabello?',
-    type: 'true-false',
-    answer: 'Verdadero (Jueces 16:19)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-4",
+    "text": "¿Quiénes eran denominados grandes apóstoles en la iglesia de Corinto?",
+    "type": "open-question",
+    "subPoints": [
+      "Probablemente maestros judeo-cristianos",
+      "Critican la forma de hablar y el ministerio de Pablo",
+      "Irónicamente se les llama superapóstoles"
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-15',
-    text: '¿Qué mar cruzó Josué y el pueblo para entrar en la Tierra Prometida?',
-    type: 'open-question',
-    answer: 'El río Jordán (Josué 3:14-17)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-5",
+    "text": "¿Qué significa “todos los que somos perfectos” en Fil 3:15?",
+    "type": "open-question",
+    "subPoints": [
+      "Perfectos viene de teleleomai – significa madurez",
+      "La meta final es la resurrección y la transformación",
+      "La madurez se vive por la justicia de Cristo, no por la propia",
+      "El cristiano maduro que reconoce que aún no llegó, sigue corriendo hacia la meta y confía en la justicia de Cristo."
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-16',
-    text: '¿Quién interpretó los sueños del Faraón en Egipto sobre 7 vacas gordas y flacas?',
-    type: 'option-selection',
-    options: ['A) Moisés', 'B) Abraham', 'C) José', 'D) Jacob'],
-    answer: 'C) José (Génesis 41:25-30)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-6",
+    "text": "¿Cuáles son las cartas denominadas “cristológicas”?",
+    "type": "open-question",
+    "subPoints": [
+      "Filipenses, Colosenses y Efesios (Hebreos)"
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-17',
-    text: '¿El fruto del Espíritu Santo incluye amor, gozo y paz?',
-    type: 'true-false',
-    answer: 'Verdadero (Gálatas 5:22-23)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-7",
+    "text": "¿Cuáles son los 3 propósitos de la carta a los Romanos?",
+    "type": "open-question",
+    "subPoints": [
+      "Propósito misionero: Evangelización del imperio – gentiles y España",
+      "Propósito apologético: Pablo presenta defensa de sí mismo y del evangelio",
+      "Propósito pastoral: Había divisiones potenciales - Unidad judío-gentil"
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-18',
-    text: '¿Cómo se llamaba la madre terrenal de Jesús?',
-    type: 'open-question',
-    answer: 'María (Lucas 1:26-31)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-8",
+    "text": "Explique ¿Qué es la diatriba?",
+    "type": "open-question",
+    "subPoints": [
+      "Es una herramienta de enseñanza interactiva en la escuela filosófica antigua. Era un estilo de discurso que se utilizaba para instruir, alentar, confrontar y persuadir al oyente, mediante preguntas y respuestas imaginarias."
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-19',
-    text: '¿En qué monte recibió Moisés las tablas de la ley?',
-    type: 'option-selection',
-    options: ['A) Sinaí', 'B) Carmelo', 'C) Sion', 'D) Olivos'],
-    answer: 'A) Monte Sinaí (Éxodo 19:20)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-open-9",
+    "text": "¿Cuáles son las imágenes o símbolos de la iglesia en la carta a los Efesios?",
+    "type": "open-question",
+    "subPoints": [
+      "La iglesia es el cuerpo de Cristo (1:22,23; 2:16; 3:6; 4:1-16, 25; 5:23, 29,30)",
+      "Es un edificio/templo santo (2:19-22)",
+      "Es la novia o desposada de Cristo (5:25-27)",
+      "Es un ejército triunfante (6:10-20)"
+    ],
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-20',
-    text: '¿Juan el Bautista bautizó a Jesús en el río Jordán?',
-    type: 'true-false',
-    answer: 'Verdadero (Mateo 3:13)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-wild-1",
+    "text": "Repita un trabalenguas",
+    "type": "wildcard",
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-21',
-    text: '¿Quién escribió la mayoría de los Salmos?',
-    type: 'open-question',
-    answer: 'El rey David',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-wild-2",
+    "text": "Cuente un buen chiste",
+    "type": "wildcard",
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-22',
-    text: '¿Cuántos panes y peces usó Jesús para alimentar a los 5,000?',
-    type: 'option-selection',
-    options: ['A) 5 panes y 2 peces', 'B) 7 panes y 3 peces', 'C) 2 panes y 5 peces', 'D) 12 panes'],
-    answer: 'A) 5 panes y 2 peces (Mateo 14:17-21)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-wild-3",
+    "text": "Canten como grupo un canto que no sea en español",
+    "type": "wildcard",
+    "answer": "",
+    "language": "es"
   },
   {
-    id: 'seed-es-23',
-    text: '¿Zaqueo se subió a un árbol sicómoro para ver a Jesús?',
-    type: 'true-false',
-    answer: 'Verdadero (Lucas 19:4)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-24',
-    text: '¿Quién fue el primer hombre creado según el libro de Génesis?',
-    type: 'open-question',
-    answer: 'Adán (Génesis 2:7)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-25',
-    text: '¿En qué idioma se escribió principalmente el Nuevo Testamento?',
-    type: 'open-question',
-    answer: 'Griego koiné',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-26',
-    text: '¿Cómo se llamaba el jardín donde Dios puso a Adán y Eva?',
-    type: 'open-question',
-    answer: 'El jardín del Edén (Génesis 2:8)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-27',
-    text: '¿Quién fue el sucesor de Moisés como líder del pueblo de Israel?',
-    type: 'open-question',
-    answer: 'Josué (Josué 1:1-2)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-28',
-    text: '¿Cuántos libros componen el Nuevo Testamento?',
-    type: 'open-question',
-    answer: '27 libros',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-29',
-    text: '¿Qué reina judía arriesgó su vida para salvar a su pueblo del complot de Amán?',
-    type: 'open-question',
-    answer: 'La reina Ester (Ester 4:16)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-30',
-    text: '¿Quién escribió el libro de Apocalipsis en la isla de Patmos?',
-    type: 'open-question',
-    answer: 'El apóstol Juan (Apocalipsis 1:9)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-31',
-    text: '¿Cómo se llamaba el gigante filisteo que desafió a los ejércitos de Israel?',
-    type: 'open-question',
-    answer: 'Goliat de Gat (1 Samuel 17:4)',
-    language: 'es',
-    source: 'database'
-  },
-  // Wildcards (Comodines - Puntos de Regalo)
-  {
-    id: 'seed-es-w1',
-    text: '🌟 ¡PUNTOS DE REGALO! Has descubierto una tarjeta comodín. ¡Te llevas 3 puntos gratis directos a tu marcador!',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-w2',
-    text: '🌟 ¡BENDICIÓN EXTRA! ¡Felicidades! Esta tarjeta es un regalo especial y te otorga 3 puntos directos.',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-w3',
-    text: '🌟 ¡PASE LIBRE DE GRACIA! ¡Puntos gratis! Suma 3 puntos automáticos para ti sin necesidad de responder.',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-w4',
-    text: '🌟 ¡COMODÍN DORADO! Has desbloqueado una bonificación directa de 3 puntos para tu cuenta.',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-w5',
-    text: '🌟 ¡TARJETA AFORTUNADA! La suerte está de tu lado: ¡3 puntos de obsequio añadidos inmediatamente!',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-w6',
-    text: '🌟 ¡REGALO DE LA CASA! ¡Qué gran sorpresa! Esta casilla te obsequia 3 puntos de bonificación.',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-w7',
-    text: '🌟 ¡SUPER COMODÍN! Has seleccionado la tarjeta premio. Recibes 3 puntos directos en este turno.',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
-  },
-  {
-    id: 'seed-es-w8',
-    text: '🌟 ¡GRACIA PLENA! Un regalo para tu marcador: 3 puntos sumados al instante a tu registro.',
-    type: 'wildcard',
-    answer: '🌟 Comodín (+3 puntos de regalo)',
-    language: 'es',
-    source: 'database'
+    "id": "hechos-wild-4",
+    "text": "Repita un versículo de memoria del Nuevo Testamento con su texto",
+    "type": "wildcard",
+    "answer": "",
+    "language": "es"
   }
 ];
 

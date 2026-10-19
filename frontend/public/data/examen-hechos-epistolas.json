@@ -1,0 +1,234 @@
+{
+  "version": "1.0",
+  "title": "Examen de Hechos y Epístolas",
+  "language": "es",
+  "description": "5 V/F (con respuestas marcadas F/V), 5 Selección de Opciones (con opciones subrayadas marcadas como respuesta), 9 Preguntas Abiertas con subpuntos a explicar y 4 Comodines.",
+  "questions": [
+    {
+      "id": "hechos-tf-1",
+      "text": "En la carta de 1 Corintios se muestra el énfasis del pronto regreso de Jesús, de tal manera que algunos ya no querían trabajar.",
+      "type": "true-false",
+      "answer": "Falso",
+      "language": "es"
+    },
+    {
+      "id": "hechos-tf-2",
+      "text": "El propósito de la carta a los Gálatas es: corregir el informe de su autoridad apostólica y corregir la doctrina de los dones espirituales.",
+      "type": "true-false",
+      "answer": "Falso",
+      "language": "es"
+    },
+    {
+      "id": "hechos-tf-3",
+      "text": "Pablo escribió cartas a los Romanos y a los Colosenses, iglesias que él no conocía personalmente, ni había fundado.",
+      "type": "true-false",
+      "answer": "Verdadero",
+      "language": "es"
+    },
+    {
+      "id": "hechos-tf-4",
+      "text": "“Estoy pronto a ser sacrificado. El tiempo de mi partida está cercano.”, se encuentra en la carta de 2 Timoteo.",
+      "type": "true-false",
+      "answer": "Verdadero",
+      "language": "es"
+    },
+    {
+      "id": "hechos-tf-5",
+      "text": "Las cartas de Colosenses y Filemón fueron llevadas por Tiquico.",
+      "type": "true-false",
+      "answer": "Verdadero",
+      "language": "es"
+    },
+    {
+      "id": "hechos-opt-1",
+      "text": "Pablo para desarrollar Romanos 4, utiliza de base el texto del AT de:",
+      "type": "option-selection",
+      "options": [
+        "a. Gen 12:1",
+        "b. Ex 20:8-11",
+        "c. Gen 15:6"
+      ],
+      "answer": "c. Gen 15:6",
+      "language": "es"
+    },
+    {
+      "id": "hechos-opt-2",
+      "text": "En esta carta no se habla de ninguna crisis acuciante (urgente). No se habla de ninguna situación local:",
+      "type": "option-selection",
+      "options": [
+        "a. Filipenses",
+        "b. Efesios",
+        "c. Colosenses"
+      ],
+      "answer": "b. Efesios",
+      "language": "es"
+    },
+    {
+      "id": "hechos-opt-3",
+      "text": "En esta carta paulina se describe una herejía que tiene estos elementos: misticismo helenista, legalismo judío y ascetismo riguroso",
+      "type": "option-selection",
+      "options": [
+        "a. Filipenses",
+        "b. Gálatas",
+        "c. Colosenses"
+      ],
+      "answer": "c. Colosenses",
+      "language": "es"
+    },
+    {
+      "id": "hechos-opt-4",
+      "text": "El texto que dice: “La mujer aprenda en silencio con toda sujeción. No permito a la mujer enseñar, ni ejercer dominio…ella se salvará engendrando hijos si permanece en fe, amor y santificación con modestia” se encuentra en la carta a:",
+      "type": "option-selection",
+      "options": [
+        "a. 2 Corintios",
+        "b. 1 Timoteo",
+        "c. 2 Timoteo"
+      ],
+      "answer": "b. 1 Timoteo",
+      "language": "es"
+    },
+    {
+      "id": "hechos-opt-5",
+      "text": "En esta carta, “la humildad” del cristiano se basa en la humillación de Cristo siendo obediente hasta la muerte.",
+      "type": "option-selection",
+      "options": [
+        "a. Filipenses",
+        "b. Colosenses",
+        "c. Romanos"
+      ],
+      "answer": "a. Filipenses",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-1",
+      "text": "Pablo, ¿qué cartas escribe en su segundo viaje?",
+      "type": "open-question",
+      "subPoints": [
+        "1 y 2 Tesalonicenses"
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-2",
+      "text": "Pablo, ¿qué cartas escribe en la prisión de Roma?",
+      "type": "open-question",
+      "subPoints": [
+        "Efesios, Colosenses, Filipenses y Filemón"
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-3",
+      "text": "¿Cuáles son las 4 cartas que Pablo pudo escribir a los Corintios?",
+      "type": "open-question",
+      "subPoints": [
+        "1. Carta previa (1 Cor 5:9)",
+        "2. 1 Corintios",
+        "3. 2 Corintios 10-13 (2 Cor 2:3,4; 7:8)",
+        "4. 2 Corintios 1-9"
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-4",
+      "text": "¿Quiénes eran denominados grandes apóstoles en la iglesia de Corinto?",
+      "type": "open-question",
+      "subPoints": [
+        "Probablemente maestros judeo-cristianos",
+        "Critican la forma de hablar y el ministerio de Pablo",
+        "Irónicamente se les llama superapóstoles"
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-5",
+      "text": "¿Qué significa “todos los que somos perfectos” en Fil 3:15?",
+      "type": "open-question",
+      "subPoints": [
+        "Perfectos viene de teleleomai – significa madurez",
+        "La meta final es la resurrección y la transformación",
+        "La madurez se vive por la justicia de Cristo, no por la propia",
+        "El cristiano maduro que reconoce que aún no llegó, sigue corriendo hacia la meta y confía en la justicia de Cristo."
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-6",
+      "text": "¿Cuáles son las cartas denominadas “cristológicas”?",
+      "type": "open-question",
+      "subPoints": [
+        "Filipenses, Colosenses y Efesios (Hebreos)"
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-7",
+      "text": "¿Cuáles son los 3 propósitos de la carta a los Romanos?",
+      "type": "open-question",
+      "subPoints": [
+        "Propósito misionero: Evangelización del imperio – gentiles y España",
+        "Propósito apologético: Pablo presenta defensa de sí mismo y del evangelio",
+        "Propósito pastoral: Había divisiones potenciales - Unidad judío-gentil"
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-8",
+      "text": "Explique ¿Qué es la diatriba?",
+      "type": "open-question",
+      "subPoints": [
+        "Es una herramienta de enseñanza interactiva en la escuela filosófica antigua. Era un estilo de discurso que se utilizaba para instruir, alentar, confrontar y persuadir al oyente, mediante preguntas y respuestas imaginarias."
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-open-9",
+      "text": "¿Cuáles son las imágenes o símbolos de la iglesia en la carta a los Efesios?",
+      "type": "open-question",
+      "subPoints": [
+        "La iglesia es el cuerpo de Cristo (1:22,23; 2:16; 3:6; 4:1-16, 25; 5:23, 29,30)",
+        "Es un edificio/templo santo (2:19-22)",
+        "Es la novia o desposada de Cristo (5:25-27)",
+        "Es un ejército triunfante (6:10-20)"
+      ],
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-wild-1",
+      "text": "Repita un trabalenguas",
+      "type": "wildcard",
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-wild-2",
+      "text": "Cuente un buen chiste",
+      "type": "wildcard",
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-wild-3",
+      "text": "Canten como grupo un canto que no sea en español",
+      "type": "wildcard",
+      "answer": "",
+      "language": "es"
+    },
+    {
+      "id": "hechos-wild-4",
+      "text": "Repita un versículo de memoria del Nuevo Testamento con su texto",
+      "type": "wildcard",
+      "answer": "",
+      "language": "es"
+    }
+  ]
+}

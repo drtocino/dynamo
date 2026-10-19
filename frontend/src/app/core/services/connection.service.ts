@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { PlayerIntent, StateDelta, StateSnapshot } from '../models/game-state.model';
+import { getGameHubUrl } from '../config/api.config';
 
 export type ConnectionStatus = 'connected' | 'reconnecting' | 'disconnected';
 
@@ -23,7 +24,9 @@ export class ConnectionService {
   public connectionStatus$: Observable<ConnectionStatus> = this.connectionStatusSubject.asObservable();
   public systemMessage$: Observable<{ messageType: string; payload: any }> = this.systemMessageSubject.asObservable();
 
-  private hubUrl = 'http://localhost:5000/hub/game';
+  private get hubUrl(): string {
+    return getGameHubUrl();
+  }
 
   public async connect(sessionId: string, clientId: string): Promise<void> {
     if (this.hubConnection && this.hubConnection.state === signalR.HubConnectionState.Connected) {

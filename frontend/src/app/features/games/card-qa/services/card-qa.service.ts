@@ -33,12 +33,12 @@ export class CardQaService {
 
   // Session & Player Turn Tracking
   readonly currentSessionId = signal<string | null>(null);
-  readonly playersRoster = signal<string[]>(['Equipo 1', 'Equipo 2']);
+  readonly playersRoster = signal<string[]>(['Equipo 1', 'Equipo 2', 'Equipo 3', 'Equipo 4']);
   readonly activePlayerIndex = signal<number>(0);
 
   readonly activePlayerName = computed<string>(() => {
     const roster = this.playersRoster();
-    if (!roster.length) return 'Jugador';
+    if (!roster.length) return 'Equipo 1';
     const idx = this.activePlayerIndex() % roster.length;
     return roster[idx];
   });
@@ -133,8 +133,8 @@ export class CardQaService {
       
       // Extract registered player names from session
       const names = session.players?.map(p => p.name).filter(n => !!n?.trim()) || [];
-      const defaultNames = session.language === 'en' ? ['Player 1', 'Player 2'] : ['Jugador 1', 'Jugador 2'];
-      this.playersRoster.set(names.length ? names : defaultNames);
+      const defaultNames = ['Equipo 1', 'Equipo 2', 'Equipo 3', 'Equipo 4'];
+      this.playersRoster.set(names.length >= 2 ? names : defaultNames);
       this.activePlayerIndex.set(0);
 
       // Clean all game state and regenerate brand new cards
@@ -145,6 +145,23 @@ export class CardQaService {
       if (names.length && JSON.stringify(names) !== JSON.stringify(this.playersRoster())) {
         this.playersRoster.set(names);
       }
+    }
+
+    // Sync match title / name from session or localStorage
+    let matchName = '';
+    if (session.gameSettingsJson) {
+      try {
+        const parsed = JSON.parse(session.gameSettingsJson);
+        if (parsed.matchName) {
+          matchName = parsed.matchName;
+        }
+      } catch (_) {}
+    }
+    if (!matchName) {
+      matchName = localStorage.getItem('cardQa_matchName') || '';
+    }
+    if (matchName && this.config().matchName !== matchName) {
+      this.config.update(c => ({ ...c, matchName }));
     }
   }
 
@@ -168,50 +185,39 @@ export class CardQaService {
     const seedBank = currentLang === 'es' ? CARD_QA_SEEDS_ES : CARD_QA_SEEDS_EN;
     let rawQuestions: CardQuestion[] = [];
 
-    const cfg = this.config();
-    if (cfg.questionSource === 'custom') {
-      const customQuestions = this.getCustomQuestions().filter(q => q.language === currentLang);
-      rawQuestions = [...customQuestions, ...seedBank];
+    const customQuestions = this.getCustomQuestions().filter(q => q.language === currentLang);
+    if (customQuestions.length > 0) {
+      this.updateConfig({ questionSource: 'custom' });
+      rawQuestions = customQuestions;
     } else {
-      // Fetch from API with graceful fallback to seed bank
-      try {
-        const url = `/api/games/card-qa/questions?language=${currentLang}&limit=60`;
-        const apiQuestions = await firstValueFrom(this.http.get<CardQuestion[]>(url));
-        if (apiQuestions && apiQuestions.length >= 20) {
-          rawQuestions = apiQuestions;
-          this.isOfflineMode.set(false);
-        } else {
-          rawQuestions = seedBank;
-        }
-      } catch (err) {
-        console.warn('Backend Card Q&A API unreachable. Falling back to seed questions.', err);
-        this.isOfflineMode.set(true);
-        rawQuestions = seedBank;
-      }
+      rawQuestions = seedBank;
     }
 
-    // Segregate question pools by columns
-    // Pool 1: Red Columns 0 & 1 -> True/False and Option Selection
-    const redPool = rawQuestions
-      .filter(q => q.type === 'true-false' || q.type === 'option-selection')
-      .concat(seedBank.filter(q => q.type === 'true-false' || q.type === 'option-selection'));
-    
-    // Pool 2: Blue Columns 2 & 3 -> Open Questions
-    const bluePool = rawQuestions
-      .filter(q => q.type === 'open-question')
-      .concat(seedBank.filter(q => q.type === 'open-question'));
+    // Segregate question pools by columns strictly from rawQuestions
+    // Pool 1: Column 0 (Red) -> True/False (5 questions: 4 regular + 1 extra)
+    const tfPool = rawQuestions.filter(q => q.type === 'true-false');
+    const finalTf = tfPool.length >= 5 ? tfPool : [...tfPool, ...seedBank.filter(q => q.type === 'true-false')];
 
-    // Pool 3: Yellow Column 4 -> Wildcards
-    const yellowPool = rawQuestions
-      .filter(q => q.type === 'wildcard')
-      .concat(seedBank.filter(q => q.type === 'wildcard'));
+    // Pool 2: Column 1 (Red) -> Option Selection (5 questions: 4 regular + 1 extra)
+    const optionsPool = rawQuestions.filter(q => q.type === 'option-selection');
+    const finalOptions = optionsPool.length >= 5 ? optionsPool : [...optionsPool, ...seedBank.filter(q => q.type === 'option-selection')];
+    
+    // Pool 3: Columns 2 & 3 (Blue) -> Open Questions (9 questions across 2 columns)
+    const bluePool = rawQuestions.filter(q => q.type === 'open-question');
+    const finalBlue = bluePool.length >= 9 ? bluePool : [...bluePool, ...seedBank.filter(q => q.type === 'open-question')];
+
+    // Pool 4: Column 4 (Yellow) -> Wildcards (4+ questions)
+    const yellowPool = rawQuestions.filter(q => q.type === 'wildcard');
+    const finalYellow = yellowPool.length >= 4 ? yellowPool : [...yellowPool, ...seedBank.filter(q => q.type === 'wildcard')];
 
     // Shuffle each pool
-    const shuffledRed = [...redPool].sort(() => Math.random() - 0.5);
-    const shuffledBlue = [...bluePool].sort(() => Math.random() - 0.5);
-    const shuffledYellow = [...yellowPool].sort(() => Math.random() - 0.5);
+    const shuffledTf = [...finalTf].sort(() => Math.random() - 0.5);
+    const shuffledOptions = [...finalOptions].sort(() => Math.random() - 0.5);
+    const shuffledBlue = [...finalBlue].sort(() => Math.random() - 0.5);
+    const shuffledYellow = [...finalYellow].sort(() => Math.random() - 0.5);
 
-    let redIndex = 0;
+    let tfIndex = 0;
+    let optionsIndex = 0;
     let blueIndex = 0;
     let yellowIndex = 0;
 
@@ -228,10 +234,14 @@ export class CardQaService {
         let question: CardQuestion;
         let color: CardColor;
 
-        if (c === 0 || c === 1) {
+        if (c === 0) {
           color = 'red';
-          question = shuffledRed[redIndex % shuffledRed.length];
-          redIndex++;
+          question = shuffledTf[tfIndex % shuffledTf.length];
+          tfIndex++;
+        } else if (c === 1) {
+          color = 'red';
+          question = shuffledOptions[optionsIndex % shuffledOptions.length];
+          optionsIndex++;
         } else if (c === 2 || c === 3) {
           color = 'blue';
           question = shuffledBlue[blueIndex % shuffledBlue.length];
@@ -318,17 +328,26 @@ export class CardQaService {
     this.activeCard.set(flipped);
   }
 
-  evaluateAndClose(isCorrect: boolean): void {
+  evaluateAndClose(evaluation: boolean | number): void {
     const current = this.activeCard();
     if (!current) return;
 
+    let points: number;
+    let isCorrect: boolean;
+
     // Wildcards always award 3 gift points
     if (current.question.type === 'wildcard') {
+      points = 3;
       isCorrect = true;
+    } else if (typeof evaluation === 'number') {
+      points = Math.max(0, evaluation);
+      isCorrect = points > 0;
+    } else {
+      isCorrect = evaluation;
+      points = isCorrect ? 3 : 0;
     }
 
     const activePlayer = this.activePlayerName();
-    const points = isCorrect ? 3 : 0; // Rule: Correct = 3 pts, Wrong = 0 pts
 
     // Record question result
     const result: QuestionResult = {
@@ -428,6 +447,7 @@ export class CardQaService {
         text: q.text,
         type: q.type,
         options: q.options,
+        subPoints: q.subPoints,
         answer: q.answer,
         language: q.language
       }))
@@ -438,8 +458,12 @@ export class CardQaService {
 
   importCustomQuestionsJson(jsonString: string): { success: boolean; importedCount: number; error?: string } {
     try {
-      const parsed = JSON.parse(jsonString) as Partial<CustomQuestionPackExport>;
-      if (!parsed.questions || !Array.isArray(parsed.questions)) {
+      const parsed = JSON.parse(jsonString);
+      const rawList = Array.isArray(parsed) 
+        ? parsed 
+        : (parsed?.questions && Array.isArray(parsed.questions) ? parsed.questions : null);
+
+      if (!rawList) {
         return { success: false, importedCount: 0, error: 'Invalid JSON format: missing questions array' };
       }
 
@@ -447,15 +471,16 @@ export class CardQaService {
       const existingIds = new Set(existing.map(q => q.id));
       let added = 0;
 
-      for (const q of parsed.questions) {
-        if (!q.text || !q.answer || !q.type) continue;
+      for (const q of rawList) {
+        if (!q.text || !q.type) continue;
         const id = q.id && !existingIds.has(q.id) ? q.id : `custom-${crypto.randomUUID()}`;
         existing.push({
           id,
           text: q.text,
           type: q.type,
           options: q.options,
-          answer: q.answer,
+          subPoints: q.subPoints,
+          answer: q.answer || '',
           language: q.language || 'es',
           source: 'custom'
         });
@@ -468,5 +493,36 @@ export class CardQaService {
     } catch (e: any) {
       return { success: false, importedCount: 0, error: e.message || 'Parsing error' };
     }
+  }
+
+  saveCustomQuestions(questions: CardQuestion[]): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(CUSTOM_QUESTIONS_STORAGE_KEY, JSON.stringify(questions));
+      this.updateConfig({ questionSource: 'custom' });
+    }
+  }
+
+  createShareableLink(): string {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const players = this.playersRoster().join(',');
+    const customQuestions = this.getCustomQuestions();
+    
+    const params = new URLSearchParams();
+    params.set('autoStart', '1');
+    params.set('players', players);
+    
+    if (customQuestions.length > 0) {
+      try {
+        const jsonStr = JSON.stringify(customQuestions);
+        const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        params.set('q', b64);
+      } catch {
+        params.set('preset', 'examen-hechos-epistolas');
+      }
+    } else {
+      params.set('preset', 'examen-hechos-epistolas');
+    }
+
+    return `${origin}/shared-screen-setup/card-qa?${params.toString()}`;
   }
 }
