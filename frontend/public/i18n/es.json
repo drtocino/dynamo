@@ -286,5 +286,7 @@
   "game.cardQa.fullscreen": "Pantalla Completa",
   "game.cardQa.exitFullscreen": "Salir de Pantalla Completa",
   "game.cardQa.trueLabel": "Verdadero",
-  "game.cardQa.falseLabel": "Falso"
+  "game.cardQa.falseLabel": "Falso",
+  "game.cardQa.closeQuestion": "Cerrar pregunta",
+  "game.cardQa.closeQuestionAria": "Cerrar y volver al tablero"
 }

@@ -304,6 +304,25 @@ export class CardQaService {
     this.activeCard.set(updatedCard);
   }
 
+  closeActiveCard(): void {
+    const current = this.activeCard();
+    if (!current) return;
+
+    // Reset this card back to faced-down so it stays available on the board
+    const resetCard: BoardCard = {
+      ...current,
+      state: 'faced-down'
+    };
+
+    this.cards.update(list => {
+      const next = [...list];
+      next[current.index] = resetCard;
+      return next;
+    });
+
+    this.activeCard.set(null);
+  }
+
   revealAnswer(): void {
     const current = this.activeCard();
     if (!current || current.state !== 'expanded-question') return;

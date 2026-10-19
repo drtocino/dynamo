@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BoardCard } from '../../models/card-qa.models';
 import { TranslatePipe } from '../../../../../core/i18n';
@@ -38,9 +38,20 @@ import { ButtonComponent } from '../../../../../shared/components/button/button.
                 {{ 'game.cardQa.cardNumber' | translate:{ number: card.number } }}
               </span>
 
-              <span class="px-2.5 py-0.5 rounded-lg border-2 border-neo-black bg-white font-black text-xs text-neo-black uppercase tracking-wider shadow-sm flex items-center gap-1">
-                {{ getTypeLabel(card.question.type) }}
-              </span>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-lg border-2 border-neo-black bg-white font-black text-xs text-neo-black uppercase tracking-wider shadow-sm flex items-center gap-1">
+                  {{ getTypeLabel(card.question.type) }}
+                </span>
+
+                <button 
+                  type="button"
+                  (click)="onClose($event)"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 border-neo-black bg-white hover:bg-rose-100 text-neo-black font-black text-sm flex items-center justify-center transition hover:scale-105 active:scale-95 shadow-sm cursor-pointer shrink-0"
+                  [title]="'game.cardQa.closeQuestion' | translate"
+                  [attr.aria-label]="'game.cardQa.closeQuestionAria' | translate">
+                  ✕
+                </button>
+              </div>
             </div>
 
             <!-- Question Body -->
@@ -113,9 +124,20 @@ import { ButtonComponent } from '../../../../../shared/components/button/button.
                 {{ 'game.cardQa.cardNumber' | translate:{ number: card.number } }}
               </span>
 
-              <span class="px-2.5 py-0.5 rounded-lg border-2 border-neo-black bg-neo-cyan font-black text-xs text-neo-black uppercase tracking-wider">
-                {{ 'game.cardQa.revealAnswer' | translate }}
-              </span>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-lg border-2 border-neo-black bg-neo-cyan font-black text-xs text-neo-black uppercase tracking-wider">
+                  {{ 'game.cardQa.revealAnswer' | translate }}
+                </span>
+
+                <button 
+                  type="button"
+                  (click)="onClose($event)"
+                  class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 border-neo-black bg-white hover:bg-rose-100 text-neo-black font-black text-sm flex items-center justify-center transition hover:scale-105 active:scale-95 shadow-sm cursor-pointer shrink-0"
+                  [title]="'game.cardQa.closeQuestion' | translate"
+                  [attr.aria-label]="'game.cardQa.closeQuestionAria' | translate">
+                  ✕
+                </button>
+              </div>
             </div>
 
             <!-- Answer Body -->
@@ -222,6 +244,16 @@ import { ButtonComponent } from '../../../../../shared/components/button/button.
               </div>
             </div>
 
+            <!-- Optional Cancel Link in Back Face Footer -->
+            <div class="text-center pt-1.5">
+              <button 
+                type="button"
+                (click)="onClose($event)"
+                class="text-[11px] font-black text-neo-muted hover:text-neo-black hover:underline cursor-pointer">
+                ✕ {{ 'game.cardQa.closeQuestionAria' | translate }}
+              </button>
+            </div>
+
           </div>
 
         </div>
@@ -233,8 +265,21 @@ export class CardModalComponent implements OnChanges {
   @Input({ required: true }) card!: BoardCard;
   @Output() flipToAnswer = new EventEmitter<void>();
   @Output() evaluate = new EventEmitter<boolean | number>();
+  @Output() closeCard = new EventEmitter<void>();
 
   openQuestionScore = 3;
+
+  @HostListener('window:keydown.escape')
+  onEscape(): void {
+    this.closeCard.emit();
+  }
+
+  onClose(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.closeCard.emit();
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['card']) {
@@ -257,8 +302,8 @@ export class CardModalComponent implements OnChanges {
   }
 
   onBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget && this.card.state === 'expanded-question') {
-      this.onCardClick();
+    if (event.target === event.currentTarget) {
+      this.onClose(event);
     }
   }
 

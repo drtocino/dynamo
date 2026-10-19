@@ -9,7 +9,7 @@ import { TranslatePipe } from '../../../../../core/i18n';
   standalone: true,
   imports: [CommonModule, CardItemComponent, TranslatePipe],
   template: `
-    <div class="w-full max-w-6xl mx-auto space-y-2.5 px-1 sm:px-2">
+    <div class="w-full max-w-6xl mx-auto space-y-2.5 px-1 sm:px-2 mt-2">
       
       <!-- 5-Column Category Header Strip -->
       <div class="grid grid-cols-5 gap-2.5 sm:gap-3.5 md:gap-4 select-none">

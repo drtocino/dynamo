@@ -295,5 +295,7 @@
   "game.cardQa.fullscreen": "Full Screen",
   "game.cardQa.exitFullscreen": "Exit Full Screen",
   "game.cardQa.trueLabel": "True",
-  "game.cardQa.falseLabel": "False"
+  "game.cardQa.falseLabel": "False",
+  "game.cardQa.closeQuestion": "Close question",
+  "game.cardQa.closeQuestionAria": "Close and return to board"
 }

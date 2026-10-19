@@ -130,7 +130,8 @@ import { Session } from '../../../core/models/session.model';
         *ngIf="service.activeCard()"
         [card]="service.activeCard()!"
         (flipToAnswer)="service.revealAnswer()"
-        (evaluate)="service.evaluateAndClose($event)">
+        (evaluate)="service.evaluateAndClose($event)"
+        (closeCard)="service.closeActiveCard()">
       </app-card-modal>
 
       <!-- Results Scoreboard Modal (Collapsible by Default) -->
