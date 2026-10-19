@@ -1,5 +1,6 @@
 using Dynamo.Api.Hubs;
 using Dynamo.Api.Services;
+using Dynamo.Application.Games.CardQa.Queries;
 using Dynamo.Application.Games.Queries;
 using Dynamo.Application.Phrases.Queries;
 using Dynamo.Application.Services;
@@ -45,6 +46,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 // Register Application Handlers
 builder.Services.AddScoped<IGetGamesQueryHandler, GetGamesQueryHandler>();
 builder.Services.AddScoped<IGetPhrasesQueryHandler, GetPhrasesQueryHandler>();
+builder.Services.AddScoped<IGetCardQuestionsQueryHandler, GetCardQuestionsQueryHandler>();
 builder.Services.AddScoped<ICreateSessionCommandHandler, CreateSessionCommandHandler>();
 builder.Services.AddScoped<ICreateSharedScreenSessionCommandHandler, CreateSharedScreenSessionCommandHandler>();
 builder.Services.AddScoped<IJoinSessionCommandHandler, JoinSessionCommandHandler>();

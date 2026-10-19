@@ -10,12 +10,13 @@ import { TurnTrackerComponent } from './turn-tracker.component';
 import { GameStore } from '../../../store/game.store';
 import { InputService } from '../../../core/services/input.service';
 import { BiblicalRouletteComponent } from '../../games/biblical-roulette';
+import { CardQaComponent } from '../../games/card-qa';
 import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
 @Component({
   selector: 'app-active-match',
   standalone: true,
-  imports: [CommonModule, TurnTrackerComponent, BiblicalRouletteComponent, TranslatePipe],
+  imports: [CommonModule, TurnTrackerComponent, BiblicalRouletteComponent, CardQaComponent, TranslatePipe],
   template: `
     <div *ngIf="session" class="w-full flex flex-col">
       <!-- Active Match Top Bar -->
@@ -50,9 +51,17 @@ import { TranslatePipe, TranslationService } from '../../../core/i18n';
       <div class="w-full px-2 sm:px-4 pt-2.5 pb-4 space-y-3">
         <!-- Biblical Roulette Mode Container -->
         <app-biblical-roulette 
-          *ngIf="session.gameSlug === 'biblical-roulette' || session.mode === 'BiblicalRoulette'; else genericGameView"
+          *ngIf="session.gameSlug === 'biblical-roulette' || session.mode === 'BiblicalRoulette'; else checkCardQa"
           [session]="session">
         </app-biblical-roulette>
+
+        <!-- Card Q&A Game Container -->
+        <ng-template #checkCardQa>
+          <app-card-qa 
+            *ngIf="session.gameSlug === 'card-qa'; else genericGameView"
+            [session]="session">
+          </app-card-qa>
+        </ng-template>
 
       <!-- Generic Game Sandbox Display Container -->
       <ng-template #genericGameView>

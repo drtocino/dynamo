@@ -12,10 +12,10 @@
 
 **Purpose**: Create project directory structure, base localization strings, and domain models.
 
-- [ ] T001 Create directory structure for Card Q&A game module in `frontend/src/app/features/games/card-qa/` with subdirectories `components/`, `models/`, and `services/`
-- [ ] T002 [P] Define TypeScript domain models, enums, and interfaces (`CardQuestion`, `BoardCard`, `QuestionResult`, `PlayerRound`, `PlayerSummary`, `GameConfiguration`) in `frontend/src/app/features/games/card-qa/models/card-qa.models.ts`
-- [ ] T003 [P] Create bundled offline seed questions bank for Spanish and English in `frontend/src/app/features/games/card-qa/services/card-qa-seeds.ts`
-- [ ] T004 [P] Add Spanish and English Card Q&A localization keys in `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json`
+- [X] T001 Create directory structure for Card Q&A game module in `frontend/src/app/features/games/card-qa/` with subdirectories `components/`, `models/`, and `services/`
+- [X] T002 [P] Define TypeScript domain models, enums, and interfaces (`CardQuestion`, `BoardCard`, `QuestionResult`, `PlayerRound`, `PlayerSummary`, `GameConfiguration`) in `frontend/src/app/features/games/card-qa/models/card-qa.models.ts`
+- [X] T003 [P] Create bundled offline seed questions bank for Spanish and English in `frontend/src/app/features/games/card-qa/services/card-qa-seeds.ts`
+- [X] T004 [P] Add Spanish and English Card Q&A localization keys in `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json`
 
 ---
 
@@ -25,10 +25,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Implement `CardQaService` managing reactive Signals (`cards`, `activeCard`, `activeRound`, `allResults`, `playerSummaries`, `config`), board initialization, card selection, and question loading in `frontend/src/app/features/games/card-qa/services/card-qa.service.ts`
-- [ ] T006 [P] Register Card Q&A game in game catalog models and Hub catalog view in `frontend/src/app/core/models/game.model.ts` and `frontend/src/app/features/hub/hub.component.ts`
-- [ ] T007 [P] Create public module barrel export in `frontend/src/app/features/games/card-qa/index.ts` and update `frontend/src/app/features/games/index.ts`
-- [ ] T008 Mount Card Q&A game container for shared-screen sessions in `frontend/src/app/features/sessions/active-match/active-match.component.ts`
+- [X] T005 Implement `CardQaService` managing reactive Signals (`cards`, `activeCard`, `activeRound`, `allResults`, `playerSummaries`, `config`), board initialization, card selection, and question loading in `frontend/src/app/features/games/card-qa/services/card-qa.service.ts`
+- [X] T006 [P] Register Card Q&A game in game catalog models and Hub catalog view in `frontend/src/app/core/models/game.model.ts` and `frontend/src/app/features/hub/hub.component.ts`
+- [X] T007 [P] Create public module barrel export in `frontend/src/app/features/games/card-qa/index.ts` and update `frontend/src/app/features/games/index.ts`
+- [X] T008 Mount Card Q&A game container for shared-screen sessions in `frontend/src/app/features/sessions/active-match/active-match.component.ts`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -40,10 +40,10 @@
 
 **Independent Test**: Load the Card Q&A game, click Card #1, verify modal expansion with background blur, click to flip from question to answer with 3D animation, click "Correct", verify modal closes, and confirm Card #1 appears disabled on the grid.
 
-- [ ] T009 [P] [US1] Implement individual numbered card tile component `CardItemComponent` with neobrutalist styling, numbered face, and disabled state in `frontend/src/app/features/games/card-qa/components/card-item/card-item.component.ts`
-- [ ] T010 [P] [US1] Implement 5x4 responsive grid container `CardGridComponent` displaying numbered cards in `frontend/src/app/features/games/card-qa/components/card-grid/card-grid.component.ts`
-- [ ] T011 [US1] Implement expanding `CardModalComponent` with backdrop blur (`backdrop-blur-md`), scoped CSS 3D flip animations (`preserve-3d`, `rotate-y-180`, `backface-visibility: hidden`), and reusable `app-button` controls for "Correct" and "Incorrect" in `frontend/src/app/features/games/card-qa/components/card-modal/card-modal.component.ts` and `frontend/src/app/features/games/card-qa/components/card-modal/card-modal.component.scss`
-- [ ] T012 [US1] Assemble root `CardQaComponent` connecting the grid, active card expansion, host evaluation, card disabling, and backdrop in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
+- [X] T009 [P] [US1] Implement individual numbered card tile component `CardItemComponent` with neobrutalist styling, numbered face, and disabled state in `frontend/src/app/features/games/card-qa/components/card-item/card-item.component.ts`
+- [X] T010 [P] [US1] Implement 5x4 responsive grid container `CardGridComponent` displaying numbered cards in `frontend/src/app/features/games/card-qa/components/card-grid/card-grid.component.ts`
+- [X] T011 [US1] Implement expanding `CardModalComponent` with backdrop blur (`backdrop-blur-md`), scoped CSS 3D flip animations (`preserve-3d`, `rotate-y-180`, `backface-visibility: hidden`), and reusable `app-button` controls for "Correct" and "Incorrect" in `frontend/src/app/features/games/card-qa/components/card-modal/card-modal.component.ts` and `frontend/src/app/features/games/card-qa/components/card-modal/card-modal.component.scss`
+- [X] T012 [US1] Assemble root `CardQaComponent` connecting the grid, active card expansion, host evaluation, card disabling, and backdrop in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
 
 **Checkpoint**: User Story 1 is functional as an MVP — cards flip smoothly in 3D, reveal question then answer, host can mark correct/incorrect, and cards disable upon closing.
 
@@ -55,9 +55,9 @@
 
 **Independent Test**: Enter player name "David", answer 5 cards, verify each question is attributed to David, confirm turn counter advances ("Question 1 of 5" to "Question 5 of 5"), and verify a prompt appears to start the next player's round ("Sarah").
 
-- [ ] T013 [US2] Implement player registration prompt dialog requiring a non-empty player name before enabling the board in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
-- [ ] T014 [US2] Implement turn progress indicator ("Question X of N") and quota completion detection in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
-- [ ] T015 [US2] Implement round completion notification prompting the host to register the next player while preserving remaining active cards on the board in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
+- [X] T013 [US2] Implement player registration prompt dialog requiring a non-empty player name before enabling the board in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
+- [X] T014 [US2] Implement turn progress indicator ("Question X of N") and quota completion detection in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
+- [X] T015 [US2] Implement round completion notification prompting the host to register the next player while preserving remaining active cards on the board in `frontend/src/app/features/games/card-qa/card-qa.component.ts`
 
 **Checkpoint**: User Stories 1 AND 2 are fully functional — structured rounds with named players and question quotas.
 
@@ -69,10 +69,10 @@
 
 **Independent Test**: Click "View Results" during or after play, verify all players and evaluated questions are displayed, click an evaluated item to toggle between Correct and Incorrect (confirming instant score recalculation), and test the manual "Reset Board" button.
 
-- [ ] T016 [US3] Implement `ResultsModalComponent` reusing `app-modal` and `app-button` to display player score summaries, correct/incorrect totals, and itemized question histories in `frontend/src/app/features/games/card-qa/components/results-modal/results-modal.component.ts`
-- [ ] T017 [US3] Implement interactive evaluation toggling in `ResultsModalComponent` to allow host misclick corrections, updating `CardQaService` reactively in `frontend/src/app/features/games/card-qa/components/results-modal/results-modal.component.ts`
-- [ ] T018 [US3] Implement manual board reset button in `ResultsModalComponent` with confirmation dialog to restart the game without a forced winner modal in `frontend/src/app/features/games/card-qa/components/results-modal/results-modal.component.ts`
-- [ ] T019 [US3] Integrate "View Results" trigger button into the top toolbar of `frontend/src/app/features/games/card-qa/card-qa.component.ts`
+- [X] T016 [US3] Implement `ResultsModalComponent` reusing `app-modal` and `app-button` to display player score summaries, correct/incorrect totals, and itemized question histories in `frontend/src/app/features/games/card-qa/components/results-modal/results-modal.component.ts`
+- [X] T017 [US3] Implement interactive evaluation toggling in `ResultsModalComponent` to allow host misclick corrections, updating `CardQaService` reactively in `frontend/src/app/features/games/card-qa/components/results-modal/results-modal.component.ts`
+- [X] T018 [US3] Implement manual board reset button in `ResultsModalComponent` with confirmation dialog to restart the game without a forced winner modal in `frontend/src/app/features/games/card-qa/components/results-modal/results-modal.component.ts`
+- [X] T019 [US3] Integrate "View Results" trigger button into the top toolbar of `frontend/src/app/features/games/card-qa/card-qa.component.ts`
 
 **Checkpoint**: User Stories 1, 2, AND 3 work together — full score tracking with misclick corrections and host-driven resets.
 
@@ -84,10 +84,10 @@
 
 **Independent Test**: Open Configuration, set card count to 16, create a custom Option Selection question in the Custom Questions Manager, export to JSON, import the JSON file, and start a match to verify the custom question appears on a card.
 
-- [ ] T020 [P] [US4] Implement `ConfigModalComponent` reusing `app-modal` to configure total card count (12, 16, 20, 24) and questions per player turn (3, 5, 10) in `frontend/src/app/features/games/card-qa/components/config-modal/config-modal.component.ts`
-- [ ] T021 [US4] Implement `CustomQuestionsModalComponent` reusing `app-modal` for creating, viewing, editing, and deleting True/False, Option Selection, and Open questions in `frontend/src/app/features/games/card-qa/components/custom-questions-modal/custom-questions-modal.component.ts`
-- [ ] T022 [US4] Implement JSON question pack export and import utilities with schema validation in `frontend/src/app/features/games/card-qa/components/custom-questions-modal/custom-questions-modal.component.ts`
-- [ ] T023 [US4] Connect custom questions selection to `CardQaService` to draw questions from `localStorage` in `frontend/src/app/features/games/card-qa/services/card-qa.service.ts`
+- [X] T020 [P] [US4] Implement `ConfigModalComponent` reusing `app-modal` to configure total card count (12, 16, 20, 24) and questions per player turn (3, 5, 10) in `frontend/src/app/features/games/card-qa/components/config-modal/config-modal.component.ts`
+- [X] T021 [US4] Implement `CustomQuestionsModalComponent` reusing `app-modal` for creating, viewing, editing, and deleting True/False, Option Selection, and Open questions in `frontend/src/app/features/games/card-qa/components/custom-questions-modal/custom-questions-modal.component.ts`
+- [X] T022 [US4] Implement JSON question pack export and import utilities with schema validation in `frontend/src/app/features/games/card-qa/components/custom-questions-modal/custom-questions-modal.component.ts`
+- [X] T023 [US4] Connect custom questions selection to `CardQaService` to draw questions from `localStorage` in `frontend/src/app/features/games/card-qa/services/card-qa.service.ts`
 
 **Checkpoint**: User Stories 1 through 4 are fully functional — flexible settings and custom question management with file portability.
 
@@ -99,13 +99,13 @@
 
 **Independent Test**: Call `GET /api/games/card-qa/questions?language=es` and verify seeded Spanish questions return. Disconnect or stop backend and verify frontend seamlessly falls back to bundled seed array without error.
 
-- [ ] T024 [P] [US5] Create `CardQuestion` entity and `CardQuestionType` enum in `backend/src/Dynamo.Core/Entities/CardQuestion.cs` and `backend/src/Dynamo.Core/Enums/CardQuestionType.cs`
-- [ ] T025 [P] [US5] Add `DbSet<CardQuestion>` and EF Core entity configuration in `backend/src/Dynamo.Infrastructure/Persistence/AppDbContext.cs` and `backend/src/Dynamo.Infrastructure/Persistence/Configurations/CardQuestionConfiguration.cs`
-- [ ] T026 [US5] Create database migration and Biblical question seeder in Spanish and English in `backend/src/Dynamo.Infrastructure/Persistence/Seeding/CardQuestionSeeder.cs`
-- [ ] T027 [P] [US5] Implement `GetCardQuestionsQuery`, DTO, and handler in `backend/src/Dynamo.Application/Games/CardQa/Queries/GetCardQuestionsQuery.cs`
-- [ ] T028 [US5] Implement `CardQuestionsController` exposing `GET /api/games/card-qa/questions` in `backend/src/Dynamo.Api/Controllers/CardQuestionsController.cs`
-- [ ] T029 [US5] Add unit tests for `GetCardQuestionsQueryHandler` in `backend/tests/Dynamo.Application.Tests/CardQaTests.cs`
-- [ ] T030 [US5] Connect `CardQaService` to fetch questions from `GET /api/games/card-qa/questions` with automatic fallback to bundled seeds in `frontend/src/app/features/games/card-qa/services/card-qa.service.ts`
+- [X] T024 [P] [US5] Create `CardQuestion` entity and `CardQuestionType` enum in `backend/src/Dynamo.Core/Entities/CardQuestion.cs` and `backend/src/Dynamo.Core/Enums/CardQuestionType.cs`
+- [X] T025 [P] [US5] Add `DbSet<CardQuestion>` and EF Core entity configuration in `backend/src/Dynamo.Infrastructure/Data/DynamoDbContext.cs`
+- [X] T026 [US5] Create database biblical question seeder in Spanish and English in `backend/src/Dynamo.Infrastructure/Data/CardQuestionSeeder.cs`
+- [X] T027 [P] [US5] Implement `GetCardQuestionsQuery`, DTO, and handler in `backend/src/Dynamo.Application/Games/CardQa/Queries/GetCardQuestionsQuery.cs`
+- [X] T028 [US5] Implement `CardQuestionsController` exposing `GET /api/games/card-qa/questions` in `backend/src/Dynamo.Api/Controllers/CardQuestionsController.cs`
+- [X] T029 [US5] Add unit tests for `GetCardQuestionsQueryHandler` in `backend/tests/Dynamo.Application.Tests/CardQaTests.cs`
+- [X] T030 [US5] Connect `CardQaService` to fetch questions from `GET /api/games/card-qa/questions` with automatic fallback to bundled seeds in `frontend/src/app/features/games/card-qa/services/card-qa.service.ts`
 
 **Checkpoint**: All 5 user stories are complete and integrated.
 
@@ -115,11 +115,11 @@
 
 **Purpose**: Visual identity audit, complete translation verification, viewport responsiveness, and end-to-end verification.
 
-- [ ] T031 [P] Audit all Card Q&A UI elements against Dynamo Neobrutalist design tokens (3px/4px black borders, stark drop shadows, flat vibrant fills, chunky typography) across `frontend/src/app/features/games/card-qa/`
-- [ ] T032 [P] Verify 100% i18n translation coverage with zero raw keys visible in `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json`
-- [ ] T033 Verify responsive grid layout across desktop, tablet, and projected display viewports
-- [ ] T034 Execute end-to-end verification walkthrough adhering to `specs/005-card-qa-game/quickstart.md`
-- [ ] T035 Verify clean frontend build (`npm run build`) and backend tests (`dotnet test`) pass with zero errors
+- [X] T031 [P] Audit all Card Q&A UI elements against Dynamo Neobrutalist design tokens (3px/4px black borders, stark drop shadows, flat vibrant fills, chunky typography) across `frontend/src/app/features/games/card-qa/`
+- [X] T032 [P] Verify 100% i18n translation coverage with zero raw keys visible in `frontend/public/i18n/es.json` and `frontend/public/i18n/en.json`
+- [X] T033 Verify responsive grid layout across desktop, tablet, and projected display viewports
+- [X] T034 Execute end-to-end verification walkthrough adhering to `specs/005-card-qa-game/quickstart.md`
+- [X] T035 Verify clean frontend build (`npm run build`) and backend tests (`dotnet test`) pass with zero errors
 
 ---
 

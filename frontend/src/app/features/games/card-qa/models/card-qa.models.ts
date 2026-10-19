@@ -2,8 +2,9 @@
  * Domain Models & Types for Card Question & Answer Game
  */
 
-export type CardQuestionType = 'true-false' | 'option-selection' | 'open-question';
+export type CardQuestionType = 'true-false' | 'option-selection' | 'open-question' | 'wildcard';
 export type CardState = 'faced-down' | 'expanded-question' | 'expanded-answer' | 'disabled';
+export type CardColor = 'red' | 'blue' | 'yellow';
 
 export interface CardQuestion {
   id: string;
@@ -20,6 +21,10 @@ export interface BoardCard {
   number: number;        // 1-based display number (1..N)
   state: CardState;      // Current interaction state
   question: CardQuestion; // Assigned question
+  color: CardColor;      // 'red' | 'blue' | 'yellow'
+  columnIndex: number;   // 0 to 4
+  rowIndex: number;      // 0 to 5
+  isBottomPeek?: boolean; // True for cards on bottom rows that are not fully visible
 }
 
 export interface QuestionResult {
@@ -31,18 +36,20 @@ export interface QuestionResult {
   questionType: CardQuestionType;
   answerText: string;    // Answer displayed
   isCorrect: boolean;    // Host evaluation (toggleable in Results Modal)
+  points: number;        // 3 if correct, 0 if incorrect
   timestamp: number;     // Evaluation timestamp
 }
 
 export interface PlayerRound {
   playerName: string;
-  questionQuota: number;       // Default 5 (configurable)
-  currentCount: number;        // Questions answered in current turn (0..quota)
-  isCompleted: boolean;        // True when currentCount === questionQuota
+  questionQuota: number;       // 1 pick per turn
+  currentCount: number;        // 0..1
+  isCompleted: boolean;
 }
 
 export interface PlayerSummary {
   playerName: string;
+  totalPoints: number;         // 3 points per correct answer
   totalAnswered: number;
   correctCount: number;
   incorrectCount: number;

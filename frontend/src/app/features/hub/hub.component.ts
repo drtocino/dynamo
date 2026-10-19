@@ -164,6 +164,7 @@ export class HubComponent implements OnInit {
       case 'charades-flash': return '🎭';
       case 'scripture-duel': return '⚔️';
       case 'biblical-roulette': return '🎡';
+      case 'card-qa': return '🃏';
       default: return '🎲';
     }
   }

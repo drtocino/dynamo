@@ -16,6 +16,7 @@ public class DynamoDbContext : DbContext
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Player> Players => Set<Player>();
     public DbSet<Phrase> Phrases => Set<Phrase>();
+    public DbSet<CardQuestion> CardQuestions => Set<CardQuestion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,10 +77,21 @@ public class DynamoDbContext : DbContext
             b.Property(p => p.Name).IsRequired().HasMaxLength(50);
         });
 
+        modelBuilder.Entity<CardQuestion>(b =>
+        {
+            b.HasKey(q => q.Id);
+            b.Property(q => q.Text).IsRequired().HasMaxLength(500);
+            b.Property(q => q.Answer).IsRequired().HasMaxLength(500);
+            b.Property(q => q.Language).IsRequired().HasMaxLength(10).HasDefaultValue("es");
+            b.Property(q => q.OptionsJson).HasMaxLength(1000);
+        });
+
         // Seed initial mock games
         var game1Id = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var game2Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var game3Id = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var game4Id = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var game5Id = Guid.Parse("55555555-5555-5555-5555-555555555555");
 
         modelBuilder.Entity<Game>().HasData(
             new
@@ -123,13 +135,26 @@ public class DynamoDbContext : DbContext
             },
             new
             {
-                Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                Id = game4Id,
                 Slug = "biblical-roulette",
                 Name = "Biblical Roulette",
                 Description = "Spin the wheel, reveal letters, and solve the hidden verse with live dynamic vowel pricing.",
                 ThumbnailUrl = "/assets/games/roulette.png",
                 SupportedModes = new List<MultiplayerMode> { MultiplayerMode.SharedScreen, MultiplayerMode.BiblicalRoulette },
                 SettingsSchemaJson = "{\"maxPlayers\": 6, \"defaultRounds\": 3, \"defaultTime\": 45}",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = game5Id,
+                Slug = "card-qa",
+                Name = "Card Question & Answer",
+                Description = "Turn face-down numbered cards, reveal biblical questions and answers, and evaluate knowledge in shared-screen turns.",
+                ThumbnailUrl = "/assets/games/card-qa.png",
+                SupportedModes = new List<MultiplayerMode> { MultiplayerMode.SharedScreen },
+                SettingsSchemaJson = "{\"totalCardCount\": 20, \"questionsPerTurn\": 5, \"defaultLanguage\": \"es\"}",
                 Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
@@ -305,5 +330,7 @@ public class DynamoDbContext : DbContext
                 UpdatedAt = (DateTime?)null
             }
         );
+
+        modelBuilder.SeedCardQuestions();
     }
 }

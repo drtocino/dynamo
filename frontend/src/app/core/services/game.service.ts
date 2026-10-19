@@ -47,6 +47,15 @@ export class GameService {
       supportedModes: ['SharedScreen'],
       settingsSchemaJson: '{"maxPlayers": 6, "defaultRounds": 3, "defaultTime": 45}',
       language: 'es'
+    },
+    {
+      id: '55555555-5555-5555-5555-555555555555',
+      slug: 'card-qa',
+      name: 'Card Question & Answer',
+      description: 'Numbered 3D flip cards with interactive questions and answers for group trivia and evaluation.',
+      thumbnailUrl: 'assets/games/card-qa.png',
+      supportedModes: ['SharedScreen'],
+      settingsSchemaJson: '{"maxPlayers": 10, "defaultRounds": 5, "defaultTime": 60}'
     }
   ];
 
