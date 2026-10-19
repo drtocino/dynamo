@@ -276,7 +276,7 @@
   "game.cardQa.importError": "El archivo JSON no tiene un formato válido.",
   "game.cardQa.offlineBadge": "Modo Local / Offline",
   "game.cardQa.closeCard": "Finalizar y Cerrar",
-  "game.cardQa.toggleStatus": "Haz clic en el estado para corregir (Correcto / Incorrecto)",
+  "game.cardQa.toggleStatus": "Haz clic en el estado o usa los botones +/- para ajustar la puntuación.",
   "game.cardQa.expandAll": "Expandir todos",
   "game.cardQa.collapseAll": "Colapsar todos",
   "game.cardQa.viewDetails": "Ver detalle",

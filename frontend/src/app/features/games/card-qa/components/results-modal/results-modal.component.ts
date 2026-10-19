@@ -107,24 +107,88 @@ import { ButtonComponent } from '../../../../../shared/components/button/button.
                 class="bg-white border-2 border-neo-black rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-3 text-xs shadow-sm">
                 
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-1.5 mb-1">
+                  <div class="flex items-center gap-1.5 mb-1 flex-wrap">
                     <span class="px-1.5 py-0.5 rounded bg-neo-black text-white font-black text-[10px]">
                       #{{ res.cardNumber }}
                     </span>
-                    <span class="font-black text-neo-black truncate">{{ res.questionText }}</span>
+                    <span 
+                      *ngIf="res.questionType === 'open-question'" 
+                      class="px-1.5 py-0.2 rounded bg-amber-100 border border-amber-400 text-amber-900 font-black text-[9px] uppercase">
+                      Abierta
+                    </span>
+                    <span 
+                      *ngIf="res.questionType === 'true-false'" 
+                      class="px-1.5 py-0.2 rounded bg-rose-100 border border-rose-400 text-rose-900 font-black text-[9px] uppercase">
+                      V/F
+                    </span>
+                    <span 
+                      *ngIf="res.questionType === 'option-selection'" 
+                      class="px-1.5 py-0.2 rounded bg-blue-100 border border-blue-400 text-blue-900 font-black text-[9px] uppercase">
+                      Opciones
+                    </span>
+                    <span 
+                      *ngIf="res.questionType === 'wildcard'" 
+                      class="px-1.5 py-0.2 rounded bg-yellow-100 border border-yellow-400 text-yellow-900 font-black text-[9px] uppercase">
+                      Comodín
+                    </span>
+                    <span class="font-black text-neo-black truncate" [title]="res.questionText">{{ res.questionText }}</span>
                   </div>
                   <div class="text-[11px] text-neo-muted truncate pl-0.5">
                     <span *ngIf="res.questionType === 'wildcard'" class="font-black text-amber-700">
                       🌟 Comodín (+3 pts de regalo)
                     </span>
                     <span *ngIf="res.questionType !== 'wildcard'">
-                      <span class="font-black text-neo-black/70">R:</span> {{ res.answerText }}
+                      <span class="font-black text-neo-black/70">R:</span> {{ res.answerText || '(Pregunta abierta / a criterio)' }}
                     </span>
                   </div>
                 </div>
 
-                <!-- Clickable Evaluation Toggle Badge -->
+                <!-- Right Side Actions & Points Badge -->
+                <!-- Case 1: Open Question (Stepper: - / Score Pill / +) -->
+                <div 
+                  *ngIf="res.questionType === 'open-question'" 
+                  class="flex items-center gap-1 shrink-0">
+                  <div class="flex items-center border-2 border-neo-black rounded-lg overflow-hidden bg-white shadow-sm">
+                    <button
+                      type="button"
+                      (click)="service.adjustResultPoints(res.id, -1)"
+                      [disabled]="res.points <= 0"
+                      class="w-6 h-7 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 disabled:opacity-30 disabled:cursor-not-allowed font-black text-xs flex items-center justify-center border-r border-neo-black cursor-pointer transition select-none"
+                      title="Restar 1 punto">
+                      -
+                    </button>
+                    <button
+                      type="button"
+                      (click)="service.cycleResultPoints(res.id)"
+                      [class.bg-emerald-100]="res.points > 0"
+                      [class.text-emerald-900]="res.points > 0"
+                      [class.bg-rose-100]="res.points === 0"
+                      [class.text-rose-900]="res.points === 0"
+                      class="px-2 h-7 font-black text-xs flex items-center justify-center hover:opacity-85 transition cursor-pointer select-none whitespace-nowrap"
+                      title="Clic para alternar (0, 1, 2, 3 pts)">
+                      {{ res.points > 0 ? ('✓ +' + res.points + (res.points === 1 ? ' pto' : ' pts')) : '✕ 0 pts' }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="service.adjustResultPoints(res.id, 1)"
+                      [disabled]="res.points >= 3"
+                      class="w-6 h-7 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 disabled:opacity-30 disabled:cursor-not-allowed font-black text-xs flex items-center justify-center border-l border-neo-black cursor-pointer transition select-none"
+                      title="Sumar 1 punto">
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Case 2: Wildcard (Gift points banner) -->
+                <div 
+                  *ngIf="res.questionType === 'wildcard'"
+                  class="px-2.5 py-1.5 rounded-lg border-2 border-amber-500 bg-amber-100 text-amber-900 font-black text-xs shrink-0 shadow-sm flex items-center gap-1 select-none">
+                  <span>🎁</span> +3 pts
+                </div>
+
+                <!-- Case 3: Binary Questions (True/False & Options Selection) -->
                 <button
+                  *ngIf="res.questionType !== 'open-question' && res.questionType !== 'wildcard'"
                   type="button"
                   (click)="service.toggleResultEvaluation(res.id)"
                   [class.bg-emerald-100]="res.isCorrect"
@@ -133,8 +197,8 @@ import { ButtonComponent } from '../../../../../shared/components/button/button.
                   [class.bg-rose-100]="!res.isCorrect"
                   [class.text-rose-800]="!res.isCorrect"
                   [class.border-rose-500]="!res.isCorrect"
-                  class="px-2.5 py-1.5 rounded-lg border-2 font-black text-xs shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-sm">
-                  {{ res.isCorrect ? '✓ Correcto (+3 pts)' : '✕ Incorrecto (0 pts)' }}
+                  class="px-2.5 py-1.5 rounded-lg border-2 font-black text-xs shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-sm select-none">
+                  {{ res.isCorrect ? ('✓ Correcto (+' + (res.points || 3) + ' pts)') : '✕ Incorrecto (0 pts)' }}
                 </button>
               </div>
 

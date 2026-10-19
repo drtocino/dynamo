@@ -285,7 +285,7 @@
   "game.cardQa.importError": "The uploaded JSON file is not properly formatted.",
   "game.cardQa.offlineBadge": "Offline / Local Mode",
   "game.cardQa.closeCard": "Finish & Close",
-  "game.cardQa.toggleStatus": "Click on status to correct (Correct / Incorrect)",
+  "game.cardQa.toggleStatus": "Click on status or use +/- to adjust the score.",
   "game.cardQa.expandAll": "Expand all",
   "game.cardQa.collapseAll": "Collapse all",
   "game.cardQa.viewDetails": "View details",

@@ -58,9 +58,6 @@ import { Session } from '../../../core/models/session.model';
             <span class="font-black text-xs text-neo-black flex items-center gap-1 truncate max-w-[120px] sm:max-w-none">
               <span>🎯</span> {{ service.activePlayerName() }}
             </span>
-            <span class="px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-400 font-black text-[8px]">
-              1 pick
-            </span>
           </div>
 
           <!-- Next Player Tag -->
@@ -182,7 +179,7 @@ export class CardQaComponent implements OnInit, OnChanges {
         if (parsed.matchName?.trim()) {
           return parsed.matchName.trim();
         }
-      } catch (_) {}
+      } catch (_) { }
     }
 
     const stored = localStorage.getItem('cardQa_matchName')?.trim();

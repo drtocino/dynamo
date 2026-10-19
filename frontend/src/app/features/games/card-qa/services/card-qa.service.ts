@@ -88,10 +88,11 @@ export class CardQaService {
     const summaries: PlayerSummary[] = [];
     for (const [playerName, playerResults] of map.entries()) {
       const total = playerResults.length;
-      const correct = playerResults.filter(p => p.isCorrect).length;
+      const correct = playerResults.filter(p => (p.points ?? 0) > 0).length;
       const incorrect = total - correct;
       const totalPoints = playerResults.reduce((acc, r) => acc + (r.points ?? (r.isCorrect ? 3 : 0)), 0);
-      const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+      const maxPossible = total * 3;
+      const percentage = maxPossible > 0 ? Math.min(100, Math.round((totalPoints / maxPossible) * 100)) : 0;
 
       summaries.push({
         playerName,
@@ -368,6 +369,13 @@ export class CardQaService {
 
     const activePlayer = this.activePlayerName();
 
+    let answerText = current.question.answer;
+    if (!answerText && current.question.subPoints?.length) {
+      answerText = current.question.subPoints.join(' · ');
+    } else if (!answerText && current.question.type === 'open-question') {
+      answerText = '(Pregunta abierta / a criterio)';
+    }
+
     // Record question result
     const result: QuestionResult = {
       id: crypto.randomUUID(),
@@ -376,7 +384,7 @@ export class CardQaService {
       questionId: current.question.id,
       questionText: current.question.text,
       questionType: current.question.type,
-      answerText: current.question.answer,
+      answerText,
       isCorrect,
       points,
       timestamp: Date.now()
@@ -410,11 +418,47 @@ export class CardQaService {
     this.allResults.update(results =>
       results.map(r => {
         if (r.id === resultId) {
-          const isCorrect = !r.isCorrect;
+          const currentPts = r.points ?? (r.isCorrect ? 3 : 0);
+          const isCorrect = currentPts === 0;
           return {
             ...r,
             isCorrect,
             points: isCorrect ? 3 : 0
+          };
+        }
+        return r;
+      })
+    );
+  }
+
+  adjustResultPoints(resultId: string, delta: number): void {
+    this.allResults.update(results =>
+      results.map(r => {
+        if (r.id === resultId) {
+          const currentPoints = r.points ?? (r.isCorrect ? 3 : 0);
+          const newPoints = Math.max(0, Math.min(10, currentPoints + delta));
+          return {
+            ...r,
+            points: newPoints,
+            isCorrect: newPoints > 0
+          };
+        }
+        return r;
+      })
+    );
+  }
+
+  cycleResultPoints(resultId: string): void {
+    this.allResults.update(results =>
+      results.map(r => {
+        if (r.id === resultId) {
+          const currentPoints = r.points ?? (r.isCorrect ? 3 : 0);
+          // Cycle: 0 -> 1 -> 2 -> 3 -> 0
+          const nextPoints = currentPoints >= 3 ? 0 : currentPoints + 1;
+          return {
+            ...r,
+            points: nextPoints,
+            isCorrect: nextPoints > 0
           };
         }
         return r;
