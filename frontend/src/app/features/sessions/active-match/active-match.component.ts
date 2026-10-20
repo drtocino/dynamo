@@ -10,7 +10,7 @@ import { TurnTrackerComponent } from './turn-tracker.component';
 import { GameStore } from '../../../store/game.store';
 import { InputService } from '../../../core/services/input.service';
 import { BiblicalRouletteComponent } from '../../games/biblical-roulette';
-import { CardQaComponent } from '../../games/card-qa';
+import { CardQaComponent } from '../../games/card-qa/card-qa.component';
 import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
 @Component({

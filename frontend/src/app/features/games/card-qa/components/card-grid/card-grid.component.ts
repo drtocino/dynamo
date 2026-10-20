@@ -2,13 +2,12 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BoardCard } from '../../models/card-qa.models';
 import { CardItemComponent } from '../card-item/card-item.component';
-import { TranslatePipe } from '../../../../../core/i18n';
 import { CardQaService } from '../../services/card-qa.service';
 
 @Component({
   selector: 'app-card-grid',
   standalone: true,
-  imports: [CommonModule, CardItemComponent, TranslatePipe],
+  imports: [CommonModule, CardItemComponent],
   template: `
     <div class="w-full max-w-6xl mx-auto space-y-2.5 px-1 sm:px-2 mt-2">
       

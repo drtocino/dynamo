@@ -2,8 +2,8 @@
  * Contract: Translation Service Interface
  * Feature: 004-i18n-translation-system
  */
-
-import { Signal } from '@angular/core';
+// Standalone reactive Signal type definition for contract specification
+export type Signal<T> = () => T;
 
 export type LanguageCode = 'es' | 'en';
 

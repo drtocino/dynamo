@@ -2,8 +2,8 @@
  * Contract Specification: CardQaService
  * Defines the public Angular Signal API surface for the Card Question & Answer Game.
  */
-
-import { Signal } from '@angular/core';
+// Standalone reactive Signal type definition for contract specification
+export type Signal<T> = () => T;
 
 export type CardQuestionType = 'true-false' | 'option-selection' | 'open-question';
 export type CardState = 'faced-down' | 'expanded-question' | 'expanded-answer' | 'disabled';
