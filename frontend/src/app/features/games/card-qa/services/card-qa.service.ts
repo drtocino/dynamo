@@ -7,9 +7,11 @@ import {
   BoardCard,
   CardColor,
   CardQuestion,
+  CardSection,
   CustomQuestionPackExport,
   GameConfiguration,
   PlayerRound,
+  PlayerSectionQuota,
   PlayerSummary,
   QuestionResult
 } from '../models/card-qa.models';
@@ -59,6 +61,68 @@ export class CardQaService {
       isCompleted: false
     };
   });
+
+  // Section Quotas: 2 selection, 2 open, 1 wildcard per player
+  readonly quotaAlert = signal<{
+    playerName: string;
+    section: CardSection;
+    sectionLabel: string;
+    max: number;
+  } | null>(null);
+
+  clearQuotaAlert(): void {
+    this.quotaAlert.set(null);
+  }
+
+  getCardSection(card: BoardCard): CardSection {
+    if (card.color === 'red' || card.question.type === 'true-false' || card.question.type === 'option-selection') {
+      return 'selection';
+    }
+    if (card.color === 'blue' || card.question.type === 'open-question') {
+      return 'open';
+    }
+    return 'wildcard';
+  }
+
+  getPlayerSectionQuota(playerName: string): PlayerSectionQuota {
+    const results = this.allResults().filter(r => r.playerName === playerName);
+    const selUsed = results.filter(r => r.questionType === 'true-false' || r.questionType === 'option-selection').length;
+    const openUsed = results.filter(r => r.questionType === 'open-question').length;
+    const wildUsed = results.filter(r => r.questionType === 'wildcard').length;
+
+    const maxSel = 2;
+    const maxOpen = 2;
+    const maxWild = 1;
+
+    return {
+      selection: { used: selUsed, max: maxSel, remaining: Math.max(0, maxSel - selUsed) },
+      open: { used: openUsed, max: maxOpen, remaining: Math.max(0, maxOpen - openUsed) },
+      wildcard: { used: wildUsed, max: maxWild, remaining: Math.max(0, maxWild - wildUsed) },
+      totalUsed: selUsed + openUsed + wildUsed,
+      totalMax: maxSel + maxOpen + maxWild,
+      isAllCompleted: selUsed >= maxSel && openUsed >= maxOpen && wildUsed >= maxWild
+    };
+  }
+
+  readonly activePlayerQuota = computed<PlayerSectionQuota>(() => {
+    return this.getPlayerSectionQuota(this.activePlayerName());
+  });
+
+  canPlayerPickCard(card: BoardCard, playerName?: string): boolean {
+    if (card.state === 'disabled') return false;
+    const quota = this.getPlayerSectionQuota(playerName || this.activePlayerName());
+    const section = this.getCardSection(card);
+    if (section === 'selection') {
+      return quota.selection.remaining > 0;
+    }
+    if (section === 'open') {
+      return quota.open.remaining > 0;
+    }
+    if (section === 'wildcard') {
+      return quota.wildcard.remaining > 0;
+    }
+    return true;
+  }
 
   readonly config = signal<GameConfiguration>({
     totalCardCount: 25, // 5 columns x 5 rows (4 fully visible rows + 1 bottom peek row)
@@ -275,21 +339,52 @@ export class CardQaService {
     this.cards.update(cards =>
       cards.map(c => ({
         ...c,
-        state: 'faced-down'
+        state: 'faced-down',
+        pickedBy: undefined
       }))
     );
     this.activeCard.set(null);
     this.allResults.set([]);
     this.activePlayerIndex.set(0);
+    this.clearQuotaAlert();
   }
 
   // --- Card Selection & Interaction ---
 
-  selectCard(index: number): void {
+  selectCard(index: number): boolean {
     const card = this.cards()[index];
     if (!card || card.state === 'disabled' || this.activeCard()) {
-      return;
+      return false;
     }
+
+    const activePlayer = this.activePlayerName();
+    if (!this.canPlayerPickCard(card, activePlayer)) {
+      const section = this.getCardSection(card);
+      const isEs = this.config().language !== 'en';
+      let sectionLabel = isEs ? 'Verdadero/Falso & Selección' : 'Selection';
+      if (section === 'open') {
+        sectionLabel = isEs ? 'Preguntas Abiertas' : 'Open Questions';
+      } else if (section === 'wildcard') {
+        sectionLabel = isEs ? 'Comodines' : 'Wildcards';
+      }
+
+      const max = section === 'wildcard' ? 1 : 2;
+
+      this.quotaAlert.set({
+        playerName: activePlayer,
+        section,
+        sectionLabel,
+        max
+      });
+
+      setTimeout(() => {
+        this.clearQuotaAlert();
+      }, 4000);
+
+      return false;
+    }
+
+    this.clearQuotaAlert();
 
     const updatedCard: BoardCard = {
       ...card,
@@ -303,6 +398,7 @@ export class CardQaService {
     });
 
     this.activeCard.set(updatedCard);
+    return true;
   }
 
   closeActiveCard(): void {
@@ -392,10 +488,11 @@ export class CardQaService {
 
     this.allResults.update(r => [...r, result]);
 
-    // Mark card as disabled on the board
+    // Mark card as disabled on the board with the player who picked it
     const disabledCard: BoardCard = {
       ...current,
-      state: 'disabled'
+      state: 'disabled',
+      pickedBy: activePlayer
     };
 
     this.cards.update(list => {
@@ -407,11 +504,28 @@ export class CardQaService {
     // Close modal
     this.activeCard.set(null);
 
-    // Rule: Turn is exactly 1 pick; automatically pass turn to next player in roster
+    // Rule: Turn is exactly 1 pick; automatically pass turn to next player in roster who still has remaining quota
+    this.advanceTurn();
+  }
+
+  advanceTurn(): void {
     const roster = this.playersRoster();
-    if (roster.length > 0) {
-      this.activePlayerIndex.update(idx => (idx + 1) % roster.length);
+    if (!roster.length) return;
+
+    const currentIdx = this.activePlayerIndex();
+    // Look for next player in turn sequence who still has remaining questions to answer
+    for (let step = 1; step <= roster.length; step++) {
+      const nextIdx = (currentIdx + step) % roster.length;
+      const nextPlayer = roster[nextIdx];
+      const quota = this.getPlayerSectionQuota(nextPlayer);
+      if (!quota.isAllCompleted) {
+        this.activePlayerIndex.set(nextIdx);
+        return;
+      }
     }
+
+    // If all players completed all their quotas, just cycle sequentially
+    this.activePlayerIndex.update(idx => (idx + 1) % roster.length);
   }
 
   toggleResultEvaluation(resultId: string): void {

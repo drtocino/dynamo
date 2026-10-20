@@ -60,6 +60,31 @@ import { Session } from '../../../core/models/session.model';
             </span>
           </div>
 
+          <!-- Active Player Section Quota Status -->
+          <div class="hidden sm:flex items-center gap-1.5 text-[11px] font-black bg-white px-2 py-0.5 rounded-lg border-2 border-neo-black select-none">
+            <span class="text-[9px] uppercase text-neo-muted font-black">Cuota:</span>
+            <span 
+              [class.text-emerald-700]="service.activePlayerQuota().selection.used >= 2"
+              [class.text-neo-black]="service.activePlayerQuota().selection.used < 2"
+              title="Selección (V/F y Opciones): 2 preguntas máximo">
+              🔴 {{ service.activePlayerQuota().selection.used }}/2
+            </span>
+            <span class="text-neo-black/30">·</span>
+            <span 
+              [class.text-emerald-700]="service.activePlayerQuota().open.used >= 2"
+              [class.text-neo-black]="service.activePlayerQuota().open.used < 2"
+              title="Preguntas Abiertas: 2 preguntas máximo">
+              🔵 {{ service.activePlayerQuota().open.used }}/2
+            </span>
+            <span class="text-neo-black/30">·</span>
+            <span 
+              [class.text-emerald-700]="service.activePlayerQuota().wildcard.used >= 1"
+              [class.text-neo-black]="service.activePlayerQuota().wildcard.used < 1"
+              title="Comodín: 1 máximo">
+              🌟 {{ service.activePlayerQuota().wildcard.used }}/1
+            </span>
+          </div>
+
           <!-- Next Player Tag -->
           <div *ngIf="service.nextPlayerName()" class="hidden lg:flex items-center gap-1 text-xs">
             <span class="font-bold text-neo-muted text-[10px]">Siguiente:</span>
@@ -154,6 +179,22 @@ import { Session } from '../../../core/models/session.model';
         *ngIf="copiedLinkToast" 
         class="fixed top-14 right-4 z-50 bg-neo-black text-white px-4 py-2.5 rounded-xl border-2 border-white shadow-neo-lg text-xs font-black flex items-center gap-2 animate-bounce-subtle select-none">
         <span>✅</span> {{ 'game.cardQa.linkCopied' | translate }}
+      </div>
+
+      <!-- Quota Limit Alert Toast -->
+      <div 
+        *ngIf="service.quotaAlert() as alert" 
+        class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-rose-500 text-white px-4 py-3 rounded-2xl border-3 border-neo-black shadow-neo-lg text-xs sm:text-sm font-black flex items-center gap-2 animate-bounce-subtle select-none max-w-lg text-center">
+        <span class="text-base">⚠️</span>
+        <span>
+          ¡{{ alert.playerName }} ya respondió sus {{ alert.max }} {{ alert.max === 1 ? 'pregunta' : 'preguntas' }} de {{ alert.sectionLabel }}! Elige de otra sección.
+        </span>
+        <button 
+          type="button" 
+          (click)="service.clearQuotaAlert()" 
+          class="ml-2 w-5 h-5 rounded-full bg-black/30 hover:bg-black/50 text-white text-[10px] flex items-center justify-center cursor-pointer shrink-0">
+          ✕
+        </button>
       </div>
 
     </div>

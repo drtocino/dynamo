@@ -26,6 +26,24 @@ export interface BoardCard {
   columnIndex: number;   // 0 to 4
   rowIndex: number;      // 0 to 5
   isBottomPeek?: boolean; // True for cards on bottom rows that are not fully visible
+  pickedBy?: string;     // Player name who picked and answered this card
+}
+
+export type CardSection = 'selection' | 'open' | 'wildcard';
+
+export interface SectionCounter {
+  used: number;
+  max: number;
+  remaining: number;
+}
+
+export interface PlayerSectionQuota {
+  selection: SectionCounter; // Max 2
+  open: SectionCounter;      // Max 2
+  wildcard: SectionCounter;  // Max 1
+  totalUsed: number;
+  totalMax: number;
+  isAllCompleted: boolean;
 }
 
 export interface QuestionResult {
