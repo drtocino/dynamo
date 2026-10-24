@@ -83,7 +83,7 @@ import { TranslatePipe } from '../../../../core/i18n';
 })
 export class VowelStoreModalComponent implements OnChanges {
   @Input() isOpen: boolean = false;
-  @Input() vowelCost: number = 100;
+  @Input() vowelCost: number = 150;
   @Input() playerPoints: number = 0;
   @Input() revealedVowels: string[] = [];
 

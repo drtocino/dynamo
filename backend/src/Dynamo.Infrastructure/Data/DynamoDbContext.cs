@@ -167,7 +167,7 @@ public class DynamoDbContext : DbContext
             {
                 Id = Guid.Parse("a1111111-1111-1111-1111-111111111111"),
                 Text = "PORQUE DE TAL MANERA AMO DIOS AL MUNDO",
-                GeneralHint = "Evangelio de Juan",
+                GeneralHint = "Jesus",
                 SpecificHint = "Juan 3:16 - El versículo de oro",
                 Category = "Evangelios",
                 Language = "es",
@@ -179,7 +179,7 @@ public class DynamoDbContext : DbContext
                 Id = Guid.Parse("b2222222-2222-2222-2222-222222222222"),
                 Text = "JEHOVA ES MI PASTOR NADA ME FALTARA",
                 GeneralHint = "Salmos de David",
-                SpecificHint = "Salmo 23:1 - Salmo del Buen Pastor",
+                SpecificHint = "Salmo 23:1",
                 Category = "Salmos",
                 Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
@@ -189,7 +189,7 @@ public class DynamoDbContext : DbContext
             {
                 Id = Guid.Parse("c3333333-3333-3333-3333-333333333333"),
                 Text = "TODO LO PUEDO EN CRISTO QUE ME FORTALECE",
-                GeneralHint = "Epístola Paulina",
+                GeneralHint = "Carta de aliento",
                 SpecificHint = "Filipenses 4:13 - Escrito desde la prisión",
                 Category = "Epístolas",
                 Language = "es",
@@ -200,7 +200,7 @@ public class DynamoDbContext : DbContext
             {
                 Id = Guid.Parse("d4444444-4444-4444-4444-444444444444"),
                 Text = "EN EL PRINCIPIO CREO DIOS LOS CIELOS Y LA TIERRA",
-                GeneralHint = "Libro de Génesis",
+                GeneralHint = "Creacion",
                 SpecificHint = "Génesis 1:1 - La creación divina",
                 Category = "Pentateuco",
                 Language = "es",
@@ -211,7 +211,7 @@ public class DynamoDbContext : DbContext
             {
                 Id = Guid.Parse("e5555555-5555-5555-5555-555555555555"),
                 Text = "LAMPARA ES A MIS PIES TU PALABRA",
-                GeneralHint = "Libro de Salmos",
+                GeneralHint = "Salmos",
                 SpecificHint = "Salmo 119:105 - Lumbrera a mi camino",
                 Category = "Salmos",
                 Language = "es",
@@ -220,9 +220,20 @@ public class DynamoDbContext : DbContext
             },
             new
             {
+                Id = Guid.Parse("e6666666-6666-6666-6666-666666666666"),
+                Text = "YO SOY EL CAMINO Y LA VERDAD Y LA VIDA",
+                GeneralHint = "Jesus",
+                SpecificHint = "Juan 14:6 - Jesús revela quién es",
+                Category = "Evangelios",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
                 Id = Guid.Parse("f6666666-6666-6666-6666-666666666666"),
                 Text = "EL AMOR ES PACIENTE ES BONDADOSO",
-                GeneralHint = "Primera a los Corintios",
+                GeneralHint = "Cartas de amor",
                 SpecificHint = "1 Corintios 13:4 - El capítulo del amor",
                 Category = "Epístolas",
                 Language = "es",
@@ -242,9 +253,9 @@ public class DynamoDbContext : DbContext
             },
             new
             {
-                Id = Guid.Parse("b8888888-8888-8888-8888-888888888888"),
+                Id = Guid.Parse("b8888888-8888-8888-8888-888838881888"),
                 Text = "MIRA QUE TE MANDO QUE TE ESFUERCES Y SEAS VALIENTE",
-                GeneralHint = "Libro de Josué",
+                GeneralHint = "Consejo a Josue",
                 SpecificHint = "Josué 1:9 - No temas ni desmayes",
                 Category = "Históricos",
                 Language = "es",
@@ -255,7 +266,7 @@ public class DynamoDbContext : DbContext
             {
                 Id = Guid.Parse("c9999999-9999-9999-9999-999999999999"),
                 Text = "Y AHORA PERMANECEN LA FE LA ESPERANZA Y EL AMOR",
-                GeneralHint = "Primera a los Corintios",
+                GeneralHint = "Cartas a los Corintios",
                 SpecificHint = "1 Corintios 13:13 - Pero el mayor de ellos es el amor",
                 Category = "Epístolas",
                 Language = "es",
@@ -266,9 +277,31 @@ public class DynamoDbContext : DbContext
             {
                 Id = Guid.Parse("daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                 Text = "CONFIA EN JEHOVA CON TODO TU CORAZON",
-                GeneralHint = "Libro de Proverbios",
-                SpecificHint = "Proverbios 3:5 - Y no te apoyes en tu propia prudencia",
+                GeneralHint = "Sabios Proverbios",
+                SpecificHint = "Proverbios 3:5 - ... y no te apoyes en tu propia prudencia",
                 Category = "Sabiduría",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("e8888888-8888-8888-8888-888888812888"),
+                Text = "SI DIOS ES POR NOSOTROS QUIEN CONTRA NOSOTROS",
+                GeneralHint = "Carta de aliento",
+                SpecificHint = "Romanos 8:31 - La seguridad en Dios",
+                Category = "Epístolas",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("e8888888-8888-8888-8888-888888888882"),
+                Text = "LA CONFIANZA EN EL PODER DIVINO",
+                GeneralHint = "8 Remedios Naturales",
+                SpecificHint = "Dios",
+                Category = "Ellen White",
                 Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null

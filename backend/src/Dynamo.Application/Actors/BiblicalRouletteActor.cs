@@ -10,7 +10,7 @@ namespace Dynamo.Application.Actors;
 public class BiblicalRouletteActor : SessionActor
 {
     private static readonly char[] Vowels = { 'A', 'E', 'I', 'O', 'U' };
-    private static readonly int[] VowelPriceTiers = { 100, 250, 500, 1000 };
+    private static readonly int[] VowelPriceTiers = { 150, 300, 600, 1000 };
     
     // Exactly 20 roulette wedges:
     // 1 Bankrupt, 2 Miss Turn, 17 Price options
@@ -64,7 +64,7 @@ public class BiblicalRouletteActor : SessionActor
         {
             TotalRounds = 3,
             CurrentRoundIndex = 1,
-            CurrentVowelCost = 100,
+            CurrentVowelCost = 150,
             TurnStep = "SelectConsonantOrBuy"
         };
 
@@ -174,11 +174,14 @@ public class BiblicalRouletteActor : SessionActor
         _rouletteState.RevealedConsonants.Clear();
         _rouletteState.RevealedVowels.Clear();
         _rouletteState.HintRevealed = false;
-        _rouletteState.CurrentVowelCost = 100;
+        _rouletteState.CurrentVowelCost = 150;
         _rouletteState.TurnStep = "SelectConsonantOrBuy";
         _rouletteState.StagedConsonant = null;
         _rouletteState.LastRevealedCount = 0;
         _rouletteState.LastPointsEarned = 0;
+        _rouletteState.LastIncorrectGuess = null;
+        _rouletteState.LastIncorrectGuessPlayerName = null;
+        _rouletteState.LastIncorrectGuessId = null;
 
         // Pick phrase randomly for this round without repeating phrases in the match
         var availablePhrases = _phraseCatalog.Where(p => !_usedPhraseIds.Contains(p.Id)).ToList();
@@ -470,7 +473,7 @@ public class BiblicalRouletteActor : SessionActor
         _rouletteState.LastRevealedCount = count;
         _rouletteState.LastPointsEarned = totalCost;
 
-        // Advance vowel tier: 100 -> 250 -> 500 -> 1000
+        // Advance vowel tier: 150 -> 300 -> 600 -> 1000
         int currentTierIndex = Array.IndexOf(VowelPriceTiers, _rouletteState.CurrentVowelCost);
         if (currentTierIndex >= 0 && currentTierIndex < VowelPriceTiers.Length - 1)
         {
@@ -508,9 +511,9 @@ public class BiblicalRouletteActor : SessionActor
         _rouletteState.SolvedPhrase = string.Empty;
 
         var turnPlayer = GetCurrentTurnPlayerState();
-        if (turnPlayer.Score < 500) return;
+        if (turnPlayer.Score < 10000) return;
 
-        turnPlayer.Score -= 500;
+        turnPlayer.Score -= 10000;
         _rouletteState.HintRevealed = true;
     }
 
@@ -523,15 +526,26 @@ public class BiblicalRouletteActor : SessionActor
         string cleanGuess = CleanPhrase(guess);
 
         var turnPlayer = GetCurrentTurnPlayerState();
+        string guessingPlayerName = !string.IsNullOrEmpty(_rouletteState.CurrentTurnPlayerName)
+            ? _rouletteState.CurrentTurnPlayerName
+            : (_playerNames.TryGetValue(turnPlayer.ClientId, out var pName)
+                ? pName
+                : (_playerNames.TryGetValue(clientId, out var cName) ? cName : "Jugador"));
 
         if (string.Equals(cleanActual, cleanGuess, StringComparison.OrdinalIgnoreCase))
         {
+            _rouletteState.LastIncorrectGuess = null;
+            _rouletteState.LastIncorrectGuessPlayerName = null;
+            _rouletteState.LastIncorrectGuessId = null;
             RevealAllLetters();
             var winnerId = !string.IsNullOrEmpty(turnPlayer.ClientId) ? turnPlayer.ClientId : clientId;
             AwardRoundWin(winnerId);
         }
         else
         {
+            _rouletteState.LastIncorrectGuess = guess;
+            _rouletteState.LastIncorrectGuessPlayerName = guessingPlayerName;
+            _rouletteState.LastIncorrectGuessId = Guid.NewGuid().ToString();
             AdvanceToNextTurn();
         }
     }
@@ -539,6 +553,9 @@ public class BiblicalRouletteActor : SessionActor
     private void AwardRoundWin(string playerId)
     {
         _rouletteState.SolvedPhrase = _currentPhrase.Text;
+        _rouletteState.LastIncorrectGuess = null;
+        _rouletteState.LastIncorrectGuessPlayerName = null;
+        _rouletteState.LastIncorrectGuessId = null;
         RevealAllLetters();
         _rouletteState.RoundWinnerId = playerId;
         if (!_rouletteState.RoundsWon.ContainsKey(playerId))

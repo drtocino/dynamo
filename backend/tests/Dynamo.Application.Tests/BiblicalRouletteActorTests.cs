@@ -51,7 +51,7 @@ public class BiblicalRouletteActorTests
         Assert.Equal(3, state.TotalRounds);
         Assert.Contains(state.CurrentTurnPlayerId, new[] { player1, player2 });
         Assert.Contains("_", state.MaskedPhrase);
-        Assert.Equal(100, state.CurrentVowelCost);
+        Assert.Equal(150, state.CurrentVowelCost);
 
         await actor.DisposeAsync();
     }
@@ -120,7 +120,7 @@ public class BiblicalRouletteActorTests
         actor.InitializeMatch();
 
         // Give player points to purchase vowel
-        actor.SetPlayerScore(player1, 600);
+        actor.SetPlayerScore(player1, 1000);
 
         // Purchase vowel 'O'
         actor.EnqueueIntent(new PlayerIntent
@@ -135,9 +135,45 @@ public class BiblicalRouletteActorTests
         var state = actor.RouletteState;
         Assert.NotNull(state);
         Assert.Contains('O', state.RevealedVowels);
-        Assert.Equal(250, state.CurrentVowelCost); // Scaled from 100 to 250!
-        // "FOR GOD SO LOVED THE WORLD" contains 5 'O's -> 5 * 100 = 500 pts deducted from 600
-        Assert.Equal(100, actor.CurrentState.Players[player1].Score);
+        Assert.Equal(300, state.CurrentVowelCost); // Scaled from 150 to 300!
+        // "FOR GOD SO LOVED THE WORLD" contains 5 'O's -> 5 * 150 = 750 pts deducted from 1000
+        Assert.Equal(250, actor.CurrentState.Players[player1].Score);
+
+        // Next purchase scales to 600
+        actor.SetPlayerScore(player1, 2000);
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "PURCHASE_VOWEL",
+            ClientId = player1,
+            SessionId = sessionId,
+            Payload = 'E'
+        });
+        await Task.Delay(200);
+        Assert.Equal(600, actor.RouletteState.CurrentVowelCost); // Scaled to 600!
+
+        // Next purchase scales to 1000
+        actor.SetPlayerScore(player1, 2000);
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "PURCHASE_VOWEL",
+            ClientId = player1,
+            SessionId = sessionId,
+            Payload = 'A'
+        });
+        await Task.Delay(200);
+        Assert.Equal(1000, actor.RouletteState.CurrentVowelCost); // Scaled to 1000!
+
+        // Capped at 1000 on further purchases
+        actor.SetPlayerScore(player1, 2000);
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "PURCHASE_VOWEL",
+            ClientId = player1,
+            SessionId = sessionId,
+            Payload = 'I'
+        });
+        await Task.Delay(200);
+        Assert.Equal(1000, actor.RouletteState.CurrentVowelCost); // Capped at 1000!
 
         await actor.DisposeAsync();
     }
@@ -175,6 +211,44 @@ public class BiblicalRouletteActorTests
     }
 
     [Fact]
+    public async Task BiblicalRouletteActor_IncorrectSolvePhrase_ShouldTrackLastIncorrectGuessAndAdvanceTurn()
+    {
+        var broadcaster = new TestBroadcaster();
+        var sessionId = "roulette-session-incorrect";
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster, _testPhrases);
+        actor.Start();
+
+        var player1 = "player-1";
+        var player2 = "player-2";
+        actor.RegisterPlayer(player1);
+        actor.RegisterPlayer(player2);
+        actor.InitializeMatch();
+        await Task.Delay(150);
+
+        var initialTurnPlayer = actor.RouletteState.CurrentTurnPlayerId;
+
+        // Player submits incorrect phrase guess
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "SOLVE_PHRASE",
+            ClientId = initialTurnPlayer,
+            SessionId = sessionId,
+            Payload = "WRONG PHRASE GUESS"
+        });
+        await Task.Delay(250);
+
+        var state = actor.RouletteState;
+        Assert.NotNull(state);
+        Assert.Null(state.RoundWinnerId);
+        Assert.Equal("WRONG PHRASE GUESS", state.LastIncorrectGuess);
+        Assert.False(string.IsNullOrEmpty(state.LastIncorrectGuessId));
+        // Turn should have advanced to next player
+        Assert.NotEqual(initialTurnPlayer, state.CurrentTurnPlayerId);
+
+        await actor.DisposeAsync();
+    }
+
+    [Fact]
     public async Task BiblicalRouletteActor_Phrases_ShouldBeRandomAndUniqueAcrossRounds()
     {
         var broadcaster = new TestBroadcaster();
@@ -189,6 +263,46 @@ public class BiblicalRouletteActorTests
 
         var round1PhraseId = actor.RouletteState.CurrentPhraseId;
         Assert.NotEqual(Guid.Empty, round1PhraseId);
+
+        await actor.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task BiblicalRouletteActor_PurchaseHint_Requires10000PointsAndRevealsHint()
+    {
+        var broadcaster = new TestBroadcaster();
+        var sessionId = "roulette-session-hint";
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster, _testPhrases);
+        actor.Start();
+
+        var player1 = "player-1";
+        actor.RegisterPlayer(player1);
+        actor.InitializeMatch();
+        await Task.Delay(150);
+
+        // Score below 10,000 should not allow hint purchase
+        actor.SetPlayerScore(player1, 9999);
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "PURCHASE_HINT",
+            ClientId = player1,
+            SessionId = sessionId
+        });
+        await Task.Delay(200);
+        Assert.False(actor.RouletteState.HintRevealed);
+        Assert.Equal(9999, actor.CurrentState.Players[player1].Score);
+
+        // Score of 15,000 should allow hint purchase, deducting 10,000
+        actor.SetPlayerScore(player1, 15000);
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "PURCHASE_HINT",
+            ClientId = player1,
+            SessionId = sessionId
+        });
+        await Task.Delay(200);
+        Assert.True(actor.RouletteState.HintRevealed);
+        Assert.Equal(5000, actor.CurrentState.Players[player1].Score);
 
         await actor.DisposeAsync();
     }

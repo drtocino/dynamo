@@ -40,6 +40,9 @@ export interface BiblicalRouletteState {
   overallWinnerId?: string;
   solvedPhrase?: string;
   roundsWon?: { [clientId: string]: number };
+  lastIncorrectGuess?: string;
+  lastIncorrectGuessPlayerName?: string;
+  lastIncorrectGuessId?: string;
 }
 
 @Component({
@@ -132,7 +135,6 @@ export interface BiblicalRouletteState {
                   variant="yellow"
                   [disabled]="!canSpin()"
                   (onClick)="spinRoulette()">
-                  <span>🎰</span>
                   <span class="truncate">{{ (currentStagedConsonant() ? ('game.biblicalRoulette.spinWithLetter' | translate:{ letter: currentStagedConsonant() }) : ('game.biblicalRoulette.spin' | translate)) }}</span>
                 </app-button>
 
@@ -141,14 +143,14 @@ export interface BiblicalRouletteState {
                     variant="cyan"
                     [disabled]="!canBuyVowel()"
                     (onClick)="openVowelStore()">
-                    <span>🔤</span> {{ 'game.biblicalRoulette.vowel' | translate }}
+                    {{ 'game.biblicalRoulette.vowel' | translate }}
                   </app-button>
 
                   <app-button
                     variant="secondary"
-                    [disabled]="rouletteState()?.hintRevealed || currentTurnPlayerScore() < 500"
-                    (onClick)="buySpecificHint()">
-                    <span>💡</span> {{ 'game.biblicalRoulette.hint' | translate }}
+                    [disabled]="rouletteState()?.hintRevealed || currentTurnPlayerScore() < 10000"
+                    (onClick)="openHintConfirmModal()">
+                    {{ 'game.biblicalRoulette.hint' | translate }}
                   </app-button>
                 </div>
 
@@ -156,7 +158,7 @@ export interface BiblicalRouletteState {
                   variant="pink"
                   [disabled]="isWheelSpinning()"
                   (onClick)="openSolveModal()">
-                  <span>🎯</span> {{ 'game.biblicalRoulette.solveVerse' | translate }}
+                  {{ 'game.biblicalRoulette.solveVerse' | translate }}
                 </app-button>
               </div>
             </div>
@@ -294,6 +296,90 @@ export interface BiblicalRouletteState {
                 {{ 'common.cancel' | translate }}
               </app-button>
             </div>
+          </div>
+        </div>
+      </app-modal>
+
+      <!-- Confirm Hint Modal -->
+      <app-modal
+        modalId="confirmHint"
+        [isOpen]="isHintConfirmModalOpen"
+        [title]="'game.biblicalRoulette.confirmHintTitle' | translate"
+        [subtitle]="'game.biblicalRoulette.confirmHintSubtitle' | translate"
+        icon="💡"
+        (close)="closeHintConfirmModal()">
+        
+        <div class="space-y-4">
+          <div class="p-3 bg-neo-bg rounded-xl border-2 border-neo-black space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase text-neo-muted">{{ 'game.biblicalRoulette.hintCostLabel' | translate }}</span>
+              <span class="text-lg font-black text-neo-pink">10,000 {{ 'common.points' | translate }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase text-neo-muted">{{ 'game.biblicalRoulette.yourPoints' | translate }}</span>
+              <span class="text-lg font-black text-neo-black">{{ currentTurnPlayerScore() }} {{ 'common.points' | translate }}</span>
+            </div>
+          </div>
+
+          <p class="text-xs font-bold text-center text-neo-muted">
+            {{ 'game.biblicalRoulette.confirmHintMessage' | translate }}
+          </p>
+
+          <div class="flex gap-2 pt-1.5 border-t border-neo-black/10">
+            <div class="flex-1">
+              <app-button
+                variant="yellow"
+                [disabled]="currentTurnPlayerScore() < 10000"
+                (onClick)="confirmBuyHint()">
+                {{ 'game.biblicalRoulette.confirmBuyHintBtn' | translate }}
+              </app-button>
+            </div>
+            <div class="w-28">
+              <app-button
+                variant="secondary"
+                (onClick)="closeHintConfirmModal()">
+                {{ 'common.cancel' | translate }}
+              </app-button>
+            </div>
+          </div>
+        </div>
+      </app-modal>
+
+      <!-- Incorrect Guess Modal (Base Modal Integration) -->
+      <app-modal
+        modalId="incorrectGuess"
+        [isOpen]="isIncorrectGuessModalOpen"
+        [title]="'game.biblicalRoulette.incorrectGuessTitle' | translate"
+        [subtitle]="'game.biblicalRoulette.incorrectGuessSubtitle' | translate:{ player: incorrectGuessData.playerName }"
+        icon="❌"
+        (close)="closeIncorrectGuessModal()">
+        
+        <div class="space-y-3">
+          <!-- Guess Details Box -->
+          <div class="p-3.5 rounded-xl border-3 border-neo-black bg-neo-pink/15 flex flex-col items-center justify-center text-center space-y-1">
+            <span class="text-[11px] font-black uppercase tracking-wider text-neo-pink">
+              {{ 'game.biblicalRoulette.guessedPhraseLabel' | translate }}
+            </span>
+            <p class="text-base sm:text-lg font-black text-neo-black uppercase tracking-wide break-words max-w-full">
+              "{{ incorrectGuessData.guess }}"
+            </p>
+          </div>
+
+          <!-- Explanation Box -->
+          <div class="p-3 rounded-xl border-2 border-neo-black bg-neo-bg text-center">
+            <span class="text-xs font-bold text-neo-black/80">
+              {{ 'game.biblicalRoulette.incorrectGuessNotice' | translate }}
+            </span>
+          </div>
+
+          <!-- Action Button -->
+          <div class="pt-1.5 border-t border-neo-black/10">
+            <app-button
+              variant="yellow"
+              (onClick)="closeIncorrectGuessModal()">
+              <span>{{ 'common.understood' | translate }}</span>
+              <span>👍</span>
+            </app-button>
           </div>
         </div>
       </app-modal>
@@ -553,10 +639,18 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
   }
 
   isVowelModalOpen = false;
+  isHintConfirmModalOpen = false;
+  isIncorrectGuessModalOpen = false;
   isSolveModalOpen = false;
   isSpinResultModalOpen = false;
   isWinnerModalOpen = false;
   isGameLogModalOpen = false;
+
+  private lastHandledIncorrectGuessId: string = '';
+  incorrectGuessData = {
+    playerName: '',
+    guess: ''
+  };
 
   gameLogs: Array<{ message: string; icon: string; time: string }> = [];
   currentSolvedPhrase: string = '';
@@ -917,6 +1011,17 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
           this.triggerWinnerCelebration(state.roundWinnerId, false);
         }
       }
+
+      // 3. Incorrect Solve Guess (triggers modal for everyone when a guess is wrong)
+      if (state.lastIncorrectGuessId && state.lastIncorrectGuessId !== this.lastHandledIncorrectGuessId) {
+        this.lastHandledIncorrectGuessId = state.lastIncorrectGuessId;
+        this.incorrectGuessData = {
+          playerName: state.lastIncorrectGuessPlayerName || this.translationService.t('common.player'),
+          guess: state.lastIncorrectGuess || ''
+        };
+        this.isIncorrectGuessModalOpen = true;
+        this.modalService.open('incorrectGuess');
+      }
     });
   }
 
@@ -1142,6 +1247,22 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
     this.modalService.close();
   }
 
+  openHintConfirmModal(): void {
+    if (this.currentTurnPlayerScore() < 10000 || this.rouletteState()?.hintRevealed) return;
+    this.isHintConfirmModalOpen = true;
+    this.modalService.open('confirmHint');
+  }
+
+  closeHintConfirmModal(): void {
+    this.isHintConfirmModalOpen = false;
+    this.modalService.close();
+  }
+
+  confirmBuyHint(): void {
+    this.closeHintConfirmModal();
+    this.buySpecificHint();
+  }
+
   buySpecificHint(): void {
     if (!this.session) return;
     this.addGameLog(this.translationService.t('game.biblicalRoulette.logBoughtHint', { name: this.displayedTurnPlayerName() }), '💡');
@@ -1158,11 +1279,15 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
     this.modalService.close();
   }
 
+  closeIncorrectGuessModal(): void {
+    this.isIncorrectGuessModalOpen = false;
+    this.modalService.close();
+  }
+
   submitSolveGuess(): void {
     if (!this.session || !this.solvePhraseGuess.trim()) return;
     const guess = this.solvePhraseGuess.trim().toUpperCase();
     this.lastSubmittedSolveGuess = guess;
-    this.currentSolvedPhrase = guess;
     this.addGameLog(this.translationService.t('game.biblicalRoulette.logGuessedVerse', { name: this.displayedTurnPlayerName(), guess }), '🎯');
     this.inputService.dispatchIntent('SOLVE_PHRASE', { phrase: guess }, this.session.id);
     this.solvePhraseGuess = '';

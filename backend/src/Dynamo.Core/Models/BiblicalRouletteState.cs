@@ -78,4 +78,13 @@ public class BiblicalRouletteState
 
     [JsonPropertyName("roundsWon")]
     public Dictionary<string, int> RoundsWon { get; set; } = new();
+
+    [JsonPropertyName("lastIncorrectGuess")]
+    public string? LastIncorrectGuess { get; set; }
+
+    [JsonPropertyName("lastIncorrectGuessPlayerName")]
+    public string? LastIncorrectGuessPlayerName { get; set; }
+
+    [JsonPropertyName("lastIncorrectGuessId")]
+    public string? LastIncorrectGuessId { get; set; }
 }
