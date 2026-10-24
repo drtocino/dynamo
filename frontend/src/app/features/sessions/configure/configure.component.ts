@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GameService } from '../../../core/services/game.service';
 import { SessionService } from '../../../core/services/session.service';
 import { Game, MultiplayerMode } from '../../../core/models/game.model';
-import { TranslatePipe } from '../../../core/i18n';
+import { TranslatePipe, TranslationService } from '../../../core/i18n';
 
 @Component({
   selector: 'app-configure',
@@ -42,6 +42,25 @@ import { TranslatePipe } from '../../../core/i18n';
           class="neo-badge">
           {{ (mode === 'RoomBased' ? 'hub.badgeRoomBased' : 'hub.badgeSharedScreen') | translate }}
         </span>
+      </div>
+
+      <!-- Quick Demo Test Game Banner for Biblical Roulette -->
+      <div *ngIf="game?.slug === 'biblical-roulette'" class="p-4 bg-neo-yellow/30 border-3 border-neo-black rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-neo-sm">
+        <div>
+          <span class="text-xs font-black uppercase text-neo-black flex items-center gap-1.5">
+            <span>⚡</span> {{ 'configure.demoBannerTitle' | translate }}
+          </span>
+          <p class="text-xs font-semibold text-neo-muted mt-0.5">
+            {{ 'configure.demoBannerDesc' | translate }}
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="startGenesisDemoGame()"
+          class="w-full sm:w-auto shrink-0 py-2.5 px-4 rounded-xl border-3 border-neo-black bg-neo-yellow hover:bg-yellow-300 text-neo-black font-black text-xs transition active:scale-95 shadow-neo-sm cursor-pointer flex items-center justify-center gap-1.5">
+          <span>⚡</span>
+          <span>{{ 'configure.btnGenesisDemo' | translate }}</span>
+        </button>
       </div>
 
       <!-- Settings Configuration Form -->
@@ -171,6 +190,7 @@ export class ConfigureComponent implements OnInit {
   private router = inject(Router);
   private gameService = inject(GameService);
   private sessionService = inject(SessionService);
+  private translationService = inject(TranslationService);
 
   game: Game | undefined;
   mode: MultiplayerMode = 'RoomBased';
@@ -283,6 +303,58 @@ export class ConfigureComponent implements OnInit {
       error: (err) => {
         this.isSubmitting = false;
         console.error('Failed to create match session:', err);
+      }
+    });
+  }
+
+  startGenesisDemoGame(): void {
+    if (!this.game) return;
+    this.isSubmitting = true;
+    const clientId = this.sessionService.getClientId();
+    const currentLang = this.translationService.currentLang() || 'es';
+    const isEn = currentLang.toLowerCase().startsWith('en');
+
+    const genesisPhrase = {
+      id: 'a0000000-0000-0000-0000-000000000001',
+      text: isEn
+        ? 'IN THE BEGINNING GOD CREATED THE HEAVENS AND THE EARTH'
+        : 'EN EL PRINCIPIO CREO DIOS LOS CIELOS Y LA TIERRA',
+      generalHint: isEn ? 'Pentateuch - Old Testament' : 'Pentateuco - Antiguo Testamento',
+      specificHint: isEn ? 'Genesis 1:1 - The creation of the heavens and the earth' : 'Génesis 1:1 - La creación de los cielos y la tierra',
+      category: 'Pentateuco',
+      language: isEn ? 'en' : 'es'
+    };
+
+    const players = isEn ? ['David', 'Sarah', 'Daniel'] : ['David', 'Sara', 'Daniel'];
+
+    this.sessionService.createSharedScreenSession({
+      gameId: this.game.id,
+      mode: 'SharedScreen',
+      hostClientId: clientId,
+      maxPlayers: 3,
+      rounds: 1,
+      timeLimitSeconds: 60,
+      language: isEn ? 'en' : 'es',
+      playerNames: players,
+      gameSettingsJson: JSON.stringify({
+        matchName: isEn ? 'Genesis 1:1 Test Game' : 'Partida de Prueba Génesis 1:1',
+        customPhrase: genesisPhrase
+      })
+    }).subscribe({
+      next: (session) => {
+        this.sessionService.changeState(session.id, 'Active').subscribe({
+          next: () => {
+            this.router.navigate(['/active-match', session.id]);
+          },
+          error: (err) => {
+            console.error('Error transitioning test session to Active:', err);
+            this.router.navigate(['/active-match', session.id]);
+          }
+        });
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('Error creating demo session:', err);
       }
     });
   }

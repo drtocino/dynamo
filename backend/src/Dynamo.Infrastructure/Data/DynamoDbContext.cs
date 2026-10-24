@@ -198,11 +198,11 @@ public class DynamoDbContext : DbContext
             },
             new
             {
-                Id = Guid.Parse("d4444444-4444-4444-4444-444444444444"),
-                Text = "EN EL PRINCIPIO CREO DIOS LOS CIELOS Y LA TIERRA",
-                GeneralHint = "Creacion",
-                SpecificHint = "Génesis 1:1 - La creación divina",
-                Category = "Pentateuco",
+                Id = Guid.Parse("f5555555-5555-5555-5235-555555555555"),
+                Text = "PERDI MIS FUERZAS CUANDO CORTARON MI CABELLO",
+                GeneralHint = "Jueces de Israel",
+                SpecificHint = "Jueces 16 - Mi fuerza",
+                Category = "Personajes bíblicos",
                 Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null
@@ -302,6 +302,28 @@ public class DynamoDbContext : DbContext
                 GeneralHint = "8 Remedios Naturales",
                 SpecificHint = "Dios",
                 Category = "Ellen White",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("a2222222-2222-2222-2222-222222222222"),
+                Text = "EL CONFLICTO DE LOS SIGLOS",
+                GeneralHint = "Libro de Elena de White",
+                SpecificHint = "Lucha entre el bien y el mal    ",
+                Category = "Libros de Elena de White",
+                Language = "es",
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = (DateTime?)null
+            },
+            new
+            {
+                Id = Guid.Parse("a3332333-3333-3333-3333-333333333333"),
+                Text = "EN EL PRINCIPIO CREO DIOS LOS CIELOS Y LA TIERRA",
+                GeneralHint = "Creacion",
+                SpecificHint = "Génesis 1:1 - La creación divina",
+                Category = "Pentateuco",
                 Language = "es",
                 CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = (DateTime?)null

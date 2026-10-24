@@ -49,6 +49,10 @@ public class BiblicalRouletteActor : SessionActor
     private readonly HashSet<Guid> _usedPhraseIds = new();
     private Session? _session;
     private string _language = "es";
+    private CancellationTokenSource? _turnTimerCts;
+    private int _pausedRemainingSeconds = 0;
+
+    public int ExtraFirstSpinSeconds { get; set; } = 15;
 
     public BiblicalRouletteState RouletteState => _rouletteState;
 
@@ -130,6 +134,10 @@ public class BiblicalRouletteActor : SessionActor
 
             if (session != null)
             {
+                if (session.Rounds > 0)
+                {
+                    _rouletteState.TotalRounds = session.Rounds;
+                }
                 _isSharedScreen = session.Mode == MultiplayerMode.SharedScreen;
                 _hostClientId = session.HostClientId.ToString();
 
@@ -182,6 +190,9 @@ public class BiblicalRouletteActor : SessionActor
         _rouletteState.LastIncorrectGuess = null;
         _rouletteState.LastIncorrectGuessPlayerName = null;
         _rouletteState.LastIncorrectGuessId = null;
+        _rouletteState.LastTurnTimeoutPlayerName = null;
+        _rouletteState.LastTurnTimeoutNextPlayerName = null;
+        _rouletteState.LastTurnTimeoutId = null;
 
         // Pick phrase randomly for this round without repeating phrases in the match
         var availablePhrases = _phraseCatalog.Where(p => !_usedPhraseIds.Contains(p.Id)).ToList();
@@ -243,6 +254,8 @@ public class BiblicalRouletteActor : SessionActor
         {
             _session.ActivePlayerId = activeGuid;
         }
+
+        ResetTurnTimer(isFirstSpin: true);
     }
 
     protected override void ApplyIntent(PlayerIntent intent)
@@ -280,6 +293,14 @@ public class BiblicalRouletteActor : SessionActor
 
             case "ADVANCE_TURN":
                 AdvanceToNextTurn();
+                break;
+
+            case "PAUSE_TURN_TIMER":
+                PauseTurnTimer();
+                break;
+
+            case "RESUME_TURN_TIMER":
+                ResumeTurnTimer();
                 break;
 
             case "SET_PHRASES":
@@ -369,7 +390,9 @@ public class BiblicalRouletteActor : SessionActor
         // If no consonant was staged yet (fallback if player immediately spun), default to first unrevealed consonant
         if (!_rouletteState.StagedConsonant.HasValue)
         {
-            var consonants = "BCDFGHJKLMNPQRSTVWXYZ";
+            var consonants = _language.StartsWith("es", StringComparison.OrdinalIgnoreCase)
+                ? "BCDFGHJKLMNÑPQRSTVWXYZ"
+                : "BCDFGHJKLMNPQRSTVWXYZ";
             var available = consonants.FirstOrDefault(c => !_rouletteState.RevealedConsonants.Contains(c));
             if (available != default)
             {
@@ -435,6 +458,7 @@ public class BiblicalRouletteActor : SessionActor
                 {
                     // Player retains turn to pick another consonant or buy vowel!
                     _rouletteState.TurnStep = "SelectConsonantOrBuy";
+                    ResetTurnTimer(isFirstSpin: false);
                 }
             }
             else
@@ -495,6 +519,7 @@ public class BiblicalRouletteActor : SessionActor
         else if (found)
         {
             _rouletteState.TurnStep = "SelectConsonantOrBuy";
+            ResetTurnTimer(isFirstSpin: false);
         }
         else
         {
@@ -511,10 +536,11 @@ public class BiblicalRouletteActor : SessionActor
         _rouletteState.SolvedPhrase = string.Empty;
 
         var turnPlayer = GetCurrentTurnPlayerState();
-        if (turnPlayer.Score < 10000) return;
+        if (turnPlayer.Score < 5000) return;
 
-        turnPlayer.Score -= 10000;
+        turnPlayer.Score -= 5000;
         _rouletteState.HintRevealed = true;
+        ResetTurnTimer(isFirstSpin: false);
     }
 
     private void HandleSolvePhrase(string clientId, object? payload)
@@ -569,6 +595,7 @@ public class BiblicalRouletteActor : SessionActor
             // End of entire game
             _state.Status = "Finished";
             _rouletteState.TurnStep = "GameFinished";
+            StopTurnTimer();
 
             // Determine overall winner with most phrases solved
             var topWinner = _rouletteState.RoundsWon
@@ -604,6 +631,8 @@ public class BiblicalRouletteActor : SessionActor
         {
             _session.ActivePlayerId = activeGuid;
         }
+
+        ResetTurnTimer(isFirstSpin: true);
     }
 
     private void UpdateMaskedPhrase()
@@ -746,5 +775,128 @@ public class BiblicalRouletteActor : SessionActor
         {
             _language = lang;
         }
+    }
+
+    public void StopTurnTimer()
+    {
+        lock (_stateLock)
+        {
+            _turnTimerCts?.Cancel();
+            _turnTimerCts?.Dispose();
+            _turnTimerCts = null;
+            _rouletteState.TurnDeadlineUtc = null;
+            _rouletteState.IsTurnTimerPaused = false;
+            _pausedRemainingSeconds = 0;
+        }
+    }
+
+    public void ResetTurnTimer(bool isFirstSpin = false)
+    {
+        lock (_stateLock)
+        {
+            if (_state.Status == "Finished" || _rouletteState.TurnStep == "GameFinished" || _rouletteState.TurnStep == "RoundEnded")
+            {
+                StopTurnTimer();
+                return;
+            }
+
+            _turnTimerCts?.Cancel();
+            _turnTimerCts?.Dispose();
+            _turnTimerCts = new CancellationTokenSource();
+
+            int baseSeconds = _session?.TimeLimitSeconds > 0 ? _session.TimeLimitSeconds : 60;
+            int durationSeconds = isFirstSpin ? baseSeconds + ExtraFirstSpinSeconds : baseSeconds;
+
+            _rouletteState.IsFirstSpinOfTurn = isFirstSpin;
+            _rouletteState.IsTurnTimerPaused = false;
+            _rouletteState.TurnDeadlineUtc = DateTime.UtcNow.AddSeconds(durationSeconds);
+            _pausedRemainingSeconds = durationSeconds;
+
+            var token = _turnTimerCts.Token;
+            _ = RunTurnTimerAsync(durationSeconds, token);
+        }
+    }
+
+    public void PauseTurnTimer()
+    {
+        lock (_stateLock)
+        {
+            if (_rouletteState.TurnDeadlineUtc.HasValue && !_rouletteState.IsTurnTimerPaused)
+            {
+                int remaining = (int)Math.Ceiling((_rouletteState.TurnDeadlineUtc.Value - DateTime.UtcNow).TotalSeconds);
+                _pausedRemainingSeconds = Math.Max(1, remaining);
+                _rouletteState.IsTurnTimerPaused = true;
+
+                _turnTimerCts?.Cancel();
+                _turnTimerCts?.Dispose();
+                _turnTimerCts = null;
+            }
+        }
+    }
+
+    public void ResumeTurnTimer()
+    {
+        lock (_stateLock)
+        {
+            if (_rouletteState.IsTurnTimerPaused)
+            {
+                int durationSeconds = _pausedRemainingSeconds > 0 
+                    ? _pausedRemainingSeconds 
+                    : (_session?.TimeLimitSeconds > 0 ? _session.TimeLimitSeconds : 60);
+
+                _turnTimerCts?.Cancel();
+                _turnTimerCts?.Dispose();
+                _turnTimerCts = new CancellationTokenSource();
+
+                _rouletteState.IsTurnTimerPaused = false;
+                _rouletteState.TurnDeadlineUtc = DateTime.UtcNow.AddSeconds(durationSeconds);
+
+                var token = _turnTimerCts.Token;
+                _ = RunTurnTimerAsync(durationSeconds, token);
+            }
+        }
+    }
+
+    private async Task RunTurnTimerAsync(int seconds, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(seconds), cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested) return;
+
+            lock (_stateLock)
+            {
+                if (cancellationToken.IsCancellationRequested) return;
+                if (_state.Status != "InProgress" || _rouletteState.TurnStep == "RoundEnded" || _rouletteState.TurnStep == "GameFinished") return;
+
+                // Time expired: forfeit turn and advance to next player
+                var timedOutPlayer = !string.IsNullOrEmpty(_rouletteState.CurrentTurnPlayerName)
+                    ? _rouletteState.CurrentTurnPlayerName
+                    : (_playerNames.TryGetValue(_rouletteState.CurrentTurnPlayerId, out var pName) ? pName : "Jugador");
+
+                AdvanceToNextTurn();
+
+                var nextPlayer = !string.IsNullOrEmpty(_rouletteState.CurrentTurnPlayerName)
+                    ? _rouletteState.CurrentTurnPlayerName
+                    : (_playerNames.TryGetValue(_rouletteState.CurrentTurnPlayerId, out var nName) ? nName : "Siguiente jugador");
+
+                _rouletteState.LastTurnTimeoutPlayerName = timedOutPlayer;
+                _rouletteState.LastTurnTimeoutNextPlayerName = nextPlayer;
+                _rouletteState.LastTurnTimeoutId = Guid.NewGuid().ToString();
+
+                _state.Payload = _rouletteState;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when timer is reset or paused
+        }
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        StopTurnTimer();
+        await base.DisposeAsync();
     }
 }

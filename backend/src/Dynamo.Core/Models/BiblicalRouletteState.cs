@@ -67,6 +67,15 @@ public class BiblicalRouletteState
     [JsonPropertyName("turnStep")]
     public string TurnStep { get; set; } = "SelectConsonantOrBuy"; // "SelectConsonantOrBuy", "AwaitingSpin", "Spinning", "RoundEnded", "GameFinished"
 
+    [JsonPropertyName("turnDeadlineUtc")]
+    public DateTime? TurnDeadlineUtc { get; set; }
+
+    [JsonPropertyName("isTurnTimerPaused")]
+    public bool IsTurnTimerPaused { get; set; }
+
+    [JsonPropertyName("isFirstSpinOfTurn")]
+    public bool IsFirstSpinOfTurn { get; set; } = true;
+
     [JsonPropertyName("roundWinnerId")]
     public string? RoundWinnerId { get; set; }
 
@@ -87,4 +96,13 @@ public class BiblicalRouletteState
 
     [JsonPropertyName("lastIncorrectGuessId")]
     public string? LastIncorrectGuessId { get; set; }
+
+    [JsonPropertyName("lastTurnTimeoutPlayerName")]
+    public string? LastTurnTimeoutPlayerName { get; set; }
+
+    [JsonPropertyName("lastTurnTimeoutNextPlayerName")]
+    public string? LastTurnTimeoutNextPlayerName { get; set; }
+
+    [JsonPropertyName("lastTurnTimeoutId")]
+    public string? LastTurnTimeoutId { get; set; }
 }

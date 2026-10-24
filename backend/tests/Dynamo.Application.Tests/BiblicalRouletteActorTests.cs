@@ -268,7 +268,7 @@ public class BiblicalRouletteActorTests
     }
 
     [Fact]
-    public async Task BiblicalRouletteActor_PurchaseHint_Requires10000PointsAndRevealsHint()
+    public async Task BiblicalRouletteActor_PurchaseHint_Requires5000PointsAndRevealsHint()
     {
         var broadcaster = new TestBroadcaster();
         var sessionId = "roulette-session-hint";
@@ -280,8 +280,8 @@ public class BiblicalRouletteActorTests
         actor.InitializeMatch();
         await Task.Delay(150);
 
-        // Score below 10,000 should not allow hint purchase
-        actor.SetPlayerScore(player1, 9999);
+        // Score below 5,000 should not allow hint purchase
+        actor.SetPlayerScore(player1, 4999);
         actor.EnqueueIntent(new PlayerIntent
         {
             ActionType = "PURCHASE_HINT",
@@ -290,10 +290,10 @@ public class BiblicalRouletteActorTests
         });
         await Task.Delay(200);
         Assert.False(actor.RouletteState.HintRevealed);
-        Assert.Equal(9999, actor.CurrentState.Players[player1].Score);
+        Assert.Equal(4999, actor.CurrentState.Players[player1].Score);
 
-        // Score of 15,000 should allow hint purchase, deducting 10,000
-        actor.SetPlayerScore(player1, 15000);
+        // Score of 7,000 should allow hint purchase, deducting 5,000
+        actor.SetPlayerScore(player1, 7000);
         actor.EnqueueIntent(new PlayerIntent
         {
             ActionType = "PURCHASE_HINT",
@@ -302,7 +302,152 @@ public class BiblicalRouletteActorTests
         });
         await Task.Delay(200);
         Assert.True(actor.RouletteState.HintRevealed);
-        Assert.Equal(5000, actor.CurrentState.Players[player1].Score);
+        Assert.Equal(2000, actor.CurrentState.Players[player1].Score);
+
+        await actor.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task BiblicalRouletteActor_FirstSpin_ShouldGrant15SecondsGracePeriod()
+    {
+        var broadcaster = new TestBroadcaster();
+        var sessionId = "roulette-session-timer-bonus";
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster, _testPhrases);
+        actor.Start();
+
+        var session = new Session
+        {
+            Id = Guid.NewGuid(),
+            TimeLimitSeconds = 30
+        };
+
+        var player1 = "player-1";
+        actor.RegisterPlayer(player1);
+        actor.InitializeMatch(session);
+        await Task.Delay(150);
+
+        var state = actor.RouletteState;
+        Assert.True(state.IsFirstSpinOfTurn);
+        Assert.False(state.IsTurnTimerPaused);
+        Assert.NotNull(state.TurnDeadlineUtc);
+
+        var secondsRemaining = (state.TurnDeadlineUtc.Value - DateTime.UtcNow).TotalSeconds;
+        // Configured 30s + 15s first-spin bonus = ~45s
+        Assert.InRange(secondsRemaining, 42.0, 46.0);
+
+        await actor.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task BiblicalRouletteActor_Action_ShouldResetTimerToStandardDurationWithoutBonus()
+    {
+        var broadcaster = new TestBroadcaster();
+        var sessionId = "roulette-session-timer-reset";
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster, _testPhrases);
+        actor.Start();
+
+        var session = new Session
+        {
+            Id = Guid.NewGuid(),
+            TimeLimitSeconds = 30
+        };
+
+        var player1 = "player-1";
+        actor.RegisterPlayer(player1);
+        actor.InitializeMatch(session);
+        await Task.Delay(150);
+
+        actor.SetPlayerScore(player1, 10000);
+
+        // Taking an action (PURCHASE_HINT) resets timer to base 30s (no +15s bonus)
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "PURCHASE_HINT",
+            ClientId = player1,
+            SessionId = sessionId
+        });
+        await Task.Delay(200);
+
+        var state = actor.RouletteState;
+        Assert.False(state.IsFirstSpinOfTurn);
+        Assert.NotNull(state.TurnDeadlineUtc);
+
+        var secondsRemaining = (state.TurnDeadlineUtc.Value - DateTime.UtcNow).TotalSeconds;
+        // Standard configured 30s without +15s bonus
+        Assert.InRange(secondsRemaining, 28.0, 31.0);
+
+        await actor.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task BiblicalRouletteActor_PauseAndResume_ShouldHaltTimer()
+    {
+        var broadcaster = new TestBroadcaster();
+        var sessionId = "roulette-session-timer-pause";
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster, _testPhrases);
+        actor.Start();
+
+        var player1 = "player-1";
+        actor.RegisterPlayer(player1);
+        actor.InitializeMatch();
+        await Task.Delay(150);
+
+        Assert.False(actor.RouletteState.IsTurnTimerPaused);
+
+        // Pause timer (e.g. solve modal open)
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "PAUSE_TURN_TIMER",
+            ClientId = player1,
+            SessionId = sessionId
+        });
+        await Task.Delay(150);
+        Assert.True(actor.RouletteState.IsTurnTimerPaused);
+
+        // Resume timer
+        actor.EnqueueIntent(new PlayerIntent
+        {
+            ActionType = "RESUME_TURN_TIMER",
+            ClientId = player1,
+            SessionId = sessionId
+        });
+        await Task.Delay(150);
+        Assert.False(actor.RouletteState.IsTurnTimerPaused);
+
+        await actor.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task BiblicalRouletteActor_TurnTimeout_ShouldAdvanceToNextPlayer()
+    {
+        var broadcaster = new TestBroadcaster();
+        var sessionId = "roulette-session-timeout";
+        var actor = new BiblicalRouletteActor(sessionId, broadcaster, _testPhrases)
+        {
+            ExtraFirstSpinSeconds = 0 // Disable 15s bonus for fast unit test
+        };
+        actor.Start();
+
+        var session = new Session
+        {
+            Id = Guid.NewGuid(),
+            TimeLimitSeconds = 1 // 1 second turn timeout
+        };
+
+        var player1 = "player-1";
+        var player2 = "player-2";
+        actor.RegisterPlayer(player1);
+        actor.RegisterPlayer(player2);
+        actor.InitializeMatch(session);
+        await Task.Delay(150);
+
+        var initialPlayer = actor.RouletteState.CurrentTurnPlayerId;
+        var expectedNextPlayer = initialPlayer == player1 ? player2 : player1;
+
+        // Wait for 1 second timeout to fire + delay for thread execution
+        await Task.Delay(1400);
+
+        Assert.Equal(expectedNextPlayer, actor.RouletteState.CurrentTurnPlayerId);
 
         await actor.DisposeAsync();
     }

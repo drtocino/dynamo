@@ -57,8 +57,7 @@ export interface WheelWedge {
           </div>
 
           <!-- Wheel Center Hub -->
-          <div class="absolute inset-0 m-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-neo-yellow border-3 sm:border-4 border-neo-black flex items-center justify-center z-20">
-            <span class="text-2xl">✝️</span>
+          <div class="absolute inset-0 m-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black border-3 sm:border-4 border-neo-black flex items-center justify-center z-20">
           </div>
         </div>
 

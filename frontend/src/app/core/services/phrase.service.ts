@@ -15,6 +15,22 @@ export class PhraseService {
 
   private fallbackPhrases: Phrase[] = [
     {
+      id: 'a0000000-0000-0000-0000-000000000001',
+      text: 'EN EL PRINCIPIO CREO DIOS LOS CIELOS Y LA TIERRA',
+      generalHint: 'Pentateuco - Antiguo Testamento',
+      specificHint: 'Génesis 1:1 - La creación de los cielos y la tierra',
+      category: 'Pentateuco',
+      language: 'es'
+    },
+    {
+      id: 'a0000000-0000-0000-0000-000000000002',
+      text: 'IN THE BEGINNING GOD CREATED THE HEAVENS AND THE EARTH',
+      generalHint: 'Pentateuch - Old Testament',
+      specificHint: 'Genesis 1:1 - The creation of the heavens and the earth',
+      category: 'Pentateuch',
+      language: 'en'
+    },
+    {
       id: 'a1111111-1111-1111-1111-111111111111',
       text: 'PORQUE DE TAL MANERA AMO DIOS AL MUNDO',
       generalHint: 'Evangelio de Juan',

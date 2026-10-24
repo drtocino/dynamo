@@ -2,8 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { GameService } from '../../core/services/game.service';
+import { SessionService } from '../../core/services/session.service';
 import { Game, MultiplayerMode } from '../../core/models/game.model';
-import { TranslatePipe } from '../../core/i18n';
+import { TranslatePipe, TranslationService } from '../../core/i18n';
 import { LanguageSelectorComponent } from './components/language-selector/language-selector.component';
 
 @Component({
@@ -129,6 +130,16 @@ import { LanguageSelectorComponent } from './components/language-selector/langua
                 class="neo-btn-secondary w-full text-sm py-2.5">
                 {{ 'hub.btnPlayShared' | translate }}
               </button>
+
+              <!-- Quick Demo Test Game Button for Biblical Roulette (1 Round, 3 Players, Genesis 1:1) -->
+              <button
+                *ngIf="game.slug === 'biblical-roulette'"
+                type="button"
+                (click)="startGenesisDemoGame(game)"
+                class="w-full py-2 px-3 rounded-xl border-3 border-neo-black bg-neo-yellow hover:bg-yellow-300 text-neo-black font-black text-xs transition active:scale-95 flex items-center justify-center gap-1.5 shadow-neo-sm cursor-pointer mt-0.5">
+                <span>⚡</span>
+                <span>{{ 'hub.btnGenesisDemo' | translate }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -138,6 +149,8 @@ import { LanguageSelectorComponent } from './components/language-selector/langua
 })
 export class HubComponent implements OnInit {
   private gameService = inject(GameService);
+  private sessionService = inject(SessionService);
+  private translationService = inject(TranslationService);
   private router = inject(Router);
 
   games: Game[] = [];
@@ -185,5 +198,54 @@ export class HubComponent implements OnInit {
 
   startConfigure(game: Game, mode: MultiplayerMode): void {
     this.router.navigate(['/configure', game.slug], { queryParams: { mode } });
+  }
+
+  startGenesisDemoGame(game: Game): void {
+    const clientId = this.sessionService.getClientId();
+    const currentLang = this.translationService.currentLang() || 'es';
+    const isEn = currentLang.toLowerCase().startsWith('en');
+
+    const genesisPhrase = {
+      id: 'a0000000-0000-0000-0000-000000000001',
+      text: isEn
+        ? 'IN THE BEGINNING GOD CREATED THE HEAVENS AND THE EARTH'
+        : 'EN EL PRINCIPIO CREO DIOS LOS CIELOS Y LA TIERRA',
+      generalHint: isEn ? 'Pentateuch - Old Testament' : 'Pentateuco - Antiguo Testamento',
+      specificHint: isEn ? 'Genesis 1:1 - The creation of the heavens and the earth' : 'Génesis 1:1 - La creación de los cielos y la tierra',
+      category: 'Pentateuco',
+      language: isEn ? 'en' : 'es'
+    };
+
+    const players = isEn ? ['David', 'Sarah', 'Daniel'] : ['David', 'Sara', 'Daniel'];
+
+    this.sessionService.createSharedScreenSession({
+      gameId: game.id,
+      mode: 'SharedScreen',
+      hostClientId: clientId,
+      maxPlayers: 3,
+      rounds: 1,
+      timeLimitSeconds: 60,
+      language: isEn ? 'en' : 'es',
+      playerNames: players,
+      gameSettingsJson: JSON.stringify({
+        matchName: isEn ? 'Genesis 1:1 Test Game' : 'Partida de Prueba Génesis 1:1',
+        customPhrase: genesisPhrase
+      })
+    }).subscribe({
+      next: (session) => {
+        this.sessionService.changeState(session.id, 'Active').subscribe({
+          next: () => {
+            this.router.navigate(['/active-match', session.id]);
+          },
+          error: (err) => {
+            console.error('Error transitioning test session to Active:', err);
+            this.router.navigate(['/active-match', session.id]);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error creating demo session:', err);
+      }
+    });
   }
 }

@@ -133,7 +133,28 @@ public class SessionsController : BaseController
                     var sessions = await _sessionRepository.FindAsync(s => s.Id == id, cancellationToken);
                     var sessionEntity = sessions.FirstOrDefault();
                     var lang = sessionEntity?.Language ?? "es";
-                    var phrases = await _phraseRepository.FindAsync(p => p.Language == lang, cancellationToken);
+                    IEnumerable<Dynamo.Core.Entities.Phrase> phrases = await _phraseRepository.FindAsync(p => p.Language == lang, cancellationToken);
+
+                    if (!string.IsNullOrWhiteSpace(sessionEntity?.GameSettingsJson))
+                    {
+                        try
+                        {
+                            using var doc = System.Text.Json.JsonDocument.Parse(sessionEntity.GameSettingsJson);
+                            if (doc.RootElement.TryGetProperty("customPhrase", out var cpElem))
+                            {
+                                var cp = System.Text.Json.JsonSerializer.Deserialize<Dynamo.Core.Entities.Phrase>(cpElem.GetRawText(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                if (cp != null)
+                                {
+                                    phrases = new List<Dynamo.Core.Entities.Phrase> { cp };
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // fallback to repository phrases
+                        }
+                    }
+
                     rouletteActor.InitializeMatch(sessionEntity, phrases.ToList());
                 }
                 actor.Start();

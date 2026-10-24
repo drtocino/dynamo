@@ -205,7 +205,7 @@ public class SessionActor : IAsyncDisposable
         return JsonSerializer.Deserialize<GameState>(json) ?? new GameState();
     }
 
-    public async ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         _cts.Cancel();
         _intentChannel.Writer.TryComplete();

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnChanges, SimpleChanges, OnDestroy, ChangeDetectorRef, NgZone, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalService } from '../../../core/services/modal.service';
 
@@ -41,19 +41,71 @@ import { ModalService } from '../../../core/services/modal.service';
     </div>
   `
 })
-export class ModalComponent {
+export class ModalComponent implements OnChanges, OnDestroy {
   private modalService = inject(ModalService);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   @Input() modalId?: string;
   @Input() isOpen: boolean = false;
   @Input() title?: string;
   @Input() subtitle?: string;
   @Input() icon?: string;
-  @Input() maxWidth: 'sm' | 'md' | 'lg' | 'xl' = 'md';
+  @Input() maxWidth: 'sm' | 'md' | 'lg' | 'xl' | '2xl' = 'md';
   @Input() showCloseButton: boolean = true;
   @Input() closeOnBackdrop: boolean = true;
+  @Input() autoDismissSeconds?: number;
 
   @Output() close = new EventEmitter<void>();
+
+  private autoDismissTimer: any = null;
+
+  constructor() {
+    effect(() => {
+      const active = this.modalService.activeModal();
+      const open = (this.modalId && active === this.modalId) || this.isOpen;
+      if (this.autoDismissSeconds && this.autoDismissSeconds > 0) {
+        if (open) {
+          this.scheduleAutoDismiss();
+        } else {
+          this.clearAutoDismiss();
+        }
+      }
+    });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.autoDismissSeconds && this.autoDismissSeconds > 0) {
+      if (this.isVisible) {
+        this.scheduleAutoDismiss();
+      } else {
+        this.clearAutoDismiss();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearAutoDismiss();
+  }
+
+  private scheduleAutoDismiss(): void {
+    if (this.autoDismissTimer) {
+      return;
+    }
+    const duration = (this.autoDismissSeconds && this.autoDismissSeconds > 0) ? this.autoDismissSeconds : 3;
+    this.autoDismissTimer = setTimeout(() => {
+      this.ngZone.run(() => {
+        this.handleClose();
+      });
+    }, duration * 1000);
+  }
+
+  private clearAutoDismiss(): void {
+    if (this.autoDismissTimer) {
+      clearTimeout(this.autoDismissTimer);
+      this.autoDismissTimer = null;
+    }
+  }
 
   get isVisible(): boolean {
     if (this.modalId) {
@@ -67,15 +119,19 @@ export class ModalComponent {
       case 'sm': return 'max-w-sm';
       case 'lg': return 'max-w-lg';
       case 'xl': return 'max-w-xl';
+      case '2xl': return 'max-w-2xl';
       default: return 'max-w-md';
     }
   }
 
   handleClose(): void {
+    this.clearAutoDismiss();
+    this.isOpen = false;
     if (this.modalId) {
       this.modalService.close();
     }
     this.close.emit();
+    this.cdr.detectChanges();
   }
 
   onBackdropClick(event: MouseEvent): void {

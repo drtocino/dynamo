@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, computed, inject, signal, effect } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, computed, inject, signal, effect, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameStore } from '../../../store/game.store';
@@ -36,6 +36,9 @@ export interface BiblicalRouletteState {
   lastRevealedCount: number;
   lastPointsEarned: number;
   turnStep: string; // 'SelectConsonantOrBuy' | 'AwaitingSpin' | 'RoundEnded' | 'GameFinished'
+  turnDeadlineUtc?: string | null;
+  isTurnTimerPaused?: boolean;
+  isFirstSpinOfTurn?: boolean;
   roundWinnerId?: string;
   overallWinnerId?: string;
   solvedPhrase?: string;
@@ -43,6 +46,9 @@ export interface BiblicalRouletteState {
   lastIncorrectGuess?: string;
   lastIncorrectGuessPlayerName?: string;
   lastIncorrectGuessId?: string;
+  lastTurnTimeoutPlayerName?: string;
+  lastTurnTimeoutNextPlayerName?: string;
+  lastTurnTimeoutId?: string;
 }
 
 @Component({
@@ -84,6 +90,20 @@ export interface BiblicalRouletteState {
           <span class="bg-neo-black text-white px-2.5 py-1 rounded-lg border-2 border-neo-black">
             {{ 'game.biblicalRoulette.turnScore' | translate:{ pts: displayedTurnPlayerScore() } }}
           </span>
+
+          <!-- Authoritative Turn Countdown Timer Badge with Fixed Width for 3 Digits -->
+          <div 
+            *ngIf="rouletteState()?.turnDeadlineUtc" 
+            class="w-24 sm:w-28 shrink-0 justify-center text-center tabular-nums px-2.5 py-1 rounded-lg border-2 border-neo-black flex items-center gap-1.5 font-black transition-all duration-200 select-none shadow-none"
+            [ngClass]="{
+              'bg-red-500 text-white animate-pulse': turnTimeRemaining() <= 5 && !isTimerPaused(),
+              'bg-neo-yellow text-neo-black': turnTimeRemaining() > 5 && turnTimeRemaining() <= 10 && !isTimerPaused(),
+              'bg-neo-gray text-neo-muted border-dashed': isTimerPaused(),
+              'bg-white text-neo-black': turnTimeRemaining() > 10 && !isTimerPaused()
+            }">
+            <span>⏱️</span>
+            <span>{{ isTimerPaused() ? ('⏸️ ' + turnTimeRemaining() + 's') : (turnTimeRemaining() + 's') }}</span>
+          </div>
         </div>
       </div>
 
@@ -122,7 +142,7 @@ export interface BiblicalRouletteState {
             <div>
               <div class="flex items-center justify-between border-b-2 border-neo-black pb-1.5 mb-2">
                 <h3 class="font-black text-xs uppercase text-neo-black flex items-center gap-1">
-                  <span>🎮</span> {{ 'game.biblicalRoulette.controls' | translate }}
+                  {{ 'game.biblicalRoulette.controls' | translate }}
                 </h3>
                 <span class="text-[10px] font-extrabold text-neo-pink">
                   {{ displayedTurnPlayerScore() }} {{ 'common.points' | translate }}
@@ -148,7 +168,7 @@ export interface BiblicalRouletteState {
 
                   <app-button
                     variant="secondary"
-                    [disabled]="rouletteState()?.hintRevealed || currentTurnPlayerScore() < 10000"
+                    [disabled]="rouletteState()?.hintRevealed || currentTurnPlayerScore() < 5000"
                     (onClick)="openHintConfirmModal()">
                     {{ 'game.biblicalRoulette.hint' | translate }}
                   </app-button>
@@ -174,7 +194,7 @@ export interface BiblicalRouletteState {
           <div class="neo-card bg-white p-3 sm:p-4 flex flex-col justify-between h-full space-y-2 select-none shadow-none">
             <div class="flex items-center justify-between border-b-2 border-neo-black pb-1.5 flex-wrap gap-1">
               <h4 class="text-xs font-black uppercase text-neo-black tracking-wider flex items-center gap-1.5">
-                <span>🔤</span> {{ 'game.biblicalRoulette.consonants' | translate }}
+                {{ 'game.biblicalRoulette.consonants' | translate }}
               </h4>
               <span class="text-xs font-black text-neo-pink" *ngIf="currentStagedConsonant()">
                 {{ 'game.biblicalRoulette.selectedLetter' | translate:{ letter: currentStagedConsonant() } }}
@@ -264,13 +284,14 @@ export interface BiblicalRouletteState {
         (close)="closeVowelModal()">
       </app-vowel-store-modal>
 
-      <!-- Solve Phrase Modal (Base Modal Integration) -->
+      <!-- Solve Phrase Modal (Base Modal Integration with Wider Layout) -->
       <app-modal
         modalId="solveVerse"
         [isOpen]="isSolveModalOpen"
         [title]="'game.biblicalRoulette.solveTitle' | translate"
         [subtitle]="'game.biblicalRoulette.solveSubtitle' | translate"
         icon="🎯"
+        maxWidth="2xl"
         (close)="closeSolveModal()">
         
         <div class="space-y-4">
@@ -278,7 +299,7 @@ export interface BiblicalRouletteState {
             type="text"
             [(ngModel)]="solvePhraseGuess"
             [placeholder]="'game.biblicalRoulette.solvePlaceholder' | translate"
-            class="w-full p-3 border-3 border-neo-black rounded-xl font-black text-base uppercase focus:outline-none focus:ring-2 focus:ring-neo-yellow" />
+            class="w-full p-3.5 border-3 border-neo-black rounded-xl font-black text-lg sm:text-xl uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-neo-yellow" />
 
           <div class="flex gap-2 pt-1.5 border-t border-neo-black/10">
             <div class="flex-1">
@@ -313,7 +334,7 @@ export interface BiblicalRouletteState {
           <div class="p-3 bg-neo-bg rounded-xl border-2 border-neo-black space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-xs font-black uppercase text-neo-muted">{{ 'game.biblicalRoulette.hintCostLabel' | translate }}</span>
-              <span class="text-lg font-black text-neo-pink">10,000 {{ 'common.points' | translate }}</span>
+              <span class="text-lg font-black text-neo-pink">5,000 {{ 'common.points' | translate }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-xs font-black uppercase text-neo-muted">{{ 'game.biblicalRoulette.yourPoints' | translate }}</span>
@@ -329,7 +350,7 @@ export interface BiblicalRouletteState {
             <div class="flex-1">
               <app-button
                 variant="yellow"
-                [disabled]="currentTurnPlayerScore() < 10000"
+                [disabled]="currentTurnPlayerScore() < 5000"
                 (onClick)="confirmBuyHint()">
                 {{ 'game.biblicalRoulette.confirmBuyHintBtn' | translate }}
               </app-button>
@@ -384,96 +405,134 @@ export interface BiblicalRouletteState {
         </div>
       </app-modal>
 
-      <!-- Spin Result Summary Modal (Base Modal Integration) -->
+      <!-- Turn Timeout Modal (Turn Loss due to timer expiry) -->
+      <app-modal
+        modalId="turnTimeout"
+        [isOpen]="isTurnTimeoutModalOpen"
+        [autoDismissSeconds]="3"
+        [title]="'game.biblicalRoulette.turnTimeoutTitle' | translate"
+        [subtitle]="'game.biblicalRoulette.turnTimeoutSubtitle' | translate:{ player: turnTimeoutData.playerName }"
+        icon="⌛"
+        maxWidth="md"
+        (close)="closeTurnTimeoutModal()">
+        
+        <div class="space-y-3.5">
+          <!-- Timed out player notice box -->
+          <div class="p-3.5 rounded-xl border-3 border-neo-black bg-purple-600/15 flex flex-col items-center justify-center text-center space-y-1">
+            <span class="text-[11px] font-black uppercase tracking-wider text-purple-700">
+              {{ 'game.biblicalRoulette.turnLostTitle' | translate }}
+            </span>
+            <p class="text-base sm:text-lg font-black text-neo-black uppercase tracking-wide">
+              {{ 'game.biblicalRoulette.playerTimeRanOut' | translate:{ player: turnTimeoutData.playerName } }}
+            </p>
+          </div>
+
+          <!-- New player on turn box -->
+          <div class="p-3.5 rounded-xl border-3 border-neo-black bg-neo-yellow/30 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">👉</span>
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-wider text-neo-muted block">
+                  {{ 'game.biblicalRoulette.nextTurnPlayerLabel' | translate }}
+                </span>
+                <span class="text-base sm:text-lg font-black text-neo-black">
+                  {{ turnTimeoutData.nextPlayerName }}
+                </span>
+              </div>
+            </div>
+            <span class="text-xs bg-neo-black text-white px-2.5 py-1 rounded-lg font-black uppercase">
+              {{ 'game.biblicalRoulette.turn' | translate }}
+            </span>
+          </div>
+
+          <!-- Auto-dismiss notice & Continue button -->
+          <div class="pt-2 border-t border-neo-black/10 flex items-center justify-between gap-3">
+            <span class="text-xs font-bold text-neo-muted italic">⏱️ {{ 'game.biblicalRoulette.autoDismissNotice' | translate }}</span>
+            <app-button
+              variant="yellow"
+              (onClick)="closeTurnTimeoutModal()">
+              <span>{{ 'common.understood' | translate }}</span>
+              <span>👍</span>
+            </app-button>
+          </div>
+        </div>
+      </app-modal>
+
+      <!-- Spin Result Summary Modal (Wider layout, bigger content, 3s auto-dismiss) -->
       <app-modal
         modalId="spinResult"
         [isOpen]="isSpinResultModalOpen"
+        [autoDismissSeconds]="3"
+        maxWidth="xl"
         [title]="getSpinModalTitle()"
         [subtitle]="getSpinModalSubtitle()"
         icon="🎡"
         [showCloseButton]="false"
         (close)="closeSpinResultModal()">
         
-        <div class="space-y-3">
-          <!-- 1. Amount Found on Wheel -->
-          <div class="p-3.5 rounded-xl border-3 border-neo-black bg-neo-bg flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="text-2xl">🎡</span>
-              <div>
-                <span class="text-[11px] font-black uppercase tracking-wider text-neo-muted block">{{ 'game.biblicalRoulette.amountLanded' | translate }}</span>
-                <span class="text-sm font-black text-neo-black">
-                  {{ spinResultModalData.isBankrupt ? ('game.biblicalRoulette.bankruptDetail' | translate) : (spinResultModalData.isMissTurn ? ('game.biblicalRoulette.missTurnDetail' | translate) : ('game.biblicalRoulette.ptsPerLetter' | translate:{ pts: spinResultModalData.prizeAmount })) }}
-                </span>
+        <div class="space-y-4 py-1">
+          <!-- Main Result Showcase: Large Roulette Land & Letters Found -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-stretch">
+            <!-- 1. Wheel Outcome (Enlarged) -->
+            <div class="p-4 rounded-xl border-3 border-neo-black bg-neo-bg flex flex-col justify-between items-center text-center space-y-2">
+              <span class="text-xs font-black uppercase tracking-wider text-neo-muted">{{ 'game.biblicalRoulette.amountLanded' | translate }}</span>
+              <div 
+                class="px-4 py-2 rounded-xl border-3 border-neo-black font-black text-2xl sm:text-3xl tracking-tight shadow-none"
+                [ngClass]="{
+                  'bg-neo-pink text-white': spinResultModalData.isBankrupt,
+                  'bg-purple-600 text-white': spinResultModalData.isMissTurn,
+                  'bg-neo-cyan text-neo-black': !spinResultModalData.isBankrupt && !spinResultModalData.isMissTurn
+                }">
+                {{ spinResultModalData.resultLabel }}
               </div>
+              <span class="text-xs font-bold text-neo-black">
+                {{ spinResultModalData.isBankrupt ? ('game.biblicalRoulette.bankruptDetail' | translate) : (spinResultModalData.isMissTurn ? ('game.biblicalRoulette.missTurnDetail' | translate) : ('game.biblicalRoulette.ptsPerLetter' | translate:{ pts: spinResultModalData.prizeAmount })) }}
+              </span>
             </div>
-            <span 
-              class="px-2.5 py-1 rounded-lg border-2 border-neo-black font-black text-xs"
-              [ngClass]="{
-                'bg-neo-pink text-white': spinResultModalData.isBankrupt,
-                'bg-purple-600 text-white': spinResultModalData.isMissTurn,
-                'bg-neo-cyan text-neo-black': !spinResultModalData.isBankrupt && !spinResultModalData.isMissTurn
-              }">
-              {{ spinResultModalData.resultLabel }}
+
+            <!-- 2. Letters Found (Enlarged) -->
+            <div class="p-4 rounded-xl border-3 border-neo-black bg-neo-bg flex flex-col justify-between items-center text-center space-y-2">
+              <span class="text-xs font-black uppercase tracking-wider text-neo-muted">{{ 'game.biblicalRoulette.lettersFound' | translate }}</span>
+              <div 
+                class="px-4 py-2 rounded-xl border-3 border-neo-black font-black text-2xl sm:text-3xl flex items-center justify-center gap-2"
+                [ngClass]="{
+                  'bg-neo-yellow text-neo-black': spinResultModalData.lettersCount > 0,
+                  'bg-neo-gray text-neo-muted': spinResultModalData.lettersCount === 0
+                }">
+                <span>{{ spinResultModalData.lettersCount }}</span>
+                <span *ngIf="spinResultModalData.letter" class="text-lg">× '{{ spinResultModalData.letter }}'</span>
+              </div>
+              <span class="text-xs font-bold text-neo-black">
+                <span *ngIf="spinResultModalData.lettersCount > 0">
+                  {{ 'game.biblicalRoulette.lettersCountFound' | translate:{ count: spinResultModalData.lettersCount, letter: spinResultModalData.letter } }}
+                </span>
+                <span *ngIf="spinResultModalData.lettersCount === 0 && spinResultModalData.letter">
+                  {{ 'game.biblicalRoulette.zeroLettersFound' | translate:{ letter: spinResultModalData.letter } }}
+                </span>
+                <span *ngIf="!spinResultModalData.letter">
+                  {{ 'game.biblicalRoulette.noLetterSelected' | translate }}
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Total Score Display as Simple Inline Text without a card component -->
+          <div class="text-center py-1">
+            <span *ngIf="spinResultModalData.finalTurnScore > 0" class="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
+              +{{ spinResultModalData.finalTurnScore }}
+            </span>
+            <span *ngIf="spinResultModalData.finalTurnScore === 0 && !spinResultModalData.isBankrupt && !spinResultModalData.isMissTurn" class="text-xl font-black text-neo-muted">
+              +0
             </span>
           </div>
 
-          <!-- 2. Count of Letters Found in Phrase -->
-          <div class="p-3.5 rounded-xl border-3 border-neo-black bg-neo-bg flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="text-2xl">🔤</span>
-              <div>
-                <span class="text-[11px] font-black uppercase tracking-wider text-neo-muted block">{{ 'game.biblicalRoulette.lettersFound' | translate }}</span>
-                <span class="text-sm font-black text-neo-black">
-                  <span *ngIf="spinResultModalData.lettersCount > 0">
-                    {{ 'game.biblicalRoulette.lettersCountFound' | translate:{ count: spinResultModalData.lettersCount, letter: spinResultModalData.letter } }}
-                  </span>
-                  <span *ngIf="spinResultModalData.lettersCount === 0 && spinResultModalData.letter">
-                    {{ 'game.biblicalRoulette.zeroLettersFound' | translate:{ letter: spinResultModalData.letter } }}
-                  </span>
-                  <span *ngIf="!spinResultModalData.letter">
-                    {{ 'game.biblicalRoulette.noLetterSelected' | translate }}
-                  </span>
-                </span>
-              </div>
-            </div>
-            <span 
-              class="w-8 h-8 rounded-lg border-2 border-neo-black font-black text-sm flex items-center justify-center"
-              [ngClass]="{
-                'bg-neo-yellow text-neo-black': spinResultModalData.lettersCount > 0,
-                'bg-neo-gray text-neo-muted': spinResultModalData.lettersCount === 0
-              }">
-              {{ spinResultModalData.lettersCount }}
-            </span>
-          </div>
-
-          <!-- 3. Final Score Obtained on Turn Spin -->
-          <div class="p-3.5 rounded-xl border-3 border-neo-black bg-neo-bg flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="text-2xl">⭐</span>
-              <div>
-                <span class="text-[11px] font-black uppercase tracking-wider text-neo-muted block">{{ 'game.biblicalRoulette.finalScoreObtained' | translate }}</span>
-                <span class="text-base font-black text-neo-black">
-                  <span *ngIf="spinResultModalData.finalTurnScore > 0" class="text-emerald-700">
-                    +{{ spinResultModalData.finalTurnScore }} {{ 'common.points' | translate }}
-                  </span>
-                  <span *ngIf="spinResultModalData.finalTurnScore === 0" class="text-neo-muted">
-                    0 {{ 'common.points' | translate }}
-                  </span>
-                </span>
-              </div>
-            </div>
-            <span *ngIf="spinResultModalData.lettersCount > 0 && spinResultModalData.prizeAmount > 0" class="text-xs font-bold text-neo-muted">
-              {{ spinResultModalData.lettersCount }} × {{ spinResultModalData.prizeAmount }}
-            </span>
-          </div>
-
-          <!-- Continue Button Reusing ButtonComponent -->
-          <div class="pt-1.5 border-t border-neo-black/10">
+          <!-- Continue Button with 3s auto-dismiss -->
+          <div class="pt-2 border-t border-neo-black/10 flex items-center justify-between gap-3">
+            <span class="text-xs font-bold text-neo-muted italic">⏱️ {{ 'game.biblicalRoulette.autoDismissNotice' | translate }}</span>
             <app-button
               variant="yellow"
               (onClick)="closeSpinResultModal()">
               <span>{{ 'common.continue' | translate }}</span>
-              <span>➡️</span>
             </app-button>
           </div>
         </div>
@@ -622,8 +681,25 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
   private phraseService = inject(PhraseService);
   private modalService = inject(ModalService);
   private translationService = inject(TranslationService);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   ngOnInit(): void {
+    // Check if session has custom test phrase settings (e.g. Genesis 1:1 demo)
+    if (this.session?.gameSettingsJson) {
+      try {
+        const settings = typeof this.session.gameSettingsJson === 'string'
+          ? JSON.parse(this.session.gameSettingsJson)
+          : this.session.gameSettingsJson;
+        if (settings?.customPhrase) {
+          this.inputService.dispatchIntent('SET_PHRASES', { phrases: [settings.customPhrase] }, this.session.id);
+          return;
+        }
+      } catch (e) {
+        console.warn('Could not parse session gameSettingsJson:', e);
+      }
+    }
+
     // Request phrases registered in Spanish (or current session/interface language) and send them to the game
     const lang = this.session?.language || this.translationService.currentLang() || 'es';
     this.phraseService.getPhrases(lang).subscribe({
@@ -651,6 +727,14 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
     playerName: '',
     guess: ''
   };
+
+  isTurnTimeoutModalOpen = false;
+  private lastHandledTurnTimeoutId: string = '';
+  turnTimeoutData = {
+    playerName: '',
+    nextPlayerName: ''
+  };
+  private turnTimeoutAutoDismissTimer: any = null;
 
   gameLogs: Array<{ message: string; icon: string; time: string }> = [];
   currentSolvedPhrase: string = '';
@@ -682,6 +766,11 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
   localStagedConsonant = signal<string>('');
   private spinSafetyTimer: any = null;
   private lastHandledSpinAngle: number = 0;
+
+  // Turn Countdown Timer & Modal Auto-dismiss handles
+  turnTimeRemaining = signal<number>(0);
+  private turnTimerIntervalHandle?: any;
+  private spinResultAutoDismissTimer?: any;
 
   // Frozen signals to ensure letters and points are revealed ONLY after the roulette finishes spinning
   private frozenMaskedPhrase = signal<string>('');
@@ -941,6 +1030,21 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
   }
 
   constructor() {
+    // Start countdown timer interval
+    this.turnTimerIntervalHandle = setInterval(() => {
+      this.updateCountdown();
+    }, 250);
+
+    // Immediate reactive countdown update when deadline changes
+    effect(() => {
+      const state = this.rouletteState();
+      if (state?.turnDeadlineUtc) {
+        const deadlineMs = new Date(state.turnDeadlineUtc).getTime();
+        const remainingMs = deadlineMs - Date.now();
+        this.turnTimeRemaining.set(Math.max(0, Math.ceil(remainingMs / 1000)));
+      }
+    });
+
     // Automatically synchronize wheel spin animation when remote player spins
     effect(() => {
       const state = this.rouletteState();
@@ -1021,6 +1125,28 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
         };
         this.isIncorrectGuessModalOpen = true;
         this.modalService.open('incorrectGuess');
+      }
+
+      // 4. Turn Timeout (triggers modal for everyone when turn time expires)
+      if (state.lastTurnTimeoutId && state.lastTurnTimeoutId !== this.lastHandledTurnTimeoutId) {
+        this.lastHandledTurnTimeoutId = state.lastTurnTimeoutId;
+        this.turnTimeoutData = {
+          playerName: state.lastTurnTimeoutPlayerName || this.translationService.t('common.player'),
+          nextPlayerName: state.lastTurnTimeoutNextPlayerName || this.translationService.t('common.player')
+        };
+        this.isTurnTimeoutModalOpen = true;
+        this.modalService.open('turnTimeout');
+        this.cdr.detectChanges();
+
+        // Auto-dismiss after exactly 3.0s
+        if (this.turnTimeoutAutoDismissTimer) {
+          clearTimeout(this.turnTimeoutAutoDismissTimer);
+        }
+        this.turnTimeoutAutoDismissTimer = setTimeout(() => {
+          this.ngZone.run(() => {
+            this.closeTurnTimeoutModal();
+          });
+        }, 3000);
       }
     });
   }
@@ -1124,6 +1250,11 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
     this.lastActionMessage = '';
     this.addGameLog(`${this.displayedTurnPlayerName()} spun the roulette for '${letter}'`, '🎡');
 
+    // Pause turn timer during spin
+    if (this.session) {
+      this.inputService.dispatchIntent('PAUSE_TURN_TIMER', null, this.session.id);
+    }
+
     // Safety timeout: guaranteed reset of spinning state after 5 seconds
     if (this.spinSafetyTimer) clearTimeout(this.spinSafetyTimer);
     this.spinSafetyTimer = setTimeout(() => {
@@ -1161,6 +1292,16 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
     this.isSpinResultModalOpen = true;
     this.modalService.open('spinResult', this.spinResultModalData);
 
+    // 3-second auto-dismiss timer
+    if (this.spinResultAutoDismissTimer) {
+      clearTimeout(this.spinResultAutoDismissTimer);
+    }
+    this.spinResultAutoDismissTimer = setTimeout(() => {
+      this.ngZone.run(() => {
+        this.closeSpinResultModal();
+      });
+    }, 3000);
+
     // Unfreeze: Now reveal newly found letters on phrase board, update scores, and advance turn
     this.isWheelSpinning.set(false);
     this.spinningConsonant.set('');
@@ -1189,8 +1330,38 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
   }
 
   closeSpinResultModal(): void {
+    if (this.spinResultAutoDismissTimer) {
+      clearTimeout(this.spinResultAutoDismissTimer);
+      this.spinResultAutoDismissTimer = null;
+    }
     this.isSpinResultModalOpen = false;
     this.modalService.close();
+    if (this.session) {
+      this.inputService.dispatchIntent('RESUME_TURN_TIMER', null, this.session.id);
+    }
+    this.cdr.detectChanges();
+  }
+
+  updateCountdown(): void {
+    const state = this.rouletteState();
+    if (!state?.turnDeadlineUtc || this.isTimerPaused()) {
+      return;
+    }
+    const deadlineMs = new Date(state.turnDeadlineUtc).getTime();
+    const remainingMs = deadlineMs - Date.now();
+    const seconds = Math.max(0, Math.ceil(remainingMs / 1000));
+    this.turnTimeRemaining.set(seconds);
+  }
+
+  isTimerPaused(): boolean {
+    const state = this.rouletteState();
+    return !!(
+      state?.isTurnTimerPaused ||
+      this.isSolveModalOpen ||
+      this.isWheelSpinning() ||
+      this.isSpinResultModalOpen ||
+      this.isTurnTimeoutModalOpen
+    );
   }
 
   getSpinModalTitle(): string {
@@ -1218,6 +1389,19 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
     if (this.spinSafetyTimer) {
       clearTimeout(this.spinSafetyTimer);
     }
+    if (this.spinResultAutoDismissTimer) {
+      clearTimeout(this.spinResultAutoDismissTimer);
+      this.spinResultAutoDismissTimer = null;
+    }
+    if (this.turnTimerIntervalHandle) {
+      clearInterval(this.turnTimerIntervalHandle);
+      this.turnTimerIntervalHandle = null;
+    }
+    if (this.turnTimeoutAutoDismissTimer) {
+      clearTimeout(this.turnTimeoutAutoDismissTimer);
+      this.turnTimeoutAutoDismissTimer = null;
+    }
+    this.closeTurnTimeoutModal();
     this.closeWinnerModal();
     this.closeGameLogModal();
     this.closeSpinResultModal();
@@ -1248,7 +1432,7 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
   }
 
   openHintConfirmModal(): void {
-    if (this.currentTurnPlayerScore() < 10000 || this.rouletteState()?.hintRevealed) return;
+    if (this.currentTurnPlayerScore() < 5000 || this.rouletteState()?.hintRevealed) return;
     this.isHintConfirmModalOpen = true;
     this.modalService.open('confirmHint');
   }
@@ -1272,16 +1456,34 @@ export class BiblicalRouletteComponent implements OnInit, OnDestroy {
   openSolveModal(): void {
     this.isSolveModalOpen = true;
     this.modalService.open('solveVerse');
+    if (this.session) {
+      this.inputService.dispatchIntent('PAUSE_TURN_TIMER', null, this.session.id);
+    }
   }
 
   closeSolveModal(): void {
     this.isSolveModalOpen = false;
     this.modalService.close();
+    if (this.session) {
+      this.inputService.dispatchIntent('RESUME_TURN_TIMER', null, this.session.id);
+    }
+    this.cdr.detectChanges();
   }
 
   closeIncorrectGuessModal(): void {
     this.isIncorrectGuessModalOpen = false;
     this.modalService.close();
+    this.cdr.detectChanges();
+  }
+
+  closeTurnTimeoutModal(): void {
+    if (this.turnTimeoutAutoDismissTimer) {
+      clearTimeout(this.turnTimeoutAutoDismissTimer);
+      this.turnTimeoutAutoDismissTimer = null;
+    }
+    this.isTurnTimeoutModalOpen = false;
+    this.modalService.close();
+    this.cdr.detectChanges();
   }
 
   submitSolveGuess(): void {
